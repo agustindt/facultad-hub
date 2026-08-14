@@ -1,0 +1,318 @@
+HUB FACULTAD
+============
+
+Un hub web sobre tu vault de Obsidian. Lee y escribe los MISMOS archivos .md:
+no hay copia, ni base de datos, ni sincronización que se pueda desincronizar.
+Podés seguir usando Obsidian en paralelo — los cambios se ven en los dos lados.
+
+
+CÓMO ARRANCARLO
+---------------
+
+Opción 1 — doble clic en:
+
+    iniciar-hub.command
+
+Opción 2 — desde la terminal:
+
+    cd ~/Documents/Facultad/00-Sistema/_hub
+    node server.js
+
+Después abrí http://localhost:4177
+
+Para cortarlo: Ctrl+C en la terminal, o cerrá la ventana.
+
+Requiere Node.js. Si no lo tenés:  brew install node
+No hay que instalar nada más: cero dependencias de npm, y las librerías
+(marked, d3, mermaid, katex, pdf.js) están guardadas en public/vendor/, así
+que el hub funciona sin internet.
+
+
+QUÉ TIENE
+---------
+
+Hub          Próximo hito con cuenta regresiva, estado de estudio por materia,
+             hitos de los próximos días, salud del vault y el repaso de hoy.
+
+Repaso       Repaso espaciado. Ver abajo — es lo más importante que hace.
+
+Capturar     Pantalla en blanco para escribir en clase. Ver abajo.
+
+Cobertura    Los temas del programa de la cátedra contra las notas que existen.
+             Ver abajo.
+
+Importar PDF Un PDF de cátedra entra, salen borradores de notas. Ver abajo.
+
+Notas        Todas las notas con búsqueda y filtros por materia, tipo y estado.
+
+Calendario   Las fechas salen solas de las tablas de 00-Seguimiento/ (cronograma,
+             condiciones, tracker). Podés agregar eventos propios, que se guardan
+             en _hub/datos/eventos.json y NO tocan tus notas.
+             "Exportar .ics" te baja un calendario para suscribir desde Apple
+             Calendar, con avisos 3 días y 1 día antes de cada fecha.
+
+Mapa         El grafo de wikilinks. Clic en un nodo para abrir la nota.
+
+Gráficos     Las curvas de Economía, interactivas: producción de corto plazo
+             (PT · PMe · PMg con las 3 etapas), costos totales (CF · CV · CT),
+             costos medios y marginal (CFMe · CVMe · CTMe · CMg), la envolvente
+             de largo plazo con la escala mínima eficiente, isocuanta+isocosto
+             con su tangencia, y la FPP de la U1.
+
+             No están dibujadas a ojo: salen de las funciones. PT = A·L² − B·L³
+             y CT = CF + aQ − bQ² + cQ³. Por eso el PMg cruza al PMe exactamente
+             en el óptimo técnico y el CMg corta al CVMe y al CTMe exactamente en
+             sus mínimos — es una consecuencia de la derivada, no del trazo.
+
+             Pasá el mouse para leer todos los valores en cada punto. Y hay dos
+             controles que enseñan algo: el de costo fijo (movelo y vas a ver que
+             el CMg y el CVMe no se mueven) y los de presupuesto y precio del
+             trabajo en el isocosto (uno lo desplaza en paralelo, el otro lo rota).
+
+Salud        Wikilinks rotos, stems duplicados entre materias, valores de estado
+             fuera de la convención, conceptos con menos de 3 conexiones y
+             conceptos huérfanos. Es el validador de Convenciones.md, con interfaz.
+
+Administrar  Alta, edición y baja de materias. Ver abajo.
+
+⌘K           Buscador. Escribís una palabra cualquiera y busca en el TEXTO de
+             todas las notas, no solo en los títulos. Ignora tildes ("economia"
+             encuentra "Economía"), muestra el fragmento donde apareció con el
+             término resaltado, y al abrir la nota salta a esa parte y la marca.
+             Flechas para moverte, Enter para abrir.
+
+
+REPASO ESPACIADO
+----------------
+
+Las tarjetas no las escribís: ya están escritas. Cada bloque "## En el parcial"
+de una nota es una tarjeta. Adelante va la consigna ("enunciar la regla y
+justificarla con el mecanismo de arrastre"); atrás, el resumen de la nota y sus
+Conexiones, que es lo que tenías que poder traer de memoria.
+
+Lo que persiste es SÓLO el calendario, en _hub/datos/repaso.json. Ninguna nota
+se toca. Si borrás ese archivo, perdés el historial y nada más.
+
+El algoritmo es SM-2 recortado: calificás de 1 a 4 y el intervalo hasta el
+próximo repaso se estira o se derrumba según cómo te fue. La parte que importa
+es el recorte: un intervalo NUNCA salta por encima de la fecha del parcial.
+Un repaso programado para tres días después del examen no sirve para nada.
+
+Y hace la cuenta que vos no vas a hacer: sabe cuántos conceptos tenés sin ver y
+cuántos días faltan para cada parcial, y te dice cuántas tarjetas nuevas por día
+hacen falta para llegar con todo visto al menos una vez. Si no alcanza el ritmo,
+te lo dice en rojo en vez de dejarte creer que vas bien.
+
+Teclas: espacio muestra la nota, 1 a 4 califican.
+
+
+COBERTURA: EL PROGRAMA CONTRA EL VAULT
+--------------------------------------
+
+Salud valida sintaxis (wikilinks rotos, stems duplicados). Cobertura valida
+CONTENIDO: qué temas dice la cátedra que entran, y cuáles tenés escritos.
+
+La fuente es <Materia>/00-Seguimiento/programa-<sufijo>.md, con una tabla de
+Unidad | Tema, una fila por tema. Ya están cargados los de Economía (151 temas,
+de los contenidos numerados del aula) y OAE (17, de la tabla del aula 2022, con
+la advertencia de que esa aula es vieja). Si una materia no tiene el archivo, el
+hub lo dice y no muestra nada: no inventa el programa.
+
+Cada tema queda en uno de tres estados:
+
+  Con nota          hay una nota cuyo título coincide con el tema
+  Solo mencionado   el tema aparece en el texto de alguna nota, pero sin nota propia
+  Sin cubrir        ni una cosa ni la otra
+
+El matching es por palabras, con un singularizador mínimo para que "isocuantas"
+y "Isocuanta" cuenten como lo mismo. NO es infalible: por eso cada fila muestra
+la nota que eligió y, debajo, las otras candidatas. Si se equivocó, la columna
+"Nota" del archivo de programa es el override manual — ponés el wikilink ahí y
+deja de buscar solo.
+
+Cada tema sin cubrir tiene un botón "Crear" que abre la nota nueva con el título
+y la unidad ya puestos.
+
+
+CAPTURA RÁPIDA
+--------------
+
+Una hoja en blanco, sin barra lateral, sin vista previa, sin botones de formato.
+Elegís materia, ponés un título y escribís.
+
+El frontmatter existe pero NO se muestra: se escribe solo al crear el archivo y
+se vuelve a pegar al guardar. Vos ves texto y nada más.
+
+Se guarda solo, un segundo después de que dejás de tipear, y avisa arriba a la
+izquierda cuándo fue el último guardado. Es un .md normal en <Materia>/06-Clases/:
+Obsidian lo ve igual.
+
+⌘T mete la hora en el cursor, que es la forma barata de saber después en qué
+momento de la clase se dijo cada cosa. Al terminar, "Terminar y ordenar" te lleva
+directo al editor con el botón de Claude enfocado.
+
+
+IMPORTAR PDF DE CÁTEDRA
+-----------------------
+
+Arrastrás un PDF y salen borradores: una nota de unidad y entre 5 y 15 notas de
+concepto, con frontmatter, wikilinks, tablas, Mermaid y bloque "## En el parcial"
+— o sea, listas para ser tarjetas de repaso.
+
+El PDF se lee en el navegador con pdf.js: el archivo nunca se sube ni se guarda.
+Al servidor sólo va el texto plano.
+
+Antes de gastar nada te muestra páginas, caracteres y el costo aproximado. Si el
+PDF es un escaneo (imágenes, sin texto) te lo dice y no sigue.
+
+Verificación del lado del servidor, igual que en Ordenar: cada wikilink de cada
+propuesta se chequea contra el índice real, y además se avisa si un nombre choca
+con una nota de OTRA materia — que es la regla que rompe el grafo de Obsidian.
+Las propuestas con colisión vienen destildadas: no se pueden escribir hasta que
+las renombres.
+
+Elegís cuáles querés, las ves renderizadas antes de decidir, y recién ahí se
+escriben. Nunca pisa un archivo que ya existe.
+
+Límite declarado: se mandan los primeros 120.000 caracteres. Si el PDF es más
+largo, te avisa cuánto quedó afuera.
+
+
+MATERIAS: ALTA, EDICIÓN Y BAJA
+------------------------------
+
+ALTA. "+ Nueva materia" crea la carpeta completa con la estructura de
+Convenciones.md: las 8 subcarpetas, el MOC, el CLAUDE.md y los dos archivos de
+seguimiento ya sufijados (cronograma-<sufijo>.md, condiciones-<sufijo>.md).
+
+El sufijo no es decorativo: Obsidian resuelve los wikilinks por nombre de
+archivo, y OAE ya ocupa cronograma.md y condiciones.md. El hub rechaza el alta
+si el sufijo elegido produce un stem que ya existe — te avisa cuál choca.
+
+Los archivos de seguimiento nacen vacíos a propósito, con las tablas armadas y
+una sección de Faltantes. No se inventan fechas ni condiciones.
+
+EDICIÓN. Cambiás nombre, nombre corto, color, orden y si está archivada. Eso vive
+en _hub/datos/materias.json, no toca tus notas.
+
+Hay 5 colores, elegidos y verificados para que se distingan también con
+daltonismo (violeta, verde azulado, ámbar, magenta, verde). El color sigue a la
+materia: no se reasigna al filtrar ni al agregar otra. La sexta materia activa
+queda en gris; si archivás alguna, el color se libera.
+
+Renombrar la CARPETA no se puede desde el hub: rompería todos los wikilinks que
+le apuntan. Si necesitás hacerlo, es una operación aparte que hay que planificar.
+
+BAJA. No borra: mueve la carpeta a 00-Sistema/_papelera/<Materia>-<fecha>/.
+Antes de mover te muestra cuántas notas tiene y, sobre todo, qué wikilinks de
+OTRAS materias apuntan adentro — que son los que van a quedar rotos. Hay que
+escribir el nombre exacto de la carpeta para confirmar.
+
+Para borrar de verdad, vaciás _papelera/ desde Finder.
+
+
+CREAR Y EDITAR
+--------------
+
+"+ Nueva nota" arma el frontmatter según la convención (tipo, materia, unidad,
+estado, tags), propone la carpeta correcta según el tipo, y avisa si el stem ya
+existe en otra materia — que es la regla que más fácil se rompe. La materia del
+frontmatter se deriva SIEMPRE de la carpeta destino: si las cambiás y no
+coinciden, te frena antes de crear el archivo.
+
+El editor tiene vista previa en vivo con Mermaid y LaTeX. ⌘S guarda.
+
+BARRA DE INSERCIÓN. Arriba del editor hay una fila de botones para no tener que
+acordarse de la sintaxis:
+
+  [[ ]]   wikilink (y después te autocompleta)
+  B i `   negrita, cursiva, código
+  H2 H3   títulos · Cita · viñetas · numerada · checklist
+  Tabla   tabla de 3 columnas ya armada
+  Código  bloque de código
+  $x$ $$  fórmula LaTeX en línea o en bloque
+  Flow    diagrama Mermaid flowchart, YA con tu paleta y con <b>/<br/>
+  2×2     matriz de cuadrantes
+  Mapa    mindmap
+  ⚠️ 📌    bloques de aviso
+  Conexiones · En el parcial   los dos bloques de la convención
+
+Si tenés texto seleccionado, el botón lo envuelve; si no, deja el cursor en su
+lugar. Y el botón "Símbolos" despliega flechas, comparadores, operadores,
+griegas, conjuntos, subíndices y marcas: → ⟺ ≥ ≠ ± Δ ∑ ∈ ∞ ⚠️ 📌 ✅
+
+
+ESCRIBIR RÁPIDO Y QUE LA NOTA SE ORDENE SOLA
+--------------------------------------------
+
+Son dos capas. La de abajo es gratis y siempre está; la de arriba la disparás vos.
+
+CAPA LOCAL (sin IA, instantánea, sin configurar nada)
+
+- Autocompletado de wikilinks: escribí "[[" y empezá a tipear. Te lista las notas
+  que existen, con su materia al lado. Flechas para moverte, Enter o Tab para
+  insertar, Esc para cerrar. Es la forma de no romper el grafo sin tener que
+  acordarte de cómo se llamaba exactamente cada concepto.
+- Avisos al guardar (no bloquean, solo avisan): wikilinks rotos, falta de
+  frontmatter, un `estado` fuera de la convención, un concepto sin bloque
+  ## Conexiones, un bloque Conexiones con menos de 3 enlaces, y ASCII art donde
+  debería ir Mermaid.
+
+CAPA CLAUDE (botón "✨ Ordenar con Claude" en el editor)
+
+Le manda a Claude tu texto crudo junto con tu Convenciones.md y la lista exacta
+de notas que existen en el vault. Devuelve la nota ordenada: títulos, tablas,
+LaTeX, Mermaid, wikilinks solo a notas reales, bloque ## Conexiones con la
+explicación de cada enlace, y sección ## En el parcial.
+
+No pisa nada solo. Te muestra:
+- un diff línea por línea de lo que cambia,
+- la lista de qué cambió y por qué,
+- los conceptos que aparecen en tu texto y todavía no tienen nota propia,
+- una alerta en rojo si la propuesta trae algún wikilink a una nota inexistente
+  (el hub lo verifica por su cuenta, no confía en el modelo).
+
+Recién ahí elegís "Aceptar y reemplazar" o "Descartar". Y aceptar tampoco guarda:
+después tenés que apretar Guardar.
+
+Para habilitarlo hace falta una clave de API de Anthropic, que se carga en
+Ajustes. Se guarda solo en _hub/datos/config.json con permisos 600 y nunca vuelve
+entera al navegador. Es la única salida a internet de todo el hub.
+
+Costo aproximado: unos 4.000 tokens de entrada y 2.500 de salida por nota. Con
+Haiku sale menos de 2 centavos de dólar por nota; con Sonnet, unos 3.
+
+REGISTRO DE USO DE IA
+
+Cada llamada queda anotada en _hub/datos/ia-log.json con fecha, nota, modelo y
+tokens, y se ve en Ajustes. Ingeniería de Software III exige declarar en
+decisiones.md qué hiciste con IA y cómo lo verificaste: ese archivo es la
+evidencia para armar esa declaración.
+
+
+LO QUE NO HACE, A PROPÓSITO
+---------------------------
+
+- No borra notas. Si querés borrar una, hacelo desde Finder u Obsidian.
+- No toca 99-Material-Catedra/ (ni la lee: la de OAE está bloqueada por el SO).
+- No reescribe tus notas por su cuenta. Los eventos que agregás van a un JSON
+  aparte, no se inyectan en el markdown.
+- No sube nada a internet, salvo las dos funciones de Claude (Ordenar e Importar
+  PDF), que son explícitas y quedan registradas. Escucha solo en 127.0.0.1:
+  nadie más en la red lo ve.
+- No guarda los PDFs que importás: se leen en el navegador y se descartan.
+- El repaso no escribe en tus notas. El calendario vive aparte, en datos/.
+
+
+SI ALGO FALLA
+-------------
+
+"No encuentro el vault"      El server espera estar en <vault>/00-Sistema/_hub/.
+                             Si lo movés, definí la ruta:
+                             VAULT_DIR=~/Documents/Facultad node server.js
+
+"address already in use"     Ya está corriendo, o el puerto está ocupado:
+                             PORT=4188 node server.js
+
+La página no muestra notas    Mirá la terminal: ahí sale el vault que tomó y
+                             cuántas notas indexó.

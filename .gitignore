@@ -1,0 +1,7 @@
+# Datos locales: clave de API, eventos propios, registro de uso de IA.
+# NUNCA se versionan.
+datos/
+
+node_modules/
+.DS_Store
+*.log
