@@ -47,20 +47,28 @@ button,input,select,textarea{font:inherit;color:inherit}
 #app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
 aside{
   background:var(--surface-1);border-right:1px solid var(--hair);
-  padding:20px 14px;position:sticky;top:0;height:100vh;min-height:100%;overflow-y:auto;
-  display:flex;flex-direction:column;gap:22px;
+  padding:18px 12px;display:flex;flex-direction:column;gap:14px;
+  /* Fijo al scrollear. Dos condiciones que hay que cumplir juntas:
+     - align-self:start, porque un item de grid se estira a la altura de la fila
+       por defecto y entonces no le queda recorrido para pegarse.
+     - height:100vh sin min-height, para que mida la ventana y no el documento.
+     Con min-height:100% medía 2949px en una nota larga y se iba con el scroll. */
+  position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  overscroll-behavior:contain;
 }
+aside::-webkit-scrollbar{width:6px}
+aside::-webkit-scrollbar-thumb{background:var(--grid);border-radius:3px}
 .brand{display:flex;align-items:center;gap:9px;padding:0 8px;font-weight:650;letter-spacing:-.01em}
 .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--m1)}
 nav{display:flex;flex-direction:column;gap:2px}
 nav a{
-  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;
+  display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:9px;
   color:var(--ink-2);font-size:14px;transition:background .12s,color .12s;
 }
 nav a:hover{background:color-mix(in oklab,var(--ink-1) 5%,transparent);color:var(--ink-1)}
 nav a.on{background:color-mix(in oklab,var(--m1) 14%,transparent);color:var(--ink-1);font-weight:550}
 nav a .ico{width:17px;text-align:center;opacity:.85;font-size:13px}
-nav .sep{margin:12px 10px 4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+nav .sep{margin:9px 10px 3px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
 .side-foot{margin-top:auto;padding:0 8px;font-size:12px;color:var(--ink-3);line-height:1.5}
 main{padding:28px 34px 72px;max-width:1240px;width:100%}
 @media(max-width:900px){
@@ -223,12 +231,13 @@ body.con-panel #app{grid-template-columns:232px minmax(0,1fr) 400px}
 #panel{display:none}
 body.con-panel #panel{
   display:flex;flex-direction:column;background:var(--surface-1);
-  border-left:1px solid var(--hair);position:sticky;top:0;height:100vh;overflow:hidden;
+  border-left:1px solid var(--hair);
+  position:sticky;top:0;align-self:start;height:100vh;overflow:hidden;
 }
 .pan-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;
   padding:14px 16px;border-bottom:1px solid var(--hair);flex:none}
 .pan-modo{display:flex;gap:5px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--hair);flex:none}
-.pan-cuerpo{flex:1;overflow-y:auto;padding:16px;font-size:14px}
+.pan-cuerpo{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px;font-size:14px}
 .pan-pie{flex:none;padding:12px 16px;border-top:1px solid var(--hair);background:var(--surface-1)}
 .pan-input{width:100%;height:66px;resize:none;background:var(--surface-2);border:1px solid var(--hair);
   border-radius:10px;padding:9px 11px;font-size:13.5px;line-height:1.5;margin-top:7px}
@@ -262,6 +271,17 @@ body.foco main{padding:0;max-width:none;display:flex;flex-direction:column;heigh
 .cap-pie{display:flex;justify-content:space-between;gap:12px;padding:9px 22px;
   border-top:1px solid var(--hair);background:var(--surface-1);flex:none}
 @media(max-width:900px){.cap-ta{padding:20px 16px}}
+
+/* ---------- Columna lateral fija (backlinks) ----------
+   Mismo par de condiciones que el menú: align-self:start para que el item de
+   grid no se estire a la altura de la fila, y una altura acotada a la ventana
+   con su propio scroll, porque la lista de backlinks puede ser más larga que
+   la pantalla y si no el final queda inalcanzable. */
+.side-fijo{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);
+  overflow-y:auto;overscroll-behavior:contain}
+.side-fijo::-webkit-scrollbar{width:6px}
+.side-fijo::-webkit-scrollbar-thumb{background:var(--grid);border-radius:3px}
+@media(max-width:900px){.side-fijo{position:static;max-height:none}}
 
 /* ---------- Matriz de actividad ----------
    Rampa secuencial de un solo tono. Los pasos salieron del validador de dataviz
@@ -1108,7 +1128,7 @@ async function viewNota(){
   // Si venís del buscador, se marca el término y se salta a la primera aparición.
   if(S.params.q) setTimeout(()=>marcarEnNota(art,S.params.q),60);
 
-  const side=el('div');
+  const side=el('div','side-fijo');
   const cb=el('div','card');
   cb.append(el('h3','',`Backlinks <span class="badge">${d.backlinks.length}</span>`));
   if(!d.backlinks.length) cb.append(el('div','tiny muted','Ninguna nota enlaza a esta.'));
@@ -3685,10 +3705,321 @@ async function panelGit(){
   m.innerHTML=''; m.append(c);
 }
 
+/* =========================================================================
+   Google Drive
+   ========================================================================= */
+
+const DRV = { carpeta:'root', ruta:[], q:'' };
+
+const TAM = (n)=>{ n=Number(n||0); if(!n) return '—';
+  const u=['B','KB','MB','GB']; let i=0; while(n>=1024&&i<3){n/=1024;i++;}
+  return n.toFixed(i?1:0)+' '+u[i]; };
+
+function esCarpeta(f){ return f.mimeType==='application/vnd.google-apps.folder'; }
+function esGoogleDoc(f){ return String(f.mimeType||'').startsWith('application/vnd.google-apps')&&!esCarpeta(f); }
+
+async function viewDrive(){
+  const m=$('#main'); m.innerHTML='<div class="empty">Cargando…</div>';
+  const est=await api('/api/drive/estado').catch(e=>({error:e.message}));
+  m.innerHTML='';
+
+  const head=el('div','head');
+  head.append(el('div','',`<h1>Drive</h1>
+    <div class="sub">${est.conectado?`Conectado como <b>${esc(est.cuenta||'—')}</b>`:'Bajá material de cátedra, publicá una unidad y hacé backup del vault'}</div>`));
+  const acts=el('div','row');
+  if(est.conectado){
+    const bB=el('button','btn','Backup del vault'); bB.onclick=()=>panelBackup();
+    const bP=el('button','btn','Publicar'); bP.onclick=()=>panelPublicar();
+    const bD=el('button','btn sm','Desconectar');
+    bD.onclick=async()=>{ if(!confirm('¿Desconectar Drive? Las credenciales quedan guardadas.'))return;
+      await api('/api/drive/desconectar',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      viewDrive(); };
+    acts.append(bB,bP,bD);
+  }
+  head.append(acts); m.append(head);
+
+  if(!est.conectado){ m.append(panelConectarDrive(est)); return; }
+  if(est.error) m.append(el('div','alert bad',esc(est.error)));
+
+  if(est.espacio){
+    const u=est.espacio.usado, t=est.espacio.total;
+    const c=el('div','tiny muted'); c.style.marginBottom='14px';
+    c.innerHTML=`Espacio: ${TAM(u)}${t?` de ${TAM(t)}`:''} · Permisos: <b>lectura de todo, escritura sólo de lo que sube el hub</b>`;
+    m.append(c);
+  }
+
+  m.append(explorador());
+}
+
+/* ---------- Conectar ---------- */
+
+function panelConectarDrive(est){
+  const c=el('div','card'); c.style.maxWidth='720px';
+  c.append(el('h3','','Conectar Google Drive'));
+
+  const pasos=el('div','sec'); pasos.style.fontSize='13.5px';
+  pasos.innerHTML=`<p>Google no da tokens sueltos como GitHub: hay que crear una app. Son diez minutos de clics, una sola vez.</p>
+  <ol style="margin:12px 0 12px 20px;line-height:1.85">
+    <li>Entrá a <span class="mono">console.cloud.google.com</span> y creá un proyecto (cualquier nombre).</li>
+    <li>Buscá <b>Google Drive API</b> en la biblioteca y habilitala.</li>
+    <li>En <b>Pantalla de consentimiento de OAuth</b>: tipo <b>Externo</b>, completá lo mínimo, y en <b>Usuarios de prueba</b> agregá tu propio mail. Sin ese paso Google bloquea la app por no verificada.</li>
+    <li>En <b>Credenciales</b> → Crear → <b>ID de cliente de OAuth</b> → tipo <b>Aplicación de escritorio</b>.</li>
+    <li>Copiá el <b>Client ID</b> y el <b>Client Secret</b> acá abajo.</li>
+  </ol>
+  <p class="tiny muted">Si te pide una URI de redirección, es esta: <span class="mono">${esc(est.redirect||'')}</span></p>`;
+  c.append(pasos);
+
+  const f=(lbl,node)=>{const w=el('div');w.style.marginBottom='12px';
+    w.append(el('div','tiny sec',lbl));w.lastChild.style.marginBottom='5px';w.append(node);return w;};
+  const iId=el('input','input'); iId.placeholder='123456-abc.apps.googleusercontent.com';
+  const iSec=el('input','input'); iSec.type='password'; iSec.placeholder='GOCSPX-…';
+  c.append(f('Client ID',iId), f('Client Secret',iSec));
+
+  const msg=el('div','tiny'); msg.style.margin='10px 0';
+  const fila=el('div','row');
+  const b1=el('button','btn','Guardar credenciales');
+  const b2=el('button','btn primary','Autorizar en Google');
+  b2.disabled=!est.credenciales;
+  fila.append(b1,b2); c.append(msg,fila);
+
+  b1.onclick=async()=>{
+    msg.style.color=''; msg.textContent='Guardando…';
+    try{
+      const r=await api('/api/drive/config',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({clientId:iId.value,clientSecret:iSec.value})});
+      msg.style.color='var(--good)'; msg.textContent='✓ Credenciales guardadas. Ahora autorizá.';
+      b2.disabled=!r.credenciales;
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; }
+  };
+  b2.onclick=async()=>{
+    try{
+      const r=await api('/api/drive/auth');
+      window.open(r.url,'_blank');
+      msg.style.color=''; msg.innerHTML='Se abrió Google en otra pestaña. Cuando termines, <a class="wl" href="javascript:viewDrive()">volvé acá</a>.';
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; }
+  };
+
+  c.append(el('div','tiny muted',`<p style="margin-top:14px"><b>Qué permisos pide y por qué.</b>
+    Dos scopes acotados en vez de acceso total: <span class="mono">drive.readonly</span> para poder leer y bajar
+    cualquier archivo tuyo, y <span class="mono">drive.file</span> para escribir <b>sólo los archivos que el hub
+    crea</b>. La consecuencia práctica es que el hub no puede modificar ni borrar ninguno de tus archivos
+    anteriores de Drive — ni con un bug ni con una instrucción metida en una nota.</p>
+    <p>El token se guarda en <span class="mono">datos/config.json</span> con permisos 600 y nunca vuelve entero al navegador.</p>`));
+  return c;
+}
+
+/* ---------- Explorador ---------- */
+
+function explorador(){
+  const cont=el('div');
+
+  const barra=el('div','row'); barra.style.marginBottom='12px';
+  const iQ=el('input','input'); iQ.placeholder='Buscar en todo tu Drive…'; iQ.style.flex='1';
+  iQ.value=DRV.q;
+  const bQ=el('button','btn','Buscar');
+  const bR=el('button','btn sm','Mi unidad');
+  barra.append(iQ,bQ,bR); cont.append(barra);
+  bQ.onclick=()=>{ DRV.q=iQ.value.trim(); DRV.carpeta='root'; cargar(); };
+  iQ.addEventListener('keydown',e=>{ if(e.key==='Enter') bQ.onclick(); });
+  bR.onclick=()=>{ DRV.q=''; iQ.value=''; DRV.carpeta='root'; cargar(); };
+
+  const migas=el('div','row'); migas.style.cssText='gap:5px;margin-bottom:10px;font-size:13px';
+  cont.append(migas);
+
+  const card=el('div','card'); card.style.padding='6px'; cont.append(card);
+
+  async function cargar(){
+    card.innerHTML='<div class="empty">Leyendo Drive…</div>';
+    migas.innerHTML='';
+    let d;
+    try{
+      const p=new URLSearchParams();
+      if(DRV.q) p.set('q',DRV.q); else p.set('carpeta',DRV.carpeta);
+      d=await api('/api/drive/listar?'+p);
+    }catch(e){ card.innerHTML=''; card.append(el('div','alert bad',esc(e.message))); return; }
+
+    if(!DRV.q){
+      const raiz=el('a','wl','Mi unidad'); raiz.href='javascript:void 0';
+      raiz.onclick=()=>{DRV.carpeta='root';cargar();};
+      migas.append(raiz);
+      (d.ruta||[]).forEach(r=>{
+        migas.append(el('span','muted','/'));
+        const a=el('a','wl',esc(r.nombre)); a.href='javascript:void 0';
+        a.onclick=()=>{DRV.carpeta=r.id;cargar();};
+        migas.append(a);
+      });
+    }else migas.append(el('span','tiny muted',`Resultados para "${esc(DRV.q)}"`));
+
+    card.innerHTML='';
+    if(!d.archivos.length){ card.append(el('div','empty','Nada acá.')); return; }
+
+    d.archivos.forEach(f=>{
+      const fila=el('div','note-row'); fila.style.gridTemplateColumns='1fr auto';
+      const izq=el('div');
+      const ico=esCarpeta(f)?'▸':esGoogleDoc(f)?'◆':'▤';
+      izq.innerHTML=`<div class="t">${ico} ${esc(f.name)}</div>
+        <div class="x">${esCarpeta(f)?'carpeta':`${TAM(f.size)}${esGoogleDoc(f)?' · documento de Google':''}`} · ${
+          f.modifiedTime?new Date(f.modifiedTime).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):''}</div>`;
+      fila.append(izq);
+      const der=el('div','row'); der.style.gap='6px';
+      if(esCarpeta(f)){
+        fila.onclick=()=>{DRV.carpeta=f.id;DRV.q='';iQ.value='';cargar();};
+      }else{
+        const bB=el('button','btn sm','Bajar al vault');
+        bB.onclick=(e)=>{ e.stopPropagation(); panelBajar(f); };
+        der.append(bB);
+      }
+      if(f.webViewLink){
+        const a=el('a','btn sm','↗'); a.href=f.webViewLink; a.target='_blank';
+        a.onclick=e=>e.stopPropagation(); der.append(a);
+      }
+      fila.append(der);
+      card.append(fila);
+    });
+    if(d.siguiente) card.append(el('div','tiny muted','Hay más archivos: afiná la búsqueda o entrá a una carpeta.'));
+  }
+  cargar();
+  return cont;
+}
+
+/* ---------- Bajar ---------- */
+
+function panelBajar(f){
+  const m=$('#main');
+  const c=el('div','card'); c.style.maxWidth='640px';
+  c.append(el('h3','',`Bajar al vault`));
+  c.append(el('div','sec',esc(f.name)));
+  if(esGoogleDoc(f)) c.append(el('div','alert warn','Es un documento de Google, no un archivo. Se va a exportar como PDF.'));
+
+  const mats=(S.data?.materias||[]).filter(x=>!x.archivada);
+  let materia=mats[0]?.id||'';
+  c.append(el('div','tiny muted','MATERIA'));
+  const chips=el('div','row'); chips.style.margin='8px 0 14px';
+  mats.forEach(x=>{
+    const ch=el('button','chip'+(x.id===materia?' on':''),
+      `<span class="dotk" style="background:${matColor(x.id)}"></span>${esc(x.corto||x.id)}`);
+    ch.onclick=()=>{materia=x.id;[...chips.children].forEach(y=>y.classList.remove('on'));ch.classList.add('on');sync();};
+    chips.append(ch);
+  });
+  c.append(chips);
+
+  const sCarp=el('select','input');
+  ['99-Material-Catedra','05-Recursos','02-TPs','03-Proyecto-Catedra'].forEach(x=>sCarp.append(new Option(x,x)));
+  const iNom=el('input','input');
+  iNom.value=esGoogleDoc(f)?f.name.replace(/\.[^.]*$/,'')+'.pdf':f.name;
+  const iDest=el('input','input'); iDest.readOnly=true; iDest.style.opacity='.7';
+  const sync=()=>{ iDest.value=`${materia}/${sCarp.value}/${iNom.value}`; };
+  sCarp.onchange=sync; iNom.oninput=sync; sync();
+
+  const f2=(l,n)=>{const w=el('div');w.style.marginBottom='12px';w.append(el('div','tiny sec',l));w.lastChild.style.marginBottom='5px';w.append(n);return w;};
+  c.append(f2('Carpeta',sCarp), f2('Nombre del archivo',iNom), f2('Va a quedar en',iDest));
+
+  const msg=el('div','tiny'); msg.style.margin='10px 0';
+  const fila=el('div','row');
+  const b=el('button','btn primary','Bajar');
+  const bc=el('button','btn','Cancelar'); bc.onclick=()=>viewDrive();
+  fila.append(b,bc); c.append(msg,fila);
+
+  b.onclick=async()=>{
+    b.disabled=true; msg.style.color=''; msg.textContent='Bajando…';
+    try{
+      const r=await api('/api/drive/bajar',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({id:f.id,destino:iDest.value})});
+      await load(true);
+      msg.style.color='var(--good)';
+      msg.innerHTML=`✓ ${TAM(r.bytes)} en <span class="mono">${esc(r.rel)}</span>.` +
+        (/\.pdf$/i.test(r.rel)?` <a class="wl" href="#/ingerir">Convertirlo en notas →</a>`:'');
+      b.textContent='Bajado';
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; b.disabled=false; }
+  };
+  c.append(el('div','tiny muted','El hub no pisa archivos: si ya existe uno con ese nombre, te frena.'));
+  m.innerHTML=''; m.append(c);
+}
+
+/* ---------- Backup ---------- */
+
+function panelBackup(){
+  const m=$('#main');
+  const c=el('div','card'); c.style.maxWidth='620px';
+  c.append(el('h3','','Backup del vault'));
+  c.append(el('div','sec',`Sube un <span class="mono">.tar.gz</span> con todas tus notas a una carpeta
+    <b>Hub Facultad — backups</b> en tu Drive. Hoy git es local: si se muere el disco, se van con él.`));
+  c.append(el('div','tiny muted','Se excluyen el material de cátedra (pesa y no es tuyo), el hub y datos/ (claves).'));
+  const msg=el('div','tiny'); msg.style.margin='14px 0';
+  const b=el('button','btn primary','Hacer backup ahora');
+  const bc=el('button','btn','Volver'); bc.onclick=()=>viewDrive();
+  const fila=el('div','row'); fila.append(b,bc);
+  c.append(msg,fila);
+  b.onclick=async()=>{
+    b.disabled=true; msg.style.color=''; msg.textContent='Comprimiendo y subiendo…';
+    try{
+      const r=await api('/api/drive/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      msg.style.color='var(--good)';
+      msg.innerHTML=`✓ <b>${esc(r.name)}</b> — ${TAM(r.bytes)}, ${r.notas} notas, en <b>${esc(r.carpeta)}</b>.
+        ${r.webViewLink?`<a class="wl" href="${r.webViewLink}" target="_blank">Verlo en Drive ↗</a>`:''}`;
+      b.disabled=false;
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; b.disabled=false; }
+  };
+  m.innerHTML=''; m.append(c);
+}
+
+/* ---------- Publicar ---------- */
+
+function panelPublicar(){
+  const m=$('#main');
+  const c=el('div','card'); c.style.maxWidth='640px';
+  c.append(el('h3','','Publicar para compartir'));
+  c.append(el('div','sec',`Arma un HTML de un solo archivo con las notas de una materia o unidad —índice,
+    tablas, fórmulas, diagramas y los wikilinks navegando entre ellas— y lo sube a tu Drive.
+    Después compartís el link desde Drive.`));
+
+  const mats=(S.data?.materias||[]).filter(x=>!x.archivada);
+  const sM=el('select','input'); mats.forEach(x=>sM.append(new Option(x.corto||x.id,x.id)));
+  const sU=el('select','input');
+  const sync=()=>{
+    sU.innerHTML=''; sU.append(new Option('— la materia entera —',''));
+    const mm=mats.find(x=>x.id===sM.value);
+    (mm?.unidades||[]).forEach(u=>sU.append(new Option(u,u)));
+  };
+  sM.onchange=sync; sync();
+
+  const f2=(l,n)=>{const w=el('div');w.style.marginBottom='12px';w.append(el('div','tiny sec',l));w.lastChild.style.marginBottom='5px';w.append(n);return w;};
+  c.append(f2('Materia',sM), f2('Unidad',sU));
+
+  const msg=el('div','tiny'); msg.style.margin='12px 0';
+  const fila=el('div','row');
+  const bV=el('button','btn','Previsualizar');
+  const b=el('button','btn primary','Publicar en Drive');
+  const bc=el('button','btn','Volver'); bc.onclick=()=>viewDrive();
+  fila.append(bV,b,bc); c.append(msg,fila);
+
+  bV.onclick=async()=>{
+    const r=await fetch('/api/drive/publicar',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({materia:sM.value,unidad:sU.value||null,previsualizar:true})});
+    if(!r.ok){ msg.style.color='var(--crit)'; msg.textContent=(await r.json()).error; return; }
+    const html=await r.text();
+    const w=window.open('','_blank'); w.document.write(html); w.document.close();
+  };
+  b.onclick=async()=>{
+    b.disabled=true; msg.style.color=''; msg.textContent='Armando y subiendo…';
+    try{
+      const r=await api('/api/drive/publicar',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({materia:sM.value,unidad:sU.value||null})});
+      msg.style.color='var(--good)';
+      msg.innerHTML=`✓ <b>${esc(r.name)}</b> — ${r.notas} notas, ${TAM(r.bytes)}.
+        ${r.webViewLink?`<a class="wl" href="${r.webViewLink}" target="_blank">Abrirlo en Drive ↗</a>`:''}
+        <br><span class="muted">El archivo queda privado: para que lo vean tus compañeros, compartilo desde Drive.</span>`;
+      b.disabled=false;
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; b.disabled=false; }
+  };
+  c.append(el('div','tiny muted','El renderizador de markdown va embebido, así que el archivo se lee sin internet. Las fórmulas y los diagramas cargan de CDN: son opcionales.'));
+  m.innerHTML=''; m.append(c);
+}
+
 const VIEWS={hub:viewHub,materia:viewMateria,materias:viewMaterias,notas:viewNotas,nota:viewNota,
   editar:viewEditar,nueva:viewNueva,calendario:viewCalendario,grafo:viewGrafo,salud:viewSalud,
   ajustes:viewAjustes,
-  repaso:viewRepaso,cobertura:viewCobertura,capturar:viewCapturar,ingerir:viewIngerir,codigo:viewCodigo};
+  repaso:viewRepaso,cobertura:viewCobertura,capturar:viewCapturar,ingerir:viewIngerir,codigo:viewCodigo,drive:viewDrive};
 
 function go(hash){ location.hash=hash; }
 
@@ -3735,6 +4066,7 @@ function buildNav(){
   n.append(item('#/grafo','⁂','Mapa','grafo'));
   n.append(item('#/ingerir','⇥','Importar PDF','ingerir'));
   n.append(item('#/codigo','⌥','Código','codigo'));
+  n.append(item('#/drive','☁','Drive','drive'));
   n.append(item('#/salud','✓','Salud','salud'));
   n.append(el('div','sep','Materias'));
   // Las materias archivadas no van al menú: se llegan desde Administrar.

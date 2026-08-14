@@ -2671,6 +2671,495 @@ async function registrarUso(uso) {
 }
 
 // ---------------------------------------------------------------------------
+// Google Drive
+//
+// Cuatro trabajos: bajar material de cátedra al vault, subir y bajar archivos
+// sueltos, hacer backup del vault fuera de esta máquina, y publicar una materia
+// o una unidad como HTML para compartir.
+//
+// Sin dependencias: OAuth 2.0 y la Drive API son HTTPS plano. El token va a
+// datos/config.json con permisos 600, igual que el de GitHub.
+//
+// SOBRE LOS PERMISOS, que es la decisión que importa acá:
+// se piden dos scopes acotados en vez de acceso total.
+//
+//   drive.readonly → leer y bajar CUALQUIER archivo. Hace falta para navegar la
+//                    carpeta de la cátedra y bajarse los PDFs.
+//   drive.file     → escribir SÓLO los archivos que crea esta app. Alcanza para
+//                    los backups y para publicar.
+//
+// La consecuencia práctica: el hub no puede modificar ni borrar ninguno de tus
+// archivos anteriores de Drive, ni con un bug ni con una instrucción inyectada
+// en una nota. Sólo toca lo que él mismo subió.
+// ---------------------------------------------------------------------------
+
+const DRIVE_SCOPES = [
+  'https://www.googleapis.com/auth/drive.readonly',
+  'https://www.googleapis.com/auth/drive.file',
+].join(' ');
+
+const DRIVE_REDIR = () => `http://127.0.0.1:${PORT}/api/drive/callback`;
+
+/** POST application/x-www-form-urlencoded a un host de Google. */
+function googleForm(host, ruta, campos) {
+  return new Promise((resolve, reject) => {
+    const cuerpo = new URLSearchParams(campos).toString();
+    const req = https.request(
+      {
+        hostname: host,
+        path: ruta,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(cuerpo),
+        },
+        timeout: 30000,
+      },
+      (res) => {
+        let d = '';
+        res.on('data', (c) => (d += c));
+        res.on('end', () => {
+          let j;
+          try {
+            j = JSON.parse(d);
+          } catch {
+            return reject(new Error(`Respuesta no válida de Google (HTTP ${res.statusCode})`));
+          }
+          if (res.statusCode >= 400)
+            return reject(new Error(j.error_description || j.error || `HTTP ${res.statusCode}`));
+          resolve(j);
+        });
+      }
+    );
+    req.on('timeout', () => req.destroy(new Error('Google tardó demasiado')));
+    req.on('error', reject);
+    req.write(cuerpo);
+    req.end();
+  });
+}
+
+/** Llamada a la API de Drive con el token vigente. `crudo` devuelve el Buffer. */
+function driveApi(token, { host = 'www.googleapis.com', ruta, metodo = 'GET', cuerpo = null, tipo = null, crudo = false }) {
+  return new Promise((resolve, reject) => {
+    const headers = { Authorization: `Bearer ${token}` };
+    let payload = null;
+    if (cuerpo != null) {
+      payload = Buffer.isBuffer(cuerpo) ? cuerpo : Buffer.from(typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo));
+      headers['Content-Type'] = tipo || 'application/json';
+      headers['Content-Length'] = payload.length;
+    }
+    const req = https.request({ hostname: host, path: ruta, method: metodo, headers, timeout: 180000 }, (res) => {
+      const trozos = [];
+      res.on('data', (c) => trozos.push(c));
+      res.on('end', () => {
+        const buf = Buffer.concat(trozos);
+        if (res.statusCode >= 400) {
+          let msg = `HTTP ${res.statusCode}`;
+          try {
+            msg = JSON.parse(buf.toString()).error?.message || msg;
+          } catch {}
+          if (res.statusCode === 401) msg = 'TOKEN_VENCIDO';
+          if (res.statusCode === 403 && /insufficient/i.test(msg))
+            msg = 'Permiso insuficiente. El hub sólo puede modificar archivos que subió él mismo.';
+          return reject(new Error(msg));
+        }
+        if (crudo) return resolve(buf);
+        try {
+          resolve(buf.length ? JSON.parse(buf.toString()) : {});
+        } catch {
+          resolve({});
+        }
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error('Drive tardó demasiado')));
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
+async function driveConfig() {
+  const cfg = await readConfig();
+  return {
+    clientId: cfg.driveClientId || null,
+    clientSecret: cfg.driveClientSecret || null,
+    refresh: cfg.driveRefresh || null,
+    cuenta: cfg.driveCuenta || null,
+  };
+}
+
+/** Token de acceso vigente. Se refresca solo con el refresh_token. */
+let TOKEN_CACHE = { valor: null, vence: 0 };
+async function driveToken(forzar = false) {
+  if (!forzar && TOKEN_CACHE.valor && Date.now() < TOKEN_CACHE.vence - 60000) return TOKEN_CACHE.valor;
+  const c = await driveConfig();
+  if (!c.clientId || !c.clientSecret) throw new Error('Falta configurar las credenciales de Google en Ajustes');
+  if (!c.refresh) throw new Error('Drive no está conectado todavía');
+  const r = await googleForm('oauth2.googleapis.com', '/token', {
+    client_id: c.clientId,
+    client_secret: c.clientSecret,
+    refresh_token: c.refresh,
+    grant_type: 'refresh_token',
+  });
+  TOKEN_CACHE = { valor: r.access_token, vence: Date.now() + (r.expires_in || 3600) * 1000 };
+  return TOKEN_CACHE.valor;
+}
+
+/** Reintenta una vez si el token venció en el medio. */
+async function conToken(fn) {
+  try {
+    return await fn(await driveToken());
+  } catch (err) {
+    if (err.message !== 'TOKEN_VENCIDO') throw err;
+    return fn(await driveToken(true));
+  }
+}
+
+async function driveUrlAuth() {
+  const c = await driveConfig();
+  if (!c.clientId) throw new Error('Falta el Client ID');
+  const p = new URLSearchParams({
+    client_id: c.clientId,
+    redirect_uri: DRIVE_REDIR(),
+    response_type: 'code',
+    scope: DRIVE_SCOPES,
+    access_type: 'offline',
+    prompt: 'consent', // fuerza que Google devuelva refresh_token
+    include_granted_scopes: 'true',
+  });
+  return `https://accounts.google.com/o/oauth2/v2/auth?${p}`;
+}
+
+async function driveCanjear(code) {
+  const c = await driveConfig();
+  const r = await googleForm('oauth2.googleapis.com', '/token', {
+    code,
+    client_id: c.clientId,
+    client_secret: c.clientSecret,
+    redirect_uri: DRIVE_REDIR(),
+    grant_type: 'authorization_code',
+  });
+  if (!r.refresh_token)
+    throw new Error('Google no devolvió refresh_token. Revocá el acceso en myaccount.google.com/permissions y probá de nuevo.');
+  TOKEN_CACHE = { valor: r.access_token, vence: Date.now() + (r.expires_in || 3600) * 1000 };
+  let cuenta = null;
+  try {
+    const u = await driveApi(r.access_token, { ruta: '/drive/v3/about?fields=user(emailAddress,displayName)' });
+    cuenta = u.user?.emailAddress || null;
+  } catch {}
+  const cfg = await readConfig();
+  cfg.driveRefresh = r.refresh_token;
+  cfg.driveCuenta = cuenta;
+  await writeConfig(cfg);
+  return { cuenta };
+}
+
+async function driveEstado() {
+  const c = await driveConfig();
+  const base = {
+    credenciales: !!(c.clientId && c.clientSecret),
+    conectado: !!c.refresh,
+    cuenta: c.cuenta,
+    scopes: DRIVE_SCOPES.split(' '),
+    redirect: DRIVE_REDIR(),
+  };
+  if (!base.conectado) return base;
+  try {
+    const q = await conToken((t) => driveApi(t, { ruta: '/drive/v3/about?fields=storageQuota,user(emailAddress)' }));
+    base.cuenta = q.user?.emailAddress || base.cuenta;
+    if (q.storageQuota) {
+      base.espacio = {
+        usado: Number(q.storageQuota.usage || 0),
+        total: Number(q.storageQuota.limit || 0) || null,
+      };
+    }
+  } catch (err) {
+    base.error = err.message;
+  }
+  return base;
+}
+
+const CAMPOS = 'id,name,mimeType,size,modifiedTime,parents,webViewLink,iconLink';
+
+async function driveListar({ carpeta, q, pagina }) {
+  return conToken(async (t) => {
+    let query;
+    if (q && q.trim()) {
+      const seguro = q.replace(/['\\]/g, '\\$&');
+      query = `name contains '${seguro}' and trashed = false`;
+    } else {
+      query = `'${(carpeta || 'root').replace(/'/g, "\\'")}' in parents and trashed = false`;
+    }
+    const p = new URLSearchParams({
+      q: query,
+      fields: `nextPageToken, files(${CAMPOS})`,
+      pageSize: '100',
+      orderBy: 'folder,name',
+      supportsAllDrives: 'true',
+      includeItemsFromAllDrives: 'true',
+    });
+    if (pagina) p.set('pageToken', pagina);
+    const r = await driveApi(t, { ruta: `/drive/v3/files?${p}` });
+    let ruta = [];
+    if (carpeta && carpeta !== 'root') {
+      // Migas de pan: se sube por los padres hasta la raíz.
+      let id = carpeta;
+      for (let i = 0; i < 8 && id && id !== 'root'; i++) {
+        try {
+          const f = await driveApi(t, { ruta: `/drive/v3/files/${id}?fields=id,name,parents&supportsAllDrives=true` });
+          ruta.unshift({ id: f.id, nombre: f.name });
+          id = f.parents?.[0];
+        } catch {
+          break;
+        }
+      }
+    }
+    return { archivos: r.files || [], siguiente: r.nextPageToken || null, ruta };
+  });
+}
+
+/** Baja un archivo de Drive a una ruta del vault. */
+async function driveBajar({ id, destino }) {
+  const rel = String(destino || '').replace(/^\/+/, '');
+  if (rel.includes('..')) throw new Error('Destino inválido');
+  const abs = safeVaultPath(rel);
+  if (fs.existsSync(abs)) throw new Error(`Ya existe ${rel} en el vault. Renombralo o elegí otro destino.`);
+
+  return conToken(async (t) => {
+    const meta = await driveApi(t, { ruta: `/drive/v3/files/${id}?fields=${CAMPOS}&supportsAllDrives=true` });
+    let buf;
+    if (String(meta.mimeType || '').startsWith('application/vnd.google-apps')) {
+      // Un Doc o una Slide de Google no es un archivo: hay que exportarlo.
+      const comoPdf = 'application/pdf';
+      buf = await driveApi(t, {
+        ruta: `/drive/v3/files/${id}/export?mimeType=${encodeURIComponent(comoPdf)}`,
+        crudo: true,
+      });
+    } else {
+      buf = await driveApi(t, { ruta: `/drive/v3/files/${id}?alt=media&supportsAllDrives=true`, crudo: true });
+    }
+    await fsp.mkdir(path.dirname(abs), { recursive: true });
+    await fsp.writeFile(abs, buf);
+    await buildIndex(true);
+    return { ok: true, rel, bytes: buf.length, nombre: meta.name, exportado: String(meta.mimeType).startsWith('application/vnd.google-apps') };
+  });
+}
+
+/** Sube un buffer a Drive. Multipart armado a mano: no hace falta ninguna librería. */
+async function driveSubirBuffer({ nombre, buf, tipo = 'application/octet-stream', carpeta = null }) {
+  return conToken(async (t) => {
+    const meta = { name: nombre, ...(carpeta ? { parents: [carpeta] } : {}) };
+    const lim = '----hubfacultad' + Math.abs(buf.length * 2654435761 % 1e12).toString(36);
+    const cuerpo = Buffer.concat([
+      Buffer.from(`--${lim}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n`),
+      Buffer.from(`--${lim}\r\nContent-Type: ${tipo}\r\n\r\n`),
+      buf,
+      Buffer.from(`\r\n--${lim}--\r\n`),
+    ]);
+    const r = await driveApi(t, {
+      ruta: '/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size&supportsAllDrives=true',
+      metodo: 'POST',
+      cuerpo,
+      tipo: `multipart/related; boundary=${lim}`,
+    });
+    return r;
+  });
+}
+
+/** Sube un archivo que ya está en el vault. */
+async function driveSubirDelVault({ rel, carpeta }) {
+  const abs = safeVaultPath(String(rel || ''));
+  const buf = await fsp.readFile(abs);
+  const ext = path.extname(rel).toLowerCase();
+  const tipo = { '.md': 'text/markdown', '.pdf': 'application/pdf', '.html': 'text/html', '.png': 'image/png', '.json': 'application/json' }[ext] || 'application/octet-stream';
+  return driveSubirBuffer({ nombre: path.basename(rel), buf, tipo, carpeta });
+}
+
+/** Carpeta del hub en Drive, creada una sola vez. */
+async function driveCarpetaHub(nombre = 'Hub Facultad') {
+  return conToken(async (t) => {
+    const p = new URLSearchParams({
+      q: `name = '${nombre}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+      fields: 'files(id,name)',
+    });
+    const r = await driveApi(t, { ruta: `/drive/v3/files?${p}` });
+    if (r.files?.length) return r.files[0];
+    return driveApi(t, {
+      ruta: '/drive/v3/files?fields=id,name',
+      metodo: 'POST',
+      cuerpo: { name: nombre, mimeType: 'application/vnd.google-apps.folder' },
+    });
+  });
+}
+
+/**
+ * Backup: un .tar.gz del vault, sin el material de cátedra ni el hub ni datos/.
+ * Hoy git es local: si se muere el disco, se van 200 notas con él.
+ */
+async function driveBackup() {
+  const carpeta = await driveCarpetaHub('Hub Facultad — backups');
+  const nombre = `vault-${hoyISO()}-${new Date().toTimeString().slice(0, 5).replace(':', '')}.tar.gz`;
+  const tmp = path.join(HUB_DATA, `_${nombre}`);
+  await fsp.mkdir(HUB_DATA, { recursive: true });
+
+  await new Promise((resolve, reject) => {
+    const p = spawn('tar', [
+      '-czf', tmp,
+      '--exclude', '99-Material-Catedra',
+      '--exclude', '_hub',
+      '--exclude', '_papelera',
+      '--exclude', '.git',
+      '--exclude', '.obsidian',
+      '-C', VAULT, '.',
+    ]);
+    let err = '';
+    p.stderr.on('data', (c) => (err += c));
+    p.on('error', reject);
+    // tar avisa con código 1 por archivos que cambiaron mientras leía: no es fatal.
+    p.on('close', (code) => (code === 0 || code === 1 ? resolve() : reject(new Error(err.slice(0, 300) || `tar salió con ${code}`))));
+  });
+
+  const buf = await fsp.readFile(tmp);
+  const r = await driveSubirBuffer({ nombre, buf, tipo: 'application/gzip', carpeta: carpeta.id });
+  await fsp.unlink(tmp).catch(() => {});
+  const { notes } = await buildIndex();
+  return { ...r, bytes: buf.length, notas: notes.length, carpeta: carpeta.name };
+}
+
+/**
+ * Publicar: una materia o una unidad como HTML de un solo archivo.
+ *
+ * marked va embebido (43 KB) porque sin él no se renderiza nada. KaTeX y Mermaid
+ * se cargan de CDN: son opcionales, pesan 4 MB juntos, y algo que compartís por
+ * link se abre con internet igual.
+ */
+async function drivePublicar({ materia, unidad, soloHtml }) {
+  const { notes } = await buildIndex();
+  let sel = notes.filter((n) => n.materia === materia && !n.rel.includes('/99-Material-Catedra/'));
+  if (unidad) sel = sel.filter((n) => n.unidad === unidad);
+  if (!sel.length) throw new Error('No hay notas para publicar con ese filtro');
+
+  const orden = { moc: 0, unidad: 1, concepto: 2, clase: 3, tp: 4 };
+  sel.sort((a, b) => (orden[a.tipo] ?? 9) - (orden[b.tipo] ?? 9) || a.title.localeCompare(b.title));
+
+  const marked = await fsp.readFile(path.join(HUB_DIR, 'frontend', 'public', 'vendor', 'marked.js'), 'utf8');
+  const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const titulo = `${materia}${unidad ? ' — ' + unidad : ''}`;
+
+  const docs = sel.map((n) => ({
+    stem: n.stem,
+    titulo: n.title,
+    tipo: n.tipo,
+    unidad: n.unidad,
+    md: n.cuerpo,
+  }));
+
+  const html = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(titulo)}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+:root{--ink:#111;--ink2:#555;--linea:#e3e2dc;--fondo:#fff;--acento:#6247d4}
+@media(prefers-color-scheme:dark){:root{--ink:#eee;--ink2:#aaa;--linea:#2c2c2a;--fondo:#151514;--acento:#8b7ff0}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--ink);
+ font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+#wrap{display:grid;grid-template-columns:250px 1fr;max-width:1180px;margin:0 auto;gap:36px;padding:0 20px}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 0;border-right:1px solid var(--linea)}
+nav h1{font-size:17px;margin:0 0 4px}
+nav .sub{font-size:12px;color:var(--ink2);margin-bottom:18px}
+nav a{display:block;padding:5px 10px 5px 0;color:var(--ink2);text-decoration:none;font-size:13.5px;border-radius:6px}
+nav a:hover{color:var(--ink)}
+main{padding:28px 0 80px;min-width:0}
+article{padding-bottom:30px;margin-bottom:30px;border-bottom:1px solid var(--linea)}
+article:last-child{border:none}
+h2{font-size:25px;letter-spacing:-.02em;margin:0 0 6px;scroll-margin-top:16px}
+h3{font-size:18px;margin:26px 0 8px}
+.meta{font-size:12px;color:var(--ink2);margin-bottom:16px}
+blockquote{border-left:3px solid var(--acento);margin:0 0 16px;padding:2px 0 2px 15px;color:var(--ink2)}
+table{border-collapse:collapse;width:100%;margin:0 0 18px;font-size:14px}
+th,td{border:1px solid var(--linea);padding:7px 10px;text-align:left}
+th{background:color-mix(in oklab,var(--ink) 5%,transparent)}
+code{background:color-mix(in oklab,var(--ink) 8%,transparent);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:color-mix(in oklab,var(--ink) 5%,transparent);padding:13px;border-radius:9px;overflow-x:auto}
+pre code{background:none;padding:0}
+.wl{color:var(--acento);text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--acento) 35%,transparent)}
+.wl.ext{color:var(--ink2);border-bottom-style:dotted}
+footer{grid-column:1/-1;padding:24px 0 60px;font-size:12px;color:var(--ink2);border-top:1px solid var(--linea)}
+@media(max-width:820px){#wrap{grid-template-columns:1fr;gap:0}nav{position:static;height:auto;border:none;border-bottom:1px solid var(--linea)}}
+</style></head><body>
+<div id="wrap">
+<nav><h1>${esc(titulo)}</h1><div class="sub">${sel.length} notas · ${new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</div><div id="toc"></div></nav>
+<main id="main"></main>
+<footer>
+Exportado desde el hub de apuntes de Agustín Di Tomaso. Los enlaces punteados apuntan a notas que no entraron en esta publicación.
+</footer>
+</div>
+<script>${marked}</script>
+<script>
+const DOCS = ${JSON.stringify(docs)};
+const STEMS = new Set(DOCS.map(d => d.stem));
+const id = s => s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-');
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const main = document.getElementById('main'), toc = document.getElementById('toc');
+
+for (const d of DOCS) {
+  const a = document.createElement('a');
+  a.href = '#' + id(d.stem); a.textContent = d.titulo; toc.appendChild(a);
+
+  const art = document.createElement('article');
+  art.id = id(d.stem);
+  const h = document.createElement('h2'); h.textContent = d.titulo; art.appendChild(h);
+  if (d.tipo || d.unidad) {
+    const m = document.createElement('div'); m.className = 'meta';
+    m.textContent = [d.tipo, d.unidad].filter(Boolean).join(' · ');
+    art.appendChild(m);
+  }
+  let md = d.md.replace(/^#\\s+.+$/m, '');
+  md = md.replace(/\\[\\[([^\\]|#]+)(?:\\|([^\\]]+))?\\]\\]/g, (m, t, l) => {
+    const target = t.trim(), txt = (l || t).trim();
+    return STEMS.has(target)
+      ? '<a class="wl" href="#' + id(target) + '">' + esc(txt) + '</a>'
+      : '<span class="wl ext" title="No está en esta publicación">' + esc(txt) + '</span>';
+  });
+  const body = document.createElement('div');
+  body.innerHTML = marked.parse(md, { gfm: true, breaks: false });
+  art.appendChild(body);
+  main.appendChild(art);
+}
+
+// KaTeX y Mermaid son opcionales: si no hay internet, el texto se lee igual.
+function cargar(src, cb){ const s=document.createElement('script'); s.src=src; s.onload=cb; document.head.appendChild(s); }
+if (document.body.textContent.includes('$')) {
+  cargar('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js', () =>
+    cargar('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', () =>
+      renderMathInElement(document.body, { delimiters: [
+        {left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError:false })));
+}
+document.querySelectorAll('pre code.language-mermaid').forEach(c => {
+  const d = document.createElement('div'); d.className='mermaid'; d.textContent=c.textContent;
+  c.closest('pre').replaceWith(d);
+});
+if (document.querySelector('.mermaid')) {
+  cargar('https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js', () => {
+    mermaid.initialize({ startOnLoad:true, securityLevel:'loose',
+      theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
+  });
+}
+</script></body></html>`;
+
+  const nombre = `${titulo.replace(/[\\/:*?"<>|]/g, '-')}.html`;
+  // Previsualizar no toca Drive: sirve para ver el resultado antes de subir, y
+  // para probar el generador sin credenciales.
+  if (soloHtml) return { html, nombre, notas: sel.length, bytes: Buffer.byteLength(html) };
+
+  const carpeta = await driveCarpetaHub('Hub Facultad — publicado');
+  const r = await driveSubirBuffer({ nombre, buf: Buffer.from(html, 'utf8'), tipo: 'text/html', carpeta: carpeta.id });
+  return { ...r, notas: sel.length, bytes: Buffer.byteLength(html), carpeta: carpeta.name };
+}
+
+// ---------------------------------------------------------------------------
 // Salud del vault
 // ---------------------------------------------------------------------------
 
@@ -3123,6 +3612,87 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/git/diff') {
       return json(res, await gitDiffArchivo(String(q.sha || ''), String(q.ruta || '')));
+    }
+
+    // --- Google Drive ------------------------------------------------------
+    if (pathname === '/api/drive/estado') return json(res, await driveEstado());
+
+    if (pathname === '/api/drive/config' && req.method === 'POST') {
+      const b = await readBody(req);
+      const cfg = await readConfig();
+      if (b.clientId != null) cfg.driveClientId = String(b.clientId).trim() || undefined;
+      if (b.clientSecret != null) cfg.driveClientSecret = String(b.clientSecret).trim() || undefined;
+      await writeConfig(cfg);
+      return json(res, await driveEstado());
+    }
+
+    if (pathname === '/api/drive/auth') {
+      return json(res, { url: await driveUrlAuth() });
+    }
+
+    // Google redirige acá con el código. Se responde HTML porque lo abre el
+    // navegador, no el hub.
+    if (pathname === '/api/drive/callback') {
+      const pagina = (titulo, cuerpo, color) => {
+        const html = `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${titulo}</title>
+<style>body{font:16px/1.6 system-ui,sans-serif;background:#0d0d0d;color:#fff;display:grid;place-items:center;height:100vh;margin:0;text-align:center;padding:20px}
+.c{max-width:460px}h1{font-size:22px;margin:0 0 10px;color:${color}}p{color:#c3c2b7;margin:0 0 8px}</style></head>
+<body><div class="c"><h1>${titulo}</h1>${cuerpo}</div></body></html>`;
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(html);
+      };
+      if (q.error) return pagina('Autorización cancelada', `<p>Google devolvió: ${String(q.error)}</p><p>Podés cerrar esta pestaña.</p>`, '#d55181');
+      if (!q.code) return pagina('Falta el código', '<p>Google no mandó ningún código de autorización.</p>', '#d55181');
+      try {
+        const r = await driveCanjear(String(q.code));
+        return pagina('Drive conectado ✓', `<p>Cuenta: <b>${r.cuenta || '—'}</b></p><p>Ya podés cerrar esta pestaña y volver al hub.</p>`, '#12a596');
+      } catch (err) {
+        return pagina('No pude completar la conexión', `<p>${String(err.message)}</p>`, '#d55181');
+      }
+    }
+
+    if (pathname === '/api/drive/desconectar' && req.method === 'POST') {
+      const cfg = await readConfig();
+      delete cfg.driveRefresh;
+      delete cfg.driveCuenta;
+      await writeConfig(cfg);
+      return json(res, { ok: true });
+    }
+
+    if (pathname === '/api/drive/listar') {
+      return json(res, await driveListar({
+        carpeta: q.carpeta ? String(q.carpeta) : null,
+        q: q.q ? String(q.q) : null,
+        pagina: q.pagina ? String(q.pagina) : null,
+      }));
+    }
+
+    if (pathname === '/api/drive/bajar' && req.method === 'POST') {
+      const b = await readBody(req);
+      return json(res, await driveBajar({ id: String(b.id || ''), destino: String(b.destino || '') }));
+    }
+
+    if (pathname === '/api/drive/subir' && req.method === 'POST') {
+      const b = await readBody(req);
+      return json(res, await driveSubirDelVault({ rel: String(b.rel || ''), carpeta: b.carpeta ? String(b.carpeta) : null }));
+    }
+
+    if (pathname === '/api/drive/backup' && req.method === 'POST') {
+      return json(res, await driveBackup());
+    }
+
+    if (pathname === '/api/drive/publicar' && req.method === 'POST') {
+      const b = await readBody(req);
+      const pub = await drivePublicar({
+        materia: String(b.materia || ''),
+        unidad: b.unidad ? String(b.unidad) : null,
+        soloHtml: !!b.previsualizar,
+      });
+      if (b.previsualizar) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(pub.html);
+      }
+      return json(res, pub);
     }
 
     // --- Asistente ---------------------------------------------------------

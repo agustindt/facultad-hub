@@ -58,6 +58,9 @@ Importar PDF Un PDF de cátedra entra, salen borradores de notas. Ver abajo.
 Código       GitHub, para las materias donde el material y la entrega viven en un
              repo. Ver abajo.
 
+Drive        Bajar material de cátedra al vault, publicar una unidad para
+             compartir y hacer backup. Ver abajo.
+
 Notas        Todas las notas con búsqueda y filtros por materia, tipo y estado.
 
 Calendario   Las fechas salen solas de las tablas de 00-Seguimiento/ (cronograma,
@@ -321,6 +324,58 @@ calendario de contribuciones hace falta un classic con read:user.
 
 Se guarda en _hub/datos/config.json con permisos 600 y nunca vuelve entero al
 navegador — el mismo trato que la clave de Anthropic.
+
+
+GOOGLE DRIVE
+------------
+
+Cuatro cosas.
+
+BAJAR MATERIAL. Navegás tu Drive desde el hub, buscás, y bajás un archivo
+directo a <Materia>/99-Material-Catedra/ (o a 05-Recursos, o donde quieras). Si
+es un Doc o una presentación de Google, lo exporta a PDF, porque un Doc no es un
+archivo. Y si lo que bajaste es un PDF, te ofrece el link a Importar PDF ahí
+mismo: Drive → vault → notas, sin salir del hub.
+
+PUBLICAR. Elegís una materia o una unidad y arma un HTML de UN SOLO ARCHIVO con
+todas esas notas: índice al costado, tablas, fórmulas, diagramas, y los wikilinks
+navegando entre las notas de adentro. Los enlaces a notas que no entraron quedan
+punteados y no rotos. Se sube a una carpeta "Hub Facultad — publicado" y de ahí
+lo compartís con quien quieras.
+
+El renderizador de markdown va embebido (43 KB), así que el archivo se lee sin
+internet. KaTeX y Mermaid se cargan de CDN sólo si la nota los usa: son 4 MB
+juntos y no vale la pena meterlos adentro de algo que se abre por link.
+
+Ojo: el archivo nace PRIVADO. Para que tus compañeros lo vean tenés que
+compartirlo vos desde Drive. El hub no cambia permisos de nada.
+
+BACKUP. Un .tar.gz de todas tus notas a una carpeta "Hub Facultad — backups".
+Sin el material de cátedra (pesa y no es tuyo), sin el hub y sin datos/ (claves).
+Hoy git es local: si se muere el disco se van 200 notas con él.
+
+SUBIR. Cualquier archivo del vault a la carpeta de Drive que elijas.
+
+LOS PERMISOS, que es lo que hay que entender antes de conectar. Se piden dos
+scopes acotados en lugar de acceso total:
+
+  drive.readonly   leer y bajar cualquier archivo tuyo
+  drive.file       escribir SÓLO los archivos que crea el hub
+
+O sea que el hub puede leer todo tu Drive, pero no puede modificar ni borrar
+ninguno de tus archivos anteriores. Ni con un bug, ni con una instrucción metida
+adentro de una nota. Sólo toca lo que él mismo subió.
+
+CONECTARLO ES TEDIOSO, y conviene saberlo antes. Google no da tokens sueltos como
+GitHub: hay que crear una app en console.cloud.google.com, habilitar la Drive API,
+configurar la pantalla de consentimiento y generar credenciales de tipo
+"Aplicación de escritorio". Diez minutos de clics, una vez. El paso que más se
+olvida: agregarte a vos mismo como usuario de prueba, porque si no Google bloquea
+la app por no verificada.
+
+El hub te lista los cinco pasos en pantalla y te muestra la URI de redirección
+que hay que pegar. Las credenciales las creás vos: el hub nunca las ve hasta que
+las pegás, y el token queda en datos/config.json con permisos 600.
 
 
 MATERIAS: ALTA, EDICIÓN Y BAJA

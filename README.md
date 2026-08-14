@@ -29,6 +29,7 @@ cp .env.example .env && docker compose up -d    →  http://localhost:8080
 | **Importar PDF** | Un PDF de cátedra entra; salen borradores de nota de unidad y de conceptos |
 | **Código** | GitHub: novedades del repo de la cátedra, matriz de actividad, checklist de entregables, creación de repos |
 | **Asistente** | Chat sobre el vault: corre el CLI de Claude Code como proceso hijo, en solo lectura |
+| **Drive** | Bajar material de cátedra, publicar una unidad como HTML, backup del vault |
 | **Notas** | Índice con búsqueda y filtros por materia, tipo y estado |
 | **Editor** | Markdown con vista previa en vivo (Mermaid + LaTeX), barra de inserción y autocompletado de wikilinks |
 | **Calendario** | Fechas extraídas de las tablas de `00-Seguimiento/` + eventos propios + export `.ics` |
@@ -118,6 +119,12 @@ transpilación. `git clone` + `node server.js`.
 | GET | `/api/github/declaracion-ia` | declaración de uso de IA desde el log real |
 | GET | `/api/agente/estado` | ¿está el CLI instalado? versión y herramientas |
 | POST | `/api/agente` | un turno del asistente, respuesta SSE en streaming |
+| GET | `/api/drive/estado` | credenciales, conexión, cuenta, espacio |
+| GET | `/api/drive/auth` · `/api/drive/callback` | flujo OAuth 2.0 con redirect al loopback |
+| GET | `/api/drive/listar` | navegar carpetas o buscar, con migas de pan |
+| POST | `/api/drive/bajar` | archivo de Drive → ruta del vault (exporta Docs a PDF) |
+| POST | `/api/drive/backup` | tar.gz del vault → carpeta de backups |
+| POST | `/api/drive/publicar` | materia o unidad → HTML de un archivo → Drive |
 | GET | `/api/motor` | qué motor se va a usar: CLI (suscripción) o API (por token) |
 | GET | `/api/git/estado` | rama, HEAD, archivos sucios |
 | POST | `/api/git/init` | inicializa el repo del vault con su .gitignore |
@@ -178,6 +185,26 @@ El matching es por conjuntos de raíces, con **F1 y no recall**: si el título d
 nota trae palabras que el tema no tiene, el match vale menos. Cada fila muestra la
 nota elegida y las otras candidatas, porque la heurística falla y conviene que se
 vea. La columna `Nota` del archivo de programa es el override manual.
+
+## Google Drive
+
+OAuth 2.0 con redirect al loopback (`http://127.0.0.1:PORT/api/drive/callback`), sin
+dependencias: `googleForm()` para el intercambio de tokens y `driveApi()` para la API. El
+`refresh_token` va a `datos/config.json` y el access token se renueva solo; `conToken()`
+reintenta una vez si venció en el medio.
+
+**Los scopes son la decisión de diseño.** `drive.readonly` + `drive.file` en vez de `drive`
+completo: el hub lee todo, pero sólo puede escribir los archivos que él mismo creó. Un bug o
+una instrucción inyectada no pueden tocar nada preexistente.
+
+La subida arma el `multipart/related` a mano — metadata JSON + bytes, con boundary propio —
+porque no hace falta un SDK para eso.
+
+`publicar` genera un HTML autocontenido: `marked` embebido (43 KB, sin él no renderiza nada) y
+KaTeX/Mermaid desde CDN (4 MB juntos, opcionales, y algo que se comparte por link se abre con
+internet). Los wikilinks a notas incluidas se convierten en anclas internas; los que apuntan
+afuera quedan como texto punteado, no como enlaces rotos. `previsualizar: true` devuelve el
+HTML sin tocar Drive.
 
 ## Asistente
 
