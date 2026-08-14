@@ -16,15 +16,24 @@ Opción 1 — doble clic en:
 Opción 2 — desde la terminal:
 
     cd ~/Documents/Facultad/00-Sistema/_hub
-    node server.js
+    node backend/server.js
 
 Después abrí http://localhost:4177
+
+Opción 3 — con contenedores (es el TP2 de Ingeniería de Software III):
+
+    cp .env.example .env      # y completá VAULT_PATH y la contraseña
+    docker compose up -d
+
+Después abrí http://localhost:8080. Levanta tres servicios: nginx con el
+frontend, el backend en Node y Postgres con un volumen. El vault entra como
+bind mount desde tu disco — las notas NO se copian adentro de ninguna imagen.
 
 Para cortarlo: Ctrl+C en la terminal, o cerrá la ventana.
 
 Requiere Node.js. Si no lo tenés:  brew install node
 No hay que instalar nada más: cero dependencias de npm, y las librerías
-(marked, d3, mermaid, katex, pdf.js) están guardadas en public/vendor/, así
+(marked, d3, mermaid, katex, pdf.js) están en frontend/public/vendor/, así
 que el hub funciona sin internet.
 
 
@@ -33,6 +42,9 @@ QUÉ TIENE
 
 Hub          Próximo hito con cuenta regresiva, estado de estudio por materia,
              hitos de los próximos días, salud del vault y el repaso de hoy.
+
+Asistente    Panel lateral (⌘J) con Claude leyendo tus archivos. Sabe en qué
+             pantalla y en qué archivo estás parado. Ver abajo.
 
 Repaso       Repaso espaciado. Ver abajo — es lo más importante que hace.
 
@@ -43,6 +55,9 @@ Cobertura    Los temas del programa de la cátedra contra las notas que existen.
 
 Importar PDF Un PDF de cátedra entra, salen borradores de notas. Ver abajo.
 
+Código       GitHub, para las materias donde el material y la entrega viven en un
+             repo. Ver abajo.
+
 Notas        Todas las notas con búsqueda y filtros por materia, tipo y estado.
 
 Calendario   Las fechas salen solas de las tablas de 00-Seguimiento/ (cronograma,
@@ -52,22 +67,6 @@ Calendario   Las fechas salen solas de las tablas de 00-Seguimiento/ (cronograma
              Calendar, con avisos 3 días y 1 día antes de cada fecha.
 
 Mapa         El grafo de wikilinks. Clic en un nodo para abrir la nota.
-
-Gráficos     Las curvas de Economía, interactivas: producción de corto plazo
-             (PT · PMe · PMg con las 3 etapas), costos totales (CF · CV · CT),
-             costos medios y marginal (CFMe · CVMe · CTMe · CMg), la envolvente
-             de largo plazo con la escala mínima eficiente, isocuanta+isocosto
-             con su tangencia, y la FPP de la U1.
-
-             No están dibujadas a ojo: salen de las funciones. PT = A·L² − B·L³
-             y CT = CF + aQ − bQ² + cQ³. Por eso el PMg cruza al PMe exactamente
-             en el óptimo técnico y el CMg corta al CVMe y al CTMe exactamente en
-             sus mínimos — es una consecuencia de la derivada, no del trazo.
-
-             Pasá el mouse para leer todos los valores en cada punto. Y hay dos
-             controles que enseñan algo: el de costo fijo (movelo y vas a ver que
-             el CMg y el CVMe no se mueven) y los de presupuesto y precio del
-             trabajo en el isocosto (uno lo desplaza en paralelo, el otro lo rota).
 
 Salud        Wikilinks rotos, stems duplicados entre materias, valores de estado
              fuera de la convención, conceptos con menos de 3 conexiones y
@@ -80,6 +79,91 @@ Administrar  Alta, edición y baja de materias. Ver abajo.
              encuentra "Economía"), muestra el fragmento donde apareció con el
              término resaltado, y al abrir la nota salta a esa parte y la marca.
              Flechas para moverte, Enter para abrir.
+
+
+ASISTENTE
+---------
+
+Un panel a la derecha, siempre a mano con ⌘J. No es una pantalla aparte: te
+acompaña donde estés, y la conversación no se pierde al navegar — de hecho
+navegar es parte de la conversación.
+
+SABE DÓNDE ESTÁS. En cada turno le mando el contexto de la vista: si estás en una
+nota, la ruta exacta del archivo con su materia, unidad, estado y cantidad de
+enlaces; si estás en Cobertura, de qué materia y de dónde sale el programa; si
+estás en Repaso, qué tarjeta tenés delante. Y las sugerencias de abajo cambian
+según dónde estés: en una nota te ofrece "tomame la lección", en Salud te ofrece
+"arreglá los wikilinks rotos".
+
+Tiene tu vault entero. No hay que pegarle contexto: abre los archivos
+él mismo, y como el hub lo corre parado en la raíz del vault, se carga solo el
+CLAUDE.md de la raíz, el de cada materia y Convenciones.md.
+
+CÓMO FUNCIONA POR DEBAJO. El servidor lanza el CLI de Claude Code como proceso
+hijo, en modo no interactivo, y va reenviando su salida al navegador mientras
+ocurre. Ves las herramientas que usa (qué archivo abrió, qué buscó) y el texto
+apareciendo. Es Node stdlib: no agrega dependencias.
+
+QUÉ CUESTA. Con Claude Pro o Max, nada aparte: el CLI usa tu suscripción, con el
+mismo login que la app, y el consumo va contra el mismo pozo. Igual el hub te
+muestra el costo estimado por turno para que veas cuánto estás gastando de ese
+pozo — el número lo reporta el propio CLI.
+
+⚠️ UNA TRAMPA QUE VALE PLATA. Si la variable ANTHROPIC_API_KEY está en el entorno,
+Claude Code la usa y te FACTURA LA API en vez de consumir la suscripción. El hub
+guarda una clave de API para otras funciones, así que borra esa variable (y
+ANTHROPIC_BASE_URL) del entorno del proceso hijo, a propósito. Si algún día lo
+probás a mano en la terminal, acordate de esto.
+
+Otro detalle relacionado: el hub NO usa el flag --bare. El flag acelera el
+arranque, pero no lee las credenciales de la suscripción — pide clave de API sí o
+sí — y además no carga los CLAUDE.md, que son justo la mitad del contexto útil.
+
+DOS MODOS.
+
+  Propone y aceptás   Solo lectura: Read, Glob, Grep. Cuando quiere cambiar algo
+                      lo emite en un bloque especial; el servidor lo extrae, lee
+                      el archivo actual y te muestra el diff. La escritura la hace
+                      el hub cuando apretás Aplicar.
+
+  Escribe solo        Write, Edit y MultiEdit habilitados. Toca los archivos sin
+                      preguntar. Sólo existe si el vault está bajo git.
+
+EL MODO DIRECTO Y GIT. Antes de cada turno el hub hace un punto de restauración
+(un commit). Cuando el turno termina te muestra exactamente qué archivos tocó, con
+cuántas líneas de más y de menos, un botón "Ver cambio" que abre el diff de cada
+uno, y un "Deshacer todo" que devuelve el vault a como estaba.
+
+Sin git no hay modo directo, y no es un capricho: dejar que escriba solo sobre 200
+notas sin poder volver atrás es una mala idea, y el botón de deshacer es lo único
+que la vuelve razonable.
+
+Lo que git NO versiona: datos/ (claves y estado local), 99-Material-Catedra/ (los
+PDFs, que pesan) y 00-Sistema/_hub/ entero, porque el hub tiene su propio repo. Ese
+último detalle importa: si el código del hub estuviera versionado acá, un "deshacer"
+sobre el vault te revertiría también la app. Aprendido a los golpes.
+
+Y un detalle chico que se paga caro: en cada subcarpeta vacía de materia hay un
+.gitkeep. git no versiona carpetas vacías, así que sin eso el deshacer se llevaría
+puesta la estructura de la materia.
+
+QUÉ PASA CON LA INYECCIÓN. En modo directo el agente lee archivos y tiene permiso
+de escritura, así que una nota, un PDF o el README de un repo ajeno con
+instrucciones adentro es texto que va a leer. La mitigación no es confiar: es que
+cada turno arranca con un punto de restauración y termina mostrándote la lista de
+lo que tocó. Si algo no cuadra, un botón y volvés.
+
+QUÉ SABE. Además de los archivos, el hub le pasa una foto del estado: cuántas
+tarjetas tenés pendientes, qué parcial viene, cuántos wikilinks rotos hay y cómo
+está la cobertura del programa. Y si venís de una nota, le dice cuál estabas
+mirando.
+
+REQUISITO. El CLI instalado y logueado:
+
+    npm install -g @anthropic-ai/claude-code
+    claude          (una vez, para loguearte)
+
+Si no está, la vista te lo dice y no rompe nada más.
 
 
 REPASO ESPACIADO
@@ -178,6 +262,67 @@ Límite declarado: se mandan los primeros 120.000 caracteres. Si el PDF es más
 largo, te avisa cuánto quedó afuera.
 
 
+CÓDIGO: GITHUB
+--------------
+
+Ingeniería de Software III no se cursa en el campus: se cursa en
+github.com/ingsoft3ucc/TPs_2026. Y no toma parciales escritos — lo que se evalúa
+es TU repo y cómo lo defendés. Así que el hub habla con GitHub.
+
+NOVEDADES DE LA CÁTEDRA. Vinculás el repo del profe y el hub te dice qué subió
+desde la última vez que miraste: los commits nuevos, y con un clic qué archivos
+tocó cada uno. Así te enterás de que se liberó el TP3 el día que se libera, no
+tres semanas después.
+
+La primera vez NO te marca todo como novedad: te muestra los últimos commits y
+esperás a apretar "marcar todo como visto". De ahí en adelante, sólo lo nuevo.
+
+ACTIVIDAD. La matriz de commits, un año, verde. Con token es el calendario de
+contribuciones real de GitHub; sin token se arma con los commits de los repos
+que vinculaste, y lo aclara — no te vende una cosa por otra.
+
+Los cortes de color no son fijos: son los cuartiles de TUS días con actividad,
+así que la escala se ajusta a tu volumen. Pasá el mouse por una celda y te dice
+el día y cuántos commits. "Ver como tabla" da lo mismo sin depender del color.
+
+Y abajo la cuenta que importa en esta materia: cuántas de las últimas 8 semanas
+tuvieron actividad. La cátedra lo dice así: "se aprueba trabajando todas las
+semanas — está diseñada para que se acumule mal si no". Si llevás 3 semanas o más
+en cero, te lo dice.
+
+ENTREGABLES. Marcás un repo como "tuyo" y el hub lo revisa contra lo que la
+cátedra pide, ítem por ítem: decisiones.md y evidencias.md en la raíz, .gitignore,
+.env.example commiteado, .env NO commiteado, docker-compose.yml, un tag semver,
+una release publicada, al menos un PR mergeado y main protegido. Cada fila dice de
+qué TP sale la exigencia.
+
+No reemplaza la defensa oral, que es el 50 % de la nota. Verifica lo verificable.
+
+DECLARACIÓN DE USO DE IA. La cátedra la exige dentro de decisiones.md. El botón la
+genera desde _hub/datos/ia-log.json, que es el registro real de cada llamada que
+hizo el hub: fecha, modelo y tokens. No es una estimación ni un texto genérico —
+son tus números. El último párrafo, el de qué NO le delegaste, lo completás vos.
+
+CREAR REPO. Nombre, descripción, privado o público, y opcionalmente el andamiaje:
+README.md, decisiones.md, evidencias.md, .gitignore y .env.example ya con la
+estructura que pide la materia (decisiones y evidencias en la raíz, un título por
+TP, se escribe hacia abajo). Nace privado por defecto; si lo tildás público te
+avisa qué implica.
+
+EL TOKEN. Sin token el hub funciona en modo lectura sobre repos públicos, con el
+límite de anónimo de GitHub: 60 llamadas por hora para toda tu red. Con token son
+5000, y se habilitan los repos privados, la creación y el calendario de
+contribuciones.
+
+Se saca en github.com/settings/tokens. Con un fine-grained alcanza:
+Contents (read and write), Metadata (read), Pull requests (read), y
+Administration (read and write) sólo si querés crear repos desde el hub. Para el
+calendario de contribuciones hace falta un classic con read:user.
+
+Se guarda en _hub/datos/config.json con permisos 600 y nunca vuelve entero al
+navegador — el mismo trato que la clave de Anthropic.
+
+
 MATERIAS: ALTA, EDICIÓN Y BAJA
 ------------------------------
 
@@ -260,6 +405,10 @@ CAPA LOCAL (sin IA, instantánea, sin configurar nada)
 
 CAPA CLAUDE (botón "✨ Ordenar con Claude" en el editor)
 
+Corre por el CLI si está instalado — o sea, contra tu suscripción, sin cobrar
+tokens. Si no está, cae a la clave de API y te avisa en pantalla que eso SÍ se
+cobra. Lo mismo vale para Importar PDF.
+
 Le manda a Claude tu texto crudo junto con tu Convenciones.md y la lista exacta
 de notas que existen en el vault. Devuelve la nota ordenada: títulos, tablas,
 LaTeX, Mermaid, wikilinks solo a notas reales, bloque ## Conexiones con la
@@ -275,8 +424,8 @@ No pisa nada solo. Te muestra:
 Recién ahí elegís "Aceptar y reemplazar" o "Descartar". Y aceptar tampoco guarda:
 después tenés que apretar Guardar.
 
-Para habilitarlo hace falta una clave de API de Anthropic, que se carga en
-Ajustes. Se guarda solo en _hub/datos/config.json con permisos 600 y nunca vuelve
+Para habilitarlo alcanza con tener el CLI instalado. La clave de API de Anthropic
+quedó como respaldo, y se carga en Ajustes. Se guarda solo en _hub/datos/config.json con permisos 600 y nunca vuelve
 entera al navegador. Es la única salida a internet de todo el hub.
 
 Costo aproximado: unos 4.000 tokens de entrada y 2.500 de salida por nota. Con
@@ -298,8 +447,10 @@ LO QUE NO HACE, A PROPÓSITO
 - No reescribe tus notas por su cuenta. Los eventos que agregás van a un JSON
   aparte, no se inyectan en el markdown.
 - No sube nada a internet, salvo las dos funciones de Claude (Ordenar e Importar
-  PDF), que son explícitas y quedan registradas. Escucha solo en 127.0.0.1:
-  nadie más en la red lo ve.
+  PDF) y las llamadas a la API de GitHub, que son explícitas. Escucha solo en
+  127.0.0.1: nadie más en la red lo ve.
+- No pushea ni commitea por su cuenta. Lo único que ESCRIBE en GitHub es crear un
+  repo, y sólo cuando apretás el botón.
 - No guarda los PDFs que importás: se leen en el navegador y se descartan.
 - El repaso no escribe en tus notas. El calendario vive aparte, en datos/.
 

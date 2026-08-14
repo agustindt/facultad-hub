@@ -216,6 +216,40 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 #omni .r{padding:10px 18px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center}
 #omni .r.sel,#omni .r:hover{background:color-mix(in oklab,var(--m1) 13%,transparent)}
 
+
+/* ---------- Panel del asistente (columna derecha) ---------- */
+#app{transition:grid-template-columns .16s ease}
+body.con-panel #app{grid-template-columns:232px minmax(0,1fr) 400px}
+#panel{display:none}
+body.con-panel #panel{
+  display:flex;flex-direction:column;background:var(--surface-1);
+  border-left:1px solid var(--hair);position:sticky;top:0;height:100vh;overflow:hidden;
+}
+.pan-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:14px 16px;border-bottom:1px solid var(--hair);flex:none}
+.pan-modo{display:flex;gap:5px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--hair);flex:none}
+.pan-cuerpo{flex:1;overflow-y:auto;padding:16px;font-size:14px}
+.pan-pie{flex:none;padding:12px 16px;border-top:1px solid var(--hair);background:var(--surface-1)}
+.pan-input{width:100%;height:66px;resize:none;background:var(--surface-2);border:1px solid var(--hair);
+  border-radius:10px;padding:9px 11px;font-size:13.5px;line-height:1.5;margin-top:7px}
+.pan-input:focus{outline:2px solid color-mix(in oklab,var(--m1) 50%,transparent);outline-offset:-1px}
+.pan-sug{padding:9px 11px;border-radius:9px;border:1px solid var(--hair);background:var(--surface-2);
+  font-size:13px;color:var(--ink-2);cursor:pointer;margin-top:7px;line-height:1.45}
+.pan-sug:hover{border-color:color-mix(in oklab,var(--m1) 45%,transparent);color:var(--ink-1)}
+.pan-cuerpo .prose{font-size:13.5px;max-width:none}
+.pan-cuerpo .card{padding:12px}
+.pan-fab{position:fixed;right:20px;bottom:20px;z-index:60;border-radius:999px;padding:11px 17px;
+  background:var(--m1);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:550;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:8px}
+.pan-fab:hover{filter:brightness(1.08)}
+body.con-panel .pan-fab{display:none}
+body.foco .pan-fab{display:none}
+@media(max-width:1200px){
+  body.con-panel #app{grid-template-columns:232px minmax(0,1fr)}
+  body.con-panel #panel{position:fixed;right:0;top:0;width:min(400px,92vw);z-index:70;box-shadow:var(--shadow)}
+}
+@media(max-width:900px){ body.con-panel #app{grid-template-columns:1fr} }
+
 /* ---------- Captura rápida (modo foco) ---------- */
 body.foco aside{display:none}
 body.foco #app{grid-template-columns:1fr}
@@ -228,6 +262,27 @@ body.foco main{padding:0;max-width:none;display:flex;flex-direction:column;heigh
 .cap-pie{display:flex;justify-content:space-between;gap:12px;padding:9px 22px;
   border-top:1px solid var(--hair);background:var(--surface-1);flex:none}
 @media(max-width:900px){.cap-ta{padding:20px 16px}}
+
+/* ---------- Matriz de actividad ----------
+   Rampa secuencial de un solo tono. Los pasos salieron del validador de dataviz
+   contra las dos superficies reales del hub (#fcfcfb y #1a1a19): L monótona,
+   saltos >= 0.06, y el paso más claro despega de la superficie — 2.00:1 en claro,
+   2.12:1 en oscuro. El nivel 0 es el gris de grilla, no un verde desvaído.
+*/
+:root{ --gh1:#81c57b; --gh2:#61b55c; --gh3:#399f34; --gh4:#036702; }
+:root[data-theme="dark"]{ --gh1:#105c0e; --gh2:#239220; --gh3:#4bad45; --gh4:#74c76e; }
+.gh-wrap{overflow-x:auto;padding-bottom:4px}
+.gh-cuerpo{display:flex;gap:6px;align-items:flex-start}
+.gh-dows{display:grid;grid-template-rows:repeat(7,13px);font-size:9.5px;color:var(--ink-3);
+  width:26px;text-align:right;line-height:11px}
+.gh-grid{display:grid;grid-auto-rows:13px}
+.gh-meses{display:grid;font-size:9.5px;color:var(--ink-3);margin:0 0 3px 32px;height:12px}
+.gh-cel{display:block;width:11px;height:11px;border-radius:2.5px;background:var(--grid);cursor:default}
+.gh-cel[data-n="1"]{background:var(--gh1)}
+.gh-cel[data-n="2"]{background:var(--gh2)}
+.gh-cel[data-n="3"]{background:var(--gh3)}
+.gh-cel[data-n="4"]{background:var(--gh4)}
+.gh-cel:hover{outline:1.5px solid var(--ink-2);outline-offset:1px}
 
 /* ---------- Zona de arrastre ---------- */
 .dropzone{border:1.5px dashed var(--axis);border-radius:var(--r);padding:34px 20px;text-align:center;
@@ -249,12 +304,14 @@ body.foco main{padding:0;max-width:none;display:flex;flex-direction:column;heigh
     <div class="brand"><span class="dot"></span> Hub Facultad</div>
     <nav id="nav"></nav>
     <div class="side-foot">
-      <div><kbd>⌘K</kbd> buscar</div>
+      <div><kbd>⌘K</kbd> buscar · <kbd>⌘J</kbd> asistente</div>
       <div id="foot-count" style="margin-top:6px"></div>
     </div>
   </aside>
   <main id="main"><div class="empty">Cargando…</div></main>
+  <div id="panel"></div>
 </div>
+<button class="pan-fab" id="fab">✦ Asistente <span style="opacity:.7;font-size:12px">⌘J</span></button>
 
 <div id="tip"></div>
 <div id="omni"><div class="box">
@@ -548,7 +605,7 @@ function viewHub(){
 
   const head=el('div','head');
   head.append(el('div','',`<h1>Hola, Agustín</h1><div class="sub">${
-    S.data.materias.length} materias · ${S.data.notas.length} notas · ${
+    S.data.materias.filter(x=>!x.archivada).length} materias · ${S.data.notas.length} notas · ${
     new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</div>`));
   const acc=el('div','row');
   const bCap=el('button','btn','✎ Capturar'); bCap.onclick=()=>go('#/capturar');
@@ -612,7 +669,7 @@ function viewHub(){
   const secM=el('section'); secM.style.marginBottom='18px';
   secM.append(el('h2','','Materias'));
   const gm=el('div','grid g2');
-  S.data.materias.forEach(mat=>{
+  S.data.materias.filter(mat=>!mat.archivada).forEach(mat=>{
     const c=el('div','card');
     const h=el('div','spread'); h.style.marginBottom='14px';
     const left=el('div','row');
@@ -1873,149 +1930,6 @@ function tarjetaGrafico(titulo,bajada,nodo,pie){
   return c;
 }
 
-function viewGraficos(){
-  const m=$('#main'); m.innerHTML='';
-  m.append(el('div','head',`<div><h1>Gráficos de Economía</h1>
-    <div class="sub">Curvas calculadas desde las funciones, no dibujadas a ojo. Pasá el mouse para leer valores.</div></div>`));
-
-  // ---- 1. Producción de corto plazo ----
-  const g1=grafico({
-    alto:340, x:{min:0,max:12,label:'Trabajo (L)'}, y:{min:0,max:210,label:'Producto total'},
-    series:[{nombre:'PT',color:'--m1',f:fPT,desc:'producto total'}],
-    bandas:[{x0:0,x1:L_OPT,texto:'Etapa 1',color:'--m2'},
-            {x0:L_OPT,x1:L_MAX,texto:'Etapa 2',color:'--m5'},
-            {x0:L_MAX,x1:12,texto:'Etapa 3',color:'--m3'}],
-    marcas:[{x:L_OPT,y:fPT(L_OPT),texto:'óptimo técnico',color:'--m2'},
-            {x:L_MAX,y:fPT(L_MAX),texto:'máximo técnico',color:'--m3'}],
-    pieBanda:'La etapa 2 es la región económica de producción.',
-  });
-  const g2=grafico({
-    alto:300, x:{min:0,max:12,label:'Trabajo (L)'}, y:{min:-10,max:40,label:'Producto por unidad'},
-    series:[{nombre:'PMe',color:'--m2',f:fPMe,desc:'producto medio'},
-            {nombre:'PMg',color:'--m4',f:fPMg,desc:'producto marginal'}],
-    marcas:[{x:L_OPT,y:fPMe(L_OPT),texto:'PMg = PMe',color:'--m2'},
-            {x:L_MAX,y:0,texto:'PMg = 0',color:'--m3'}],
-    nota:x=>x<L_OPT?'Etapa 1 · PMg &gt; PMe':(x<L_MAX?'Etapa 2 · PMg &lt; PMe, PMg &gt; 0':'Etapa 3 · PMg &lt; 0'),
-  });
-  const c1=el('div','card');
-  c1.append(el('h3','','Producción de corto plazo'));
-  c1.append(el('div','tiny muted','Los dos gráficos comparten el eje horizontal: los puntos notables de arriba caen justo sobre los de abajo. Ahí se ve que el óptimo técnico llega antes que el máximo técnico.'));
-  c1.lastChild.style.marginBottom='12px';
-  c1.append(g1,g2);
-  c1.append(el('div','tiny sec','El máximo del PT cae exactamente donde el PMg cruza el cero, y el máximo del PMe exactamente donde lo cruza el PMg. No está dibujado así a propósito: sale de derivar la misma función.'));
-  c1.lastChild.style.marginTop='12px';
-  m.append(c1);
-
-  // ---- 2. Costos totales, con CF regulable ----
-  let CF=100;
-  const zona2=el('div');
-  const dibujar2=()=>{
-    zona2.innerHTML='';
-    const gA=grafico({
-      alto:300, x:{min:0,max:20,label:'Cantidad producida (Q)'}, y:{min:0,max:600,label:'Costo total ($)'},
-      series:[{nombre:'CT',color:'--m1',f:Q=>fCT(Q,CF),desc:'= CF + CV'},
-              {nombre:'CV',color:'--m2',f:fCV,desc:'variable'},
-              {nombre:'CF',color:'--m5',f:()=>CF,desc:'fijo — no depende de Q'}],
-      nota:x=>`CT − CV = ${CF} = CF, para cualquier Q`,
-    });
-    const gB=grafico({
-      alto:320, x:{min:0.5,max:20,label:'Cantidad producida (Q)'}, y:{min:0,max:70,label:'Costo por unidad ($)'},
-      series:[{nombre:'CTMe',color:'--m1',f:Q=>fCTMe(Q,CF),desc:'total medio'},
-              {nombre:'CVMe',color:'--m2',f:fCVMe,desc:'variable medio'},
-              {nombre:'CFMe',color:'--m5',f:Q=>fCFMe(Q,CF),desc:'fijo medio'},
-              {nombre:'CMg',color:'--m4',f:fCMg,desc:'marginal'}],
-      marcas:[{x:Q_CVME,y:fCVMe(Q_CVME),texto:'mín. CVMe',color:'--m2'},
-              {x:qMinCTMe(CF),y:fCTMe(qMinCTMe(CF),CF),texto:'mín. CTMe',color:'--m1'}],
-      nota:x=>{
-        const d=fCMg(x)-fCTMe(x,CF);
-        return d<0?'CMg &lt; CTMe → el medio <b>baja</b>':'CMg &gt; CTMe → el medio <b>sube</b>';
-      },
-    });
-    zona2.append(gA,gB);
-  };
-  const c2=el('div','card'); c2.style.marginTop='14px';
-  c2.append(el('h3','','Costos de corto plazo'));
-  c2.append(el('div','tiny muted','Mové el costo fijo y mirá qué se mueve y qué no. Es la forma más rápida de fijar por qué el CMg no depende del CF.'));
-  c2.lastChild.style.marginBottom='12px';
-  const ctrl=el('div','row'); ctrl.style.marginBottom='14px';
-  const sl=el('input'); sl.type='range'; sl.min=0; sl.max=300; sl.value=CF; sl.step=10;
-  sl.style.cssText='flex:1;max-width:300px;accent-color:var(--m1)';
-  const val=el('span','tiny',`CF = $${CF}`); val.style.minWidth='80px';
-  ctrl.append(el('span','tiny sec','Costo fijo'),sl,val);
-  sl.oninput=()=>{ CF=Number(sl.value); val.textContent=`CF = $${CF}`; dibujar2(); };
-  c2.append(ctrl,zona2);
-  c2.append(el('div','tiny sec','Al mover el CF: el <b>CFMe</b> se levanta o se aplasta, el <b>CTMe</b> lo sigue y su mínimo se corre a la derecha… y el <b>CMg</b> y el <b>CVMe</b> no se mueven ni un pixel. Por eso el CMg se calcula sobre el CV: el fijo se cancela en la variación.'));
-  c2.lastChild.style.marginTop='12px';
-  dibujar2(); m.append(c2);
-
-  // ---- 3. Largo plazo: la envolvente ----
-  const plantas=[8,14,20,26,32,38];
-  const cmeCorto=k=>(Q=>12+0.02*(k-26)*(k-26)+0.055*(Q-k)*(Q-k));
-  const cmeL=Q=>Math.min(...plantas.map(k=>cmeCorto(k)(Q)));
-  const g3=grafico({
-    alto:330, x:{min:2,max:44,label:'Cantidad producida (Q)'}, y:{min:0,max:60,label:'Costo medio ($/unidad)'},
-    series:[...plantas.map((k,i)=>({nombre:'CMe'+(i+1),color:'--ink-3',f:cmeCorto(k),punteada:true,desc:'planta '+(i+1)})),
-            {nombre:'CMeL',color:'--m1',f:cmeL,desc:'envolvente de largo plazo'}],
-    marcas:[{x:26,y:cmeL(26),texto:'escala mínima eficiente',color:'--m1'}],
-    nota:x=>x<26?'Economías de escala · CMeL bajando':(x>26?'Deseconomías de escala · CMeL subiendo':'Mínimo de la CMeL'),
-  });
-  m.append(tarjetaGrafico('Largo plazo: la curva envolvente',
-    'Cada curva punteada es un tamaño de planta con su costo medio de corto plazo. La violeta toma, para cada cantidad, el mínimo de todas.',
-    g3,
-    'Fijate que ninguna curva de corto plazo baja jamás por debajo de la envolvente: la toca en un punto y queda por encima en todos los demás. Eso es porque en el largo plazo la empresa tiene más opciones, y tener más opciones no puede dar un resultado peor.'));
-
-  // ---- 4. Isocuanta e isocosto ----
-  let presu=120, w=6;
-  const zona4=el('div');
-  const dibujar4=()=>{
-    zona4.innerHTML='';
-    const r=4;
-    const Lopt=presu/(2*w), Kopt=presu/(2*r);
-    const q=Math.sqrt(Lopt*Kopt);           // Cobb-Douglas q = √(L·K)
-    const g=grafico({
-      alto:330, x:{min:0,max:30,label:'Trabajo (L)'}, y:{min:0,max:30,label:'Capital (K)'},
-      series:[{nombre:'Isocuanta',color:'--m2',f:L=>L<=0?NaN:q*q/L,desc:`q = ${q.toFixed(1)}`},
-              {nombre:'Isocosto',color:'--m3',f:L=>presu/r-(w/r)*L,desc:`$${presu}`},
-              {nombre:'q menor',color:'--ink-3',f:L=>L<=0?NaN:(q*0.7)*(q*0.7)/L,punteada:true,desc:'otra isocuanta'},
-              {nombre:'q mayor',color:'--ink-3',f:L=>L<=0?NaN:(q*1.3)*(q*1.3)/L,punteada:true,desc:'otra isocuanta'}],
-      marcas:[{x:Lopt,y:Kopt,texto:'tangencia = óptimo',color:'--m1'}],
-      nota:()=>`TMST = w/r = ${(w/r).toFixed(2)}`,
-    });
-    zona4.append(g);
-  };
-  const c4=el('div','card'); c4.style.marginTop='14px';
-  c4.append(el('h3','','Isocuanta e isocosto'));
-  c4.append(el('div','tiny muted','El punto de tangencia es la eficiencia económica. Cambiá el precio del trabajo y mirá cómo se inclina el isocosto y se corre el óptimo.'));
-  c4.lastChild.style.marginBottom='12px';
-  const ctrl4=el('div','row'); ctrl4.style.marginBottom='14px';
-  const s1=el('input'); s1.type='range'; s1.min=40; s1.max=240; s1.value=presu; s1.step=10;
-  s1.style.cssText='flex:1;max-width:200px;accent-color:var(--m1)';
-  const v1=el('span','tiny',`$${presu}`); v1.style.minWidth='60px';
-  const s2=el('input'); s2.type='range'; s2.min=2; s2.max=14; s2.value=w; s2.step=0.5;
-  s2.style.cssText='flex:1;max-width:200px;accent-color:var(--m3)';
-  const v2=el('span','tiny',`w = $${w}`); v2.style.minWidth='70px';
-  ctrl4.append(el('span','tiny sec','Presupuesto'),s1,v1,el('span','tiny sec','Precio del trabajo'),s2,v2);
-  s1.oninput=()=>{presu=Number(s1.value); v1.textContent='$'+presu; dibujar4();};
-  s2.oninput=()=>{w=Number(s2.value); v2.textContent='w = $'+w; dibujar4();};
-  c4.append(ctrl4,zona4);
-  c4.append(el('div','tiny sec','Subir el <b>presupuesto</b> desplaza el isocosto en paralelo — la pendiente no cambia porque los precios no cambiaron. Subir el <b>precio del trabajo</b> lo rota, y el óptimo se corre hacia menos trabajo y más capital. Esa es la razón de que la tecnología óptima dependa de dónde estés produciendo, no solo de la técnica disponible.'));
-  c4.lastChild.style.marginTop='12px';
-  dibujar4(); m.append(c4);
-
-  // ---- 5. FPP ----
-  const tabla=[[0,18],[1,17],[2,14],[3,9],[4,0]];
-  const g5=grafico({
-    alto:320, x:{min:0,max:5,label:'Bienes de consumo'}, y:{min:0,max:20,label:'Bienes de capital'},
-    series:[{nombre:'FPP',color:'--m1',f:x=>x>4?NaN:18-1.125*x*x,desc:'frontera'}],
-    marcas:tabla.slice(1,4).map(([x,y],i)=>({x,y,texto:'ABCDE'[i+1],color:'--ink-3'})),
-    nota:x=>{const y=18-1.125*x*x; return `costo de oportunidad de la unidad siguiente ≈ ${Math.max(0,(y-(18-1.125*(x+1)*(x+1)))).toFixed(1)}`;},
-  });
-  m.append(tarjetaGrafico('Frontera de posibilidades de producción (U1)',
-    'Los puntos son la tabla A–E del teórico. La curva es cóncava porque el costo de oportunidad crece: 1, 3, 5, 9.',
-    g5,
-    'Un punto <b>debajo</b> de la curva es ineficiente: se puede producir más de un bien sin resignar el otro, o sea costo de oportunidad cero. Uno <b>arriba</b> es inalcanzable con la tecnología actual. Solo los que están <b>sobre</b> la curva son eficientes.'));
-}
-
 async function viewAjustes(){
   const m=$('#main'); m.innerHTML='';
   m.append(el('div','head',`<div><h1>Ajustes</h1>
@@ -2023,28 +1937,6 @@ async function viewAjustes(){
 
   let cfg;
   try{ cfg=await api('/api/config'); }catch(e){ m.innerHTML=`<div class="empty">${esc(e.message)}</div>`; return; }
-
-  // ---- Clave de API ----
-  const c1=el('div','card'); c1.style.marginBottom='14px'; c1.style.maxWidth='680px';
-  c1.append(el('h3','','Clave de API de Anthropic'));
-  c1.append(el('div','tiny muted',
-    'Habilita el botón "Ordenar con Claude" del editor. Se guarda solo en este archivo, con permisos 600, y nunca vuelve entera al navegador. Es la única salida a internet del hub, y siempre la disparás vos con un clic.'));
-  c1.lastChild.style.marginBottom='12px';
-
-  const estado=el('div','row'); estado.style.marginBottom='12px';
-  estado.append(el('span',cfg.tieneClave?'alert ok':'alert warn',
-    cfg.tieneClave
-      ? `<b>✓</b><div>Clave cargada (termina en <code>${esc(cfg.claveCola)}</code>)</div>`
-      : '<b>!</b><div>Sin clave. El resto del hub funciona igual.</div>'));
-  c1.append(estado);
-
-  const key=el('input','input'); key.type='password'; key.placeholder='sk-ant-…';
-  key.autocomplete='off';
-  c1.append(campo('Clave',key,'Se saca de console.anthropic.com → API Keys. Dejala vacía y guardá para borrar la que hay.'));
-
-  const msg1=el('div','tiny'); msg1.style.marginBottom='10px';
-  const bK=el('button','btn primary','Guardar clave');
-  c1.append(msg1,bK); m.append(c1);
 
   // ---- Modelo ----
   const c2=el('div','card'); c2.style.marginBottom='14px'; c2.style.maxWidth='680px';
@@ -2788,10 +2680,1015 @@ function pintarPropuestas(cont,r,materia){
   cont.append(fin);
 }
 
+/* =========================================================================
+   Código — GitHub
+
+   Para las materias donde el material y la entrega viven en un repo. La fuente
+   de verdad de Ingeniería de Software III no es el campus: es github.com.
+   ========================================================================= */
+
+const DOW = ['', 'Lun', '', 'Mié', '', 'Vie', ''];
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+async function viewCodigo(){
+  const m=$('#main'); m.innerHTML='<div class="empty">Cargando…</div>';
+  let est;
+  try{ est=await api('/api/github/estado'); }
+  catch(e){ m.innerHTML=`<div class="empty">No pude hablar con el servidor: ${esc(e.message)}</div>`; return; }
+  m.innerHTML='';
+
+  const head=el('div','head');
+  head.append(el('div','',`<h1>Código</h1>
+    <div class="sub">${est.usuario
+      ? `Conectado como <b>${esc(est.usuario.login)}</b>`
+      : 'Sin token: modo lectura sobre repos públicos, 60 llamadas por hora'}</div>`));
+  const acts=el('div','row');
+  const bTok=el('button','btn'+(est.token?'':' primary'), est.token?'Token':'Conectar GitHub');
+  bTok.onclick=()=>panelToken(est);
+  acts.append(bTok);
+  if(est.token){
+    const bNuevo=el('button','btn primary','+ Nuevo repo');
+    bNuevo.onclick=()=>panelCrearRepo();
+    acts.append(bNuevo);
+  }
+  head.append(acts); m.append(head);
+
+  if(est.tokenError){
+    m.append(el('div','alert bad',`El token está guardado pero GitHub lo rechazó: ${esc(est.tokenError)}`));
+  }
+  if(!est.token){
+    const a=el('div','card'); a.style.marginBottom='16px';
+    a.innerHTML=`<b>Sin token andás con el límite de anónimo</b>
+      <div class="sec tiny" style="margin-top:6px">60 llamadas por hora para toda tu red, y no se pueden ver repos privados,
+      crear repos ni traer el calendario real de contribuciones. Con un token pasás a 5000.
+      <b>El token se guarda solo en <span class="mono">_hub/datos/config.json</span> con permisos 600 y nunca vuelve entero al navegador.</b></div>`;
+    m.append(a);
+  }
+
+  const zonaVin=el('div'); m.append(zonaVin);
+  pintarVinculos(zonaVin, est);
+
+  if(!est.vinculos.length){
+    m.append(el('div','empty','Vinculá un repo arriba y acá abajo aparecen las novedades, la actividad y el checklist de entregables.'));
+    return;
+  }
+
+  const zonaNov=el('div'); zonaNov.innerHTML='<div class="empty">Consultando GitHub…</div>'; m.append(zonaNov);
+  const zonaAct=el('div'); m.append(zonaAct);
+  const zonaEnt=el('div'); m.append(zonaEnt);
+
+  api('/api/github/novedades').then(n=>pintarNovedades(zonaNov,n)).catch(e=>{
+    zonaNov.innerHTML=''; zonaNov.append(el('div','alert bad',esc(e.message)));
+  });
+  api('/api/github/actividad').then(a=>pintarActividad(zonaAct,a)).catch(()=>{});
+  const propios=est.vinculos.filter(v=>v.rol==='propio');
+  if(propios.length) pintarEntregables(zonaEnt, propios);
+}
+
+/* ---------- Token ---------- */
+
+function panelToken(est){
+  const m=$('#main');
+  const c=el('div','card'); c.style.cssText='max-width:640px;margin-bottom:16px';
+  c.append(el('h3','','Token de GitHub'));
+  c.append(el('div','sec tiny',`Andá a <span class="mono">github.com/settings/tokens</span> → <b>Generate new token</b>.
+    Con un <b>fine-grained</b> alcanza: dale acceso a tus repos y los permisos
+    <span class="mono">Contents: read and write</span>, <span class="mono">Metadata: read</span>,
+    <span class="mono">Administration: read and write</span> (sólo si querés crear repos desde acá)
+    y <span class="mono">Pull requests: read</span>. Para el calendario de contribuciones, un token
+    <b>classic</b> con <span class="mono">read:user</span>.`));
+  const i=el('input','input'); i.type='password'; i.placeholder=est.token?'••••••••  (pegá uno nuevo para reemplazarlo)':'github_pat_… o ghp_…';
+  i.style.margin='12px 0';
+  c.append(i);
+  const msg=el('div','tiny'); msg.style.marginBottom='10px'; c.append(msg);
+  const fila=el('div','row');
+  const b=el('button','btn primary','Guardar y probar');
+  b.onclick=async()=>{
+    msg.textContent='Probando contra GitHub…'; msg.style.color='';
+    try{
+      const r=await api('/api/github/config',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token:i.value})});
+      msg.style.color='var(--good)';
+      msg.textContent=`✓ Andá: sos ${r.usuario.login}`;
+      setTimeout(()=>viewCodigo(),700);
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; }
+  };
+  fila.append(b);
+  if(est.token){
+    const bq=el('button','btn','Quitar el token');
+    bq.onclick=async()=>{
+      await api('/api/github/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:''})});
+      viewCodigo();
+    };
+    fila.append(bq);
+  }
+  const bc=el('button','btn','Cancelar'); bc.onclick=()=>viewCodigo(); fila.append(bc);
+  c.append(fila);
+  m.innerHTML=''; m.append(c);
+  i.focus();
+}
+
+/* ---------- Repos vinculados ---------- */
+
+function pintarVinculos(zona, est){
+  zona.innerHTML='';
+  const c=el('div','card'); c.style.marginBottom='16px';
+  const sp=el('div','spread'); sp.append(el('h3','','Repos vinculados'));
+  c.append(sp);
+
+  if(est.vinculos.length){
+    const t=el('table'); t.style.marginTop='10px';
+    t.innerHTML='<thead><tr><th>Repo</th><th style="width:130px">Rol</th><th style="width:140px">Materia</th><th style="width:60px"></th></tr></thead>';
+    const tb=el('tbody');
+    est.vinculos.forEach(v=>{
+      const tr=el('tr');
+      const td=el('td');
+      const a=el('a','wl',esc(v.full_name)); a.href=v.url||`https://github.com/${v.full_name}`; a.target='_blank';
+      td.append(a);
+      if(v.privado) td.append(el('span','badge','privado'));
+      tr.append(td);
+      tr.append(el('td','',v.rol==='catedra'?'<span class="badge">cátedra</span>':'<span class="badge">tuyo</span>'));
+      tr.append(el('td','',`<span class="dotk" style="background:${matColor(v.materia)};display:inline-block;margin-right:6px"></span>${esc(v.materia)}`));
+      const acc=el('td');
+      const b=el('button','btn sm','Quitar');
+      b.onclick=async()=>{
+        await api('/api/github/vinculo',{method:'DELETE',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({full_name:v.full_name})});
+        viewCodigo();
+      };
+      acc.append(b); tr.append(acc);
+      tb.append(tr);
+    });
+    t.append(tb); c.append(t);
+  }
+
+  const f=el('div','row'); f.style.marginTop='14px';
+  const iR=el('input','input'); iR.placeholder='github.com/usuario/repo  ·  o usuario/repo'; iR.style.flex='1';
+  const sM=el('select','input'); sM.style.width='auto';
+  (S.data?.materias||[]).forEach(x=>sM.append(new Option(x.corto||x.id,x.id)));
+  const sR=el('select','input'); sR.style.width='auto';
+  sR.append(new Option('de la cátedra','catedra'), new Option('mío','propio'));
+  const bA=el('button','btn','Vincular');
+  const err=el('div','tiny'); err.style.color='var(--crit)';
+  bA.onclick=async()=>{
+    err.textContent=''; bA.disabled=true;
+    try{
+      await api('/api/github/vinculo',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({full_name:iR.value,materia:sM.value,rol:sR.value})});
+      viewCodigo();
+    }catch(e){ err.textContent=e.message; bA.disabled=false; }
+  };
+  f.append(iR,sM,sR,bA);
+  c.append(f,err);
+  zona.append(c);
+}
+
+/* ---------- Novedades ---------- */
+
+function pintarNovedades(zona, n){
+  zona.innerHTML='';
+  const catedra=n.repos.filter(r=>r.rol==='catedra');
+  if(!catedra.length) return;
+
+  catedra.forEach(r=>{
+    const c=el('div','card'); c.style.marginBottom='16px';
+    const sp=el('div','spread');
+    const izq=el('div');
+    izq.append(el('h2','',`Novedades · ${esc(r.full_name)}`));
+    if(r.ultimo) izq.append(el('div','tiny muted',`Último commit: ${fechaRel(r.ultimo.fecha)} — ${esc(r.ultimo.mensaje)}`));
+    sp.append(izq);
+    if(r.ultimo){
+      const b=el('button','btn sm','Marcar todo como visto');
+      b.onclick=async()=>{
+        await api('/api/github/visto',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({full_name:r.full_name,sha:r.ultimo.sha})});
+        const nn=await api('/api/github/novedades'); pintarNovedades(zona,nn);
+      };
+      sp.append(b);
+    }
+    c.append(sp);
+
+    if(r.error){ c.append(el('div','alert bad',esc(r.error))); zona.append(c); return; }
+
+    if(r.primeraVez){
+      c.append(el('div','alert warn','Primera vez que mirás este repo desde el hub. No te marco todo como novedad: acá abajo están los últimos commits. Apretá "marcar todo como visto" y de acá en adelante te aviso sólo lo nuevo.'));
+      c.append(listaCommits(r.recientes, r.full_name));
+    }else if(!r.nuevos.length){
+      c.append(el('div','alert ok','Nada nuevo desde la última vez que miraste.'));
+    }else{
+      const av=el('div','alert warn');
+      av.innerHTML=`<b>${r.nuevos.length} commit${r.nuevos.length===1?'':'s'} nuevo${r.nuevos.length===1?'':'s'}</b> desde la última vez.`;
+      c.append(av);
+      c.append(listaCommits(r.nuevos, r.full_name, true));
+    }
+    zona.append(c);
+  });
+}
+
+function listaCommits(commits, full_name, expandir){
+  const cont=el('div'); cont.style.marginTop='12px';
+  commits.forEach(cm=>{
+    const fila=el('div'); fila.style.cssText='padding:10px 0;border-bottom:1px solid var(--grid)';
+    const sp=el('div','spread');
+    const izq=el('div');
+    izq.append(el('div','',esc(cm.mensaje)));
+    izq.append(el('div','tiny muted',`${esc(cm.autor)} · ${fechaRel(cm.fecha)} · <span class="mono">${cm.corto}</span>`));
+    sp.append(izq);
+    const der=el('div','row'); der.style.gap='6px';
+    const bV=el('button','btn sm','Qué tocó');
+    const arch=el('div'); arch.style.display='none'; arch.style.marginTop='8px';
+    bV.onclick=async()=>{
+      if(arch.dataset.listo){ arch.style.display=arch.style.display==='none'?'block':'none'; return; }
+      bV.textContent='…';
+      try{
+        const r=await api(`/api/github/commit?full_name=${encodeURIComponent(full_name)}&sha=${encodeURIComponent(cm.sha||cm.corto)}`);
+        arch.innerHTML='';
+        r.archivos.forEach(a=>{
+          const l=el('div','tiny');
+          const col=a.estado==='added'?'var(--good)':a.estado==='removed'?'var(--crit)':'var(--ink-3)';
+          l.innerHTML=`<span style="color:${col}">●</span> <span class="mono">${esc(a.ruta)}</span>
+            <span class="muted">+${a.mas} −${a.menos}</span>`;
+          arch.append(l);
+        });
+        if(!r.archivos.length) arch.append(el('div','tiny muted','sin archivos'));
+        arch.dataset.listo='1'; arch.style.display='block';
+      }catch(e){ arch.textContent=e.message; arch.style.display='block'; }
+      bV.textContent='Qué tocó';
+    };
+    der.append(bV);
+    if(cm.url&&cm.url!=='#'){ const a=el('a','btn sm','GitHub ↗'); a.href=cm.url; a.target='_blank'; der.append(a); }
+    sp.append(der);
+    fila.append(sp,arch);
+    cont.append(fila);
+  });
+  return cont;
+}
+
+function fechaRel(iso){
+  if(!iso) return '—';
+  const d=new Date(iso), h=(Date.now()-d)/3600000;
+  if(h<1) return 'hace minutos';
+  if(h<24) return `hace ${Math.round(h)} h`;
+  const dd=Math.round(h/24);
+  if(dd<30) return `hace ${dd} día${dd===1?'':'s'}`;
+  return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+}
+
+/* ---------- La matriz ----------
+   Rampa secuencial de un solo tono, validada con el validador de dataviz en las
+   dos superficies del hub: monótona en L, saltos >= 0.06, y el paso más claro
+   despega de la superficie (2.00:1 en claro, 2.12:1 en oscuro).
+*/
+
+function pintarActividad(zona, a){
+  zona.innerHTML='';
+  const c=el('div','card'); c.style.marginBottom='16px';
+
+  const sp=el('div','spread');
+  const izq=el('div');
+  izq.append(el('h2','','Actividad'));
+  izq.append(el('div','tiny muted', a.origen==='contribuciones'
+    ? `Calendario de contribuciones de <b>${esc(a.usuario)}</b> · ${a.total.toLocaleString('es-AR')} en el último año`
+    : `Commits en los repos vinculados (${(a.repos||[]).map(esc).join(', ')}). <b>No es</b> el calendario de contribuciones de GitHub: para eso hace falta un token con <span class="mono">read:user</span>.`));
+  sp.append(izq);
+  const bTabla=el('button','btn sm','Ver como tabla');
+  sp.append(bTabla);
+  c.append(sp);
+
+  // Umbrales por cuartiles de los días con actividad: se adapta a tu volumen
+  // en vez de fijar "10 commits = verde oscuro" para cualquiera.
+  const nz=a.dias.filter(d=>d.n>0).map(d=>d.n).sort((x,y)=>x-y);
+  const q=(p)=>nz.length?nz[Math.min(nz.length-1,Math.floor(nz.length*p))]:1;
+  const cortes=[q(0.25),q(0.5),q(0.75)];
+  const nivel=(n)=>n===0?0:n<=cortes[0]?1:n<=cortes[1]?2:n<=cortes[2]?3:4;
+
+  const grid=el('div','gh-grid');
+  const dias=a.dias.slice();
+  // Alinear a domingo para que cada columna sea una semana.
+  const primera=new Date(dias[0].fecha+'T00:00:00');
+  for(let i=0;i<primera.getDay();i++) dias.unshift({fecha:null,n:null});
+
+  const cols=Math.ceil(dias.length/7);
+  const wrap=el('div','gh-wrap');
+
+  // Etiquetas de mes
+  const meses=el('div','gh-meses');
+  meses.style.gridTemplateColumns=`repeat(${cols}, 13px)`;
+  let ultimoMes=-1;
+  for(let col=0;col<cols;col++){
+    const d=dias[col*7]?.fecha||dias[col*7+6]?.fecha;
+    const et=el('span');
+    if(d){ const mes=new Date(d+'T00:00:00').getMonth();
+      if(mes!==ultimoMes){ et.textContent=MESES[mes]; ultimoMes=mes; } }
+    meses.append(et);
+  }
+
+  const cuerpo=el('div','gh-cuerpo');
+  const dows=el('div','gh-dows');
+  DOW.forEach(d=>dows.append(el('span','',d)));
+  grid.style.gridTemplateColumns=`repeat(${cols}, 13px)`;
+  for(let col=0;col<cols;col++){
+    for(let fila=0;fila<7;fila++){
+      const d=dias[col*7+fila];
+      const cel=el('i','gh-cel');
+      cel.style.gridColumn=col+1; cel.style.gridRow=fila+1;
+      if(!d||d.fecha===null){ cel.style.visibility='hidden'; grid.append(cel); continue; }
+      const nv=nivel(d.n);
+      cel.dataset.n=nv;
+      bindTip(cel, `<b>${d.n} commit${d.n===1?'':'s'}</b><br>${new Date(d.fecha+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}`);
+      grid.append(cel);
+    }
+  }
+  cuerpo.append(dows,grid);
+  wrap.append(meses,cuerpo);
+  c.append(wrap);
+
+  const pie=el('div','spread'); pie.style.marginTop='12px';
+  const leyenda=el('div','row'); leyenda.style.gap='4px';
+  leyenda.append(el('span','tiny muted','menos'));
+  [0,1,2,3,4].forEach(n=>{ const i=el('i','gh-cel'); i.dataset.n=n; leyenda.append(i); });
+  leyenda.append(el('span','tiny muted','más'));
+  pie.append(leyenda);
+  pie.append(el('span','tiny muted',`cortes: 1–${cortes[0]} · ${cortes[0]+1}–${cortes[1]} · ${cortes[1]+1}–${cortes[2]} · ${cortes[2]+1}+`));
+  c.append(pie);
+
+  // Vista de tabla: la alternativa que no depende del color.
+  const tabla=el('div'); tabla.style.display='none'; tabla.style.marginTop='14px';
+  const porMes=new Map();
+  a.dias.forEach(d=>{ const k=d.fecha.slice(0,7); porMes.set(k,(porMes.get(k)||0)+d.n); });
+  const t=el('table');
+  t.innerHTML='<thead><tr><th>Mes</th><th class="num">Commits</th><th class="num">Días activos</th></tr></thead>';
+  const tb=el('tbody');
+  [...porMes.entries()].reverse().forEach(([k,v])=>{
+    const act=a.dias.filter(d=>d.fecha.startsWith(k)&&d.n>0).length;
+    const tr=el('tr');
+    const [y,mm]=k.split('-');
+    tr.append(el('td','',`${MESES[Number(mm)-1]} ${y}`));
+    tr.append(el('td','num',String(v)));
+    tr.append(el('td','num',String(act)));
+    tb.append(tr);
+  });
+  t.append(tb); tabla.append(t); c.append(tabla);
+  bTabla.onclick=()=>{
+    const abierto=tabla.style.display!=='none';
+    tabla.style.display=abierto?'none':'block';
+    bTabla.textContent=abierto?'Ver como tabla':'Ocultar tabla';
+  };
+
+  // La regla de la materia, medida.
+  const semanas=new Map();
+  a.dias.forEach(d=>{ const dt=new Date(d.fecha+'T00:00:00');
+    const lunes=new Date(dt); lunes.setDate(dt.getDate()-((dt.getDay()+6)%7));
+    const k=ymdCliente(lunes); semanas.set(k,(semanas.get(k)||0)+d.n); });
+  const ult=[...semanas.entries()].slice(-8);
+  const vacias=ult.filter(([,v])=>v===0).length;
+  if(ult.length>=4){
+    const nota=el('div','tiny'); nota.style.marginTop='10px';
+    nota.innerHTML=vacias>=3
+      ? `<span style="color:var(--warn)">⚠︎ ${vacias} de las últimas ${ult.length} semanas sin un solo commit.</span> Ingeniería de Software III se aprueba trabajando todas las semanas — la cátedra lo dice así: "está diseñada para que se acumule mal si no".`
+      : `Semanas con actividad: <b>${ult.length-vacias} de las últimas ${ult.length}</b>. La materia se aprueba trabajando todas las semanas.`;
+    c.append(nota);
+  }
+
+  zona.append(c);
+}
+
+function ymdCliente(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ---------- Entregables ---------- */
+
+async function pintarEntregables(zona, propios){
+  zona.innerHTML='';
+  for(const v of propios){
+    const c=el('div','card'); c.style.marginBottom='16px';
+    c.innerHTML='<div class="empty">Revisando '+esc(v.full_name)+'…</div>';
+    zona.append(c);
+    let d;
+    try{ d=await api('/api/github/entregables?full_name='+encodeURIComponent(v.full_name)); }
+    catch(e){ c.innerHTML=''; c.append(el('div','alert bad',esc(e.message))); continue; }
+    c.innerHTML='';
+    const sp=el('div','spread');
+    const izq=el('div');
+    izq.append(el('h2','',`Entregables · ${esc(d.repo.full_name)}`));
+    izq.append(el('div','tiny muted','Lo que la cátedra pide y se puede verificar solo. No reemplaza la defensa oral, que es el 50 %.'));
+    sp.append(izq);
+    sp.append(el('div','',`<span class="hero" style="font-size:30px">${d.listos}</span><span class="hero-unit">de ${d.total}</span>`));
+    c.append(sp);
+
+    const barra=el('div','meter'); barra.style.margin='14px 0';
+    const i=el('i'); i.style.width=(d.listos/d.total*100)+'%'; barra.append(i);
+    c.append(barra);
+
+    const t=el('table');
+    t.innerHTML='<thead><tr><th style="width:26px"></th><th>Entregable</th><th>Por qué</th></tr></thead>';
+    const tb=el('tbody');
+    d.filas.forEach(f=>{
+      const tr=el('tr');
+      const ic=f.ok===true?'<span style="color:var(--good)">✓</span>'
+             :f.ok===false?'<span style="color:var(--serious)">✗</span>'
+             :'<span class="muted">?</span>';
+      tr.append(el('td','',ic));
+      const td=el('td');
+      td.append(el('div','',esc(f.txt)));
+      if(f.detalle) td.append(el('div','tiny muted',esc(f.detalle)));
+      tr.append(td);
+      tr.append(el('td','tiny muted',esc(f.por)));
+      tb.append(tr);
+    });
+    t.append(tb); c.append(t);
+
+    const acc=el('div','row'); acc.style.marginTop='14px';
+    const bIA=el('button','btn sm','Generar la declaración de uso de IA');
+    const salida=el('div'); salida.style.marginTop='12px';
+    bIA.onclick=async()=>{
+      bIA.disabled=true;
+      const r=await api('/api/github/declaracion-ia');
+      salida.innerHTML='';
+      const card=el('div','card');
+      card.append(el('h3','',`Para pegar en decisiones.md — ${r.llamadas} llamadas registradas`));
+      const ta=el('textarea'); ta.value=r.markdown;
+      ta.style.cssText='width:100%;height:280px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--surface-2);border:1px solid var(--hair);border-radius:9px;padding:12px';
+      card.append(ta);
+      const bc=el('button','btn sm','Copiar'); bc.style.marginTop='8px';
+      bc.onclick=()=>{ta.select();document.execCommand('copy');bc.textContent='✓ Copiado';};
+      card.append(bc);
+      card.append(el('div','tiny muted','Sale del registro real de <span class="mono">_hub/datos/ia-log.json</span>: fecha, modelo y tokens de cada llamada que hiciste desde el hub. El último párrafo lo completás vos — es el que dice qué NO le delegaste.'));
+      salida.append(card);
+      bIA.disabled=false;
+    };
+    acc.append(bIA);
+    const bG=el('a','btn sm','Abrir en GitHub ↗'); bG.href=d.repo.url; bG.target='_blank'; acc.append(bG);
+    c.append(acc,salida);
+  }
+}
+
+/* ---------- Crear repo ---------- */
+
+function panelCrearRepo(){
+  const m=$('#main');
+  const c=el('div','card'); c.style.cssText='max-width:620px';
+  c.append(el('h3','','Nuevo repositorio'));
+  const f=(lbl,node)=>{const w=el('div');w.style.marginBottom='13px';
+    w.append(el('div','tiny sec',lbl));w.lastChild.style.marginBottom='5px';w.append(node);return w;};
+
+  const iN=el('input','input'); iN.placeholder='isw3-tp1-git';
+  const iD=el('input','input'); iD.placeholder='TP1 — Git colaborativo · IngSoft III UCC 2026';
+  const sM=el('select','input');
+  sM.append(new Option('— sin vincular —',''));
+  (S.data?.materias||[]).forEach(x=>sM.append(new Option(x.corto||x.id,x.id)));
+
+  const fPriv=el('label','row'); fPriv.style.cursor='pointer';
+  const cPriv=el('input'); cPriv.type='checkbox'; cPriv.checked=true;
+  fPriv.append(cPriv, el('span','','Privado'));
+  const avisoPub=el('div','tiny'); avisoPub.style.marginTop='6px';
+  cPriv.onchange=()=>{
+    avisoPub.innerHTML=cPriv.checked?'':'<span style="color:var(--warn)">⚠︎ Público: cualquiera lo ve. Ingeniería de Software III pide que el repo de entrega sea público, así que para eso está bien — pero no subas nunca el <span class="mono">.env</span>.</span>';
+  };
+
+  const fScaf=el('label','row'); fScaf.style.cursor='pointer';
+  const cScaf=el('input'); cScaf.type='checkbox'; cScaf.checked=true;
+  fScaf.append(cScaf, el('span','','Con el andamiaje de la cátedra'));
+
+  c.append(f('Nombre',iN), f('Descripción',iD), f('Vincular a la materia',sM));
+  c.append(fPriv, avisoPub, fScaf);
+  c.append(el('div','tiny muted','El andamiaje crea <span class="mono">README.md</span>, <span class="mono">decisiones.md</span>, <span class="mono">evidencias.md</span>, <span class="mono">.gitignore</span> y <span class="mono">.env.example</span> con la estructura que pide Ingeniería de Software III: decisiones y evidencias van en la raíz y se escriben hacia abajo, un título por TP.'));
+
+  const msg=el('div','tiny'); msg.style.margin='12px 0';
+  const fila=el('div','row');
+  const b=el('button','btn primary','Crear el repo');
+  b.onclick=async()=>{
+    if(!iN.value.trim()){ msg.style.color='var(--crit)'; msg.textContent='Falta el nombre.'; return; }
+    b.disabled=true; msg.style.color=''; msg.textContent='Creando…';
+    try{
+      const r=await api('/api/github/repo',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({nombre:iN.value.trim(),descripcion:iD.value,privado:cPriv.checked,
+          scaffold:cScaf.checked,materia:sM.value||null})});
+      msg.style.color='var(--good)';
+      msg.innerHTML=`✓ Creado: <a class="wl" href="${r.repo.url}" target="_blank">${esc(r.repo.full_name)}</a><br>
+        <span class="muted">${r.creados.length?'Archivos: '+r.creados.map(esc).join(', '):''}</span>`;
+      setTimeout(()=>viewCodigo(),2200);
+    }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; b.disabled=false; }
+  };
+  const bc=el('button','btn','Cancelar'); bc.onclick=()=>viewCodigo();
+  fila.append(b,bc);
+  c.append(msg,fila);
+  m.innerHTML=''; m.append(c);
+  iN.focus();
+}
+
+/* =========================================================================
+   Asistente
+
+   Chat sobre el vault. El agente lee los archivos por su cuenta — no hay que
+   armarle el contexto a mano. Lo que NO puede es escribir: cuando quiere
+   cambiar algo lo propone, el hub lo muestra como diff y vos aceptás.
+   ========================================================================= */
+
+/* =========================================================================
+   Contexto: qué está mirando Agustín ahora mismo
+
+   Es lo que hace que el asistente sirva desde cualquier pantalla. No le mando
+   "está en la vista X": le mando la ruta exacta del archivo, la materia, los
+   números que tiene delante y qué suele necesitar alguien parado ahí.
+   ========================================================================= */
+
+async function contextoDeVista(){
+  const v=S.view, p=S.params||{};
+  const partes=[];
+  const N=(rel)=>(S.data?.notas||[]).find(n=>n.rel===rel);
+
+  if(v==='nota'||v==='editar'){
+    const n=N(p.rel);
+    partes.push(`Está ${v==='editar'?'EDITANDO':'leyendo'} la nota \`${p.rel}\`.`);
+    if(n) partes.push(`Es de ${n.materia}, tipo ${n.tipo||'—'}${n.unidad?', unidad '+n.unidad:''}, estado ${n.estado||'sin estado'}, ${n.palabras} palabras, ${n.enlaces} wikilinks.`);
+    partes.push('Si le pide algo sobre "esta nota" o "acá", es ese archivo. Leelo antes de contestar.');
+  }
+  else if(v==='materia'){
+    const m=(S.data?.materias||[]).find(x=>x.id===p.id);
+    partes.push(`Está en la materia ${p.id}.`);
+    if(m) partes.push(`${m.total} notas · ${m.conteo.pendiente} pendientes, ${m.conteo.borrador} en borrador, ${m.conteo.estudiado} estudiadas, ${m.conteo.dominado} dominadas.`);
+    partes.push(`El contexto de esa materia está en \`${p.id}/CLAUDE.md\`.`);
+  }
+  else if(v==='cobertura'){
+    partes.push(`Está en Cobertura${p.materia?' de '+p.materia:''}: los temas del programa contra las notas que existen.`);
+    partes.push(`El programa sale de \`${p.materia||'<Materia>'}/00-Seguimiento/programa-*.md\`. Lo que suele querer acá es que le escribas las notas que faltan, o que le digas cuáles priorizar para el parcial.`);
+  }
+  else if(v==='repaso'){
+    const r=S.repaso;
+    partes.push('Está en Repaso, la sesión de tarjetas.');
+    if(r?.resumen) partes.push(`${r.resumen.pendientes} pendientes de ${r.resumen.totalTarjetas} tarjetas.`);
+    if(r?.hoy?.[r.i]) partes.push(`La tarjeta que tiene delante es \`${r.hoy[r.i].rel}\`.`);
+    partes.push('Acá suele querer que le tomes la lección: preguntale de a una y corregile.');
+  }
+  else if(v==='salud'){
+    partes.push('Está en Salud: el validador de Convenciones.md.');
+    partes.push('Lo que suele querer es que arregles lo que está roto: wikilinks a notas inexistentes, conceptos con menos de 3 conexiones, estados fuera de convención.');
+  }
+  else if(v==='codigo'){
+    partes.push('Está en Código, la vista de GitHub.');
+    partes.push('Los repos vinculados y el checklist de entregables de Ingeniería de Software III se ven ahí.');
+  }
+  else if(v==='calendario') partes.push('Está en el Calendario. Las fechas salen de las tablas de 00-Seguimiento/.');
+  else if(v==='capturar') partes.push('Está capturando notas de clase a mano alzada. Probablemente quiera que le ordenes lo que acaba de escribir.');
+  else if(v==='notas') partes.push('Está en el índice de notas.');
+  else if(v==='hub') partes.push('Está en el Hub, la pantalla de inicio.');
+
+  // Materia en foco: sirve para desambiguar "el parcial", "la unidad 3", etc.
+  const mat = p.id || p.materia || (p.rel ? String(p.rel).split('/')[0] : null);
+  if(mat && (S.data?.materias||[]).some(x=>x.id===mat)) partes.push(`Materia en foco: ${mat}.`);
+
+  return partes.join(' ');
+}
+
+/* =========================================================================
+   Panel del asistente
+
+   Vive a la derecha, fuera de #main, así sobrevive a los cambios de vista y
+   te acompaña donde estés. El estado de la conversación no se pierde al
+   navegar — de hecho navegar es parte de la conversación.
+   ========================================================================= */
+
+const AG = { sesion:null, mensajes:[], corriendo:false, costo:0, turnos:0, modo:'propuesta', abierto:false, est:null };
+
+const ICONO_TOOL = { Read:'▤', Glob:'⌸', Grep:'⌕', Write:'✎', Edit:'✎', MultiEdit:'✎', WebFetch:'⇱', Task:'⁂' };
+
+/** Primera oración, sin cortar en extensiones de archivo. */
+function primeraOracion(t){
+  const m=String(t||'').match(/^.*?[.](?=\s|$)/);
+  return m ? m[0] : String(t||'');
+}
+
+function togglePanel(forzar){
+  AG.abierto = forzar!=null ? forzar : !AG.abierto;
+  document.body.classList.toggle('con-panel', AG.abierto);
+  localStorage.setItem('hub-panel', AG.abierto?'1':'0');
+  if(AG.abierto){
+    pintarPanel();
+    setTimeout(()=>$('#pan-input')?.focus(),60);
+  }
+}
+
+async function pintarPanel(){
+  const raiz=$('#panel'); if(!raiz) return;
+  if(!AG.est){
+    raiz.innerHTML='<div class="empty">Conectando…</div>';
+    AG.est=await api('/api/agente/estado').catch(e=>({ok:false,error:e.message}));
+  }
+  const est=AG.est, g=est.git||{};
+  if(!g.repo && AG.modo==='directo') AG.modo='propuesta';
+  raiz.innerHTML='';
+
+  /* --- cabecera --- */
+  const cab=el('div','pan-cab');
+  const t=el('div','row'); t.style.gap='7px';
+  t.append(el('span','',`<b style="letter-spacing:-.01em">Asistente</b>`));
+  if(AG.turnos) t.append(el('span','tiny muted',`~US$ ${AG.costo.toFixed(3)}`));
+  cab.append(t);
+  const bx=el('div','row'); bx.style.gap='4px';
+  if(AG.mensajes.length){
+    const bn=el('button','btn sm','Nueva');
+    bn.onclick=()=>{AG.sesion=null;AG.mensajes=[];AG.costo=0;AG.turnos=0;pintarPanel();};
+    bx.append(bn);
+  }
+  const bc=el('button','btn sm','✕'); bc.onclick=()=>togglePanel(false);
+  bx.append(bc); cab.append(bx);
+  raiz.append(cab);
+
+  if(!est.ok){
+    const c=el('div','pan-cuerpo');
+    c.append(el('div','alert warn',`No encuentro el CLI de Claude Code: <span class="mono">${esc(est.error||'')}</span>`));
+    c.append(el('div','tiny muted',`<p style="margin-top:10px">Se instala con <span class="mono">npm install -g @anthropic-ai/claude-code</span> y se loguea corriendo <span class="mono">claude</span> una vez en la terminal.</p>`));
+    const b=el('button','btn sm','Reintentar'); b.style.marginTop='10px';
+    b.onclick=async()=>{ AG.est=null; await api('/api/agente/estado?force=1').catch(()=>{}); pintarPanel(); };
+    c.append(b); raiz.append(c);
+    return;
+  }
+
+  /* --- modo --- */
+  const modos=el('div','pan-modo');
+  [['propuesta','Propone'],['directo','Escribe solo']].forEach(([v,txt])=>{
+    const ch=el('button','chip'+(AG.modo===v?' on':''),txt);
+    if(v==='directo'&&!g.repo) ch.style.opacity='.45';
+    ch.onclick=async()=>{
+      if(v==='directo'&&!g.repo){ go('#/ajustes'); togglePanel(false); return; }
+      AG.modo=v; pintarPanel();
+    };
+    modos.append(ch);
+  });
+  if(AG.modo==='directo') modos.append(el('span','tiny',`<span style="color:var(--good)">git ${esc(g.head||'')}</span>`));
+  raiz.append(modos);
+
+  /* --- hilo --- */
+  const hilo=el('div','pan-cuerpo'); hilo.id='pan-hilo';
+  if(!AG.mensajes.length) hilo.append(await panelSugerencias());
+  else AG.mensajes.forEach(msg=>hilo.append(pintarMensaje(msg)));
+  raiz.append(hilo);
+
+  /* --- entrada --- */
+  const pie=el('div','pan-pie');
+  const ctx=el('div','tiny muted','');
+  ctx.id='pan-ctx';
+  contextoDeVista().then(c=>{ ctx.textContent = c ? '◈ '+primeraOracion(c) : ''; });
+  pie.append(ctx);
+  const ta=el('textarea','pan-input'); ta.id='pan-input';
+  ta.placeholder='Preguntá algo. Sabe dónde estás parado.';
+  pie.append(ta);
+  const fila=el('div','spread'); fila.style.marginTop='7px';
+  fila.append(el('span','tiny muted','⌘↵ enviar'));
+  const b=el('button','btn primary sm','Preguntar');
+  fila.append(b); pie.append(fila);
+  raiz.append(pie);
+
+  const enviar=async()=>{
+    const texto=ta.value.trim();
+    if(!texto||AG.corriendo) return;
+    ta.value=''; ta.disabled=true; b.disabled=true; AG.corriendo=true;
+    const h=$('#pan-hilo'); if(!AG.mensajes.length) h.innerHTML='';
+    const mio={rol:'yo',texto}; AG.mensajes.push(mio); h.append(pintarMensaje(mio));
+    const suyo={rol:'agente',texto:'',tools:[],propuestas:[],pensando:true};
+    AG.mensajes.push(suyo);
+    let nodo=pintarMensaje(suyo); h.append(nodo);
+    h.scrollTop=h.scrollHeight;
+    try{ await correrTurno(texto, {texto: await contextoDeVista()}, suyo, nodo, h); }
+    catch(e){ suyo.error=e.message; suyo.pensando=false; nodo.replaceWith(pintarMensaje(suyo)); }
+    AG.corriendo=false; ta.disabled=false; b.disabled=false; ta.focus();
+    pintarPanel();
+  };
+  b.onclick=enviar;
+  ta.addEventListener('keydown',e=>{ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();enviar();} });
+  hilo.scrollTop=hilo.scrollHeight;
+}
+
+/** Sugerencias que cambian según dónde estés. */
+async function panelSugerencias(){
+  const c=el('div');
+  const v=S.view, p=S.params||{};
+  let ideas;
+  if(v==='nota'||v==='editar') ideas=[
+    'Revisá esta nota contra Convenciones.md y decime qué está mal',
+    'Tomame la lección de esta nota: preguntas de a una',
+    'Faltan conexiones acá — proponeme 3 que sean reales'];
+  else if(v==='cobertura') ideas=[
+    'Escribí las notas de los temas que faltan en esta unidad',
+    '¿Cuáles de estos huecos entran en el próximo parcial?'];
+  else if(v==='repaso') ideas=[
+    'Explicame esta tarjeta como si no entendiera nada',
+    'Hacéme 3 preguntas más difíciles sobre este concepto'];
+  else if(v==='salud') ideas=[
+    'Arreglá todos los wikilinks rotos',
+    '¿Por qué hay 7 estados fuera de convención y cómo los normalizo?'];
+  else if(v==='codigo') ideas=[
+    '¿Qué me falta para entregar el TP2?',
+    'Leé el repo de la cátedra y decime qué cambió'];
+  else if(v==='materia') ideas=[
+    '¿Qué me falta de esta materia para el parcial?',
+    'Armá un plan de estudio para los días que quedan'];
+  else ideas=[
+    '¿Qué tengo que hacer hoy?',
+    '¿Qué me falta para el parcial más cercano?',
+    '¿Qué está roto en el vault?'];
+
+  c.append(el('div','tiny muted','Desde acá podrías preguntar'));
+  ideas.forEach(t=>{
+    const r=el('div','pan-sug',esc(t));
+    r.onclick=()=>{ const ta=$('#pan-input'); ta.value=t; ta.focus(); };
+    c.append(r);
+  });
+  return c;
+}
+
+/* ---------- Un turno ---------- */
+
+async function correrTurno(texto, donde, msg, nodo, cont){
+  const r=await fetch('/api/agente',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prompt:texto, sesion:AG.sesion, contexto:donde?donde.texto:null, modo:AG.modo})});
+  if(!r.ok){ throw new Error((await r.json().catch(()=>({}))).error||r.statusText); }
+
+  const reader=r.body.getReader();
+  const dec=new TextDecoder();
+  let buf='';
+  const repintar=()=>{ const n=pintarMensaje(msg); nodo.replaceWith(n); nodo=n; if(cont) cont.scrollTop=cont.scrollHeight; };
+  let ultimo=0;
+
+  while(true){
+    const {done,value}=await reader.read();
+    if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    let corte;
+    while((corte=buf.indexOf('\n\n'))>=0){
+      const bloque=buf.slice(0,corte); buf=buf.slice(corte+2);
+      const mEv=bloque.match(/^event: (.+)$/m);
+      const mD=bloque.match(/^data: ([\s\S]*)$/m);
+      if(!mEv||!mD) continue;
+      let dato; try{ dato=JSON.parse(mD[1]); }catch{ continue; }
+
+      if(mEv[1]==='error'){ msg.error=dato.mensaje; msg.pensando=false; repintar(); continue; }
+
+      if(mEv[1]==='fin'){
+        msg.pensando=false;
+        msg.propuestas=dato.propuestas||[];
+        msg.escrituras=dato.escrituras||null;
+        if(dato.code!==0 && !msg.texto) msg.error=dato.stderr||`El CLI salió con código ${dato.code}`;
+        // El texto final ya no debe mostrar los bloques de escritura: se ven
+        // como diff más abajo.
+        msg.texto=msg.texto.replace(/```hub:escribir[\s\S]*?```/g,'').replace(/\n{3,}/g,'\n\n').trim();
+        repintar();
+        continue;
+      }
+
+      const ev=dato;
+      if(ev.type==='system'&&ev.subtype==='init'){ msg.modelo=ev.model; AG.sesion=ev.session_id; }
+      else if(ev.type==='stream_event'&&ev.event?.delta?.type==='text_delta'){
+        msg.texto+=ev.event.delta.text; msg.pensando=false;
+        if(Date.now()-ultimo>90){ ultimo=Date.now(); repintar(); }
+      }
+      else if(ev.type==='assistant'){
+        (ev.message?.content||[]).forEach(b=>{
+          if(b.type==='tool_use') msg.tools.push({id:b.id,nombre:b.name,input:b.input});
+        });
+        repintar();
+      }
+      else if(ev.type==='result'){
+        AG.sesion=ev.session_id||AG.sesion;
+        AG.costo+=ev.total_cost_usd||0; AG.turnos++;
+        msg.uso=ev.usage; msg.costo=ev.total_cost_usd;
+      }
+      else if(ev.type==='system'&&ev.subtype==='api_retry'){
+        msg.reintento=`reintentando (${ev.attempt}/${ev.max_retries}) — ${ev.error}`;
+        repintar();
+      }
+    }
+  }
+  repintar();
+}
+
+/* ---------- Pintado ---------- */
+
+function pintarMensaje(msg){
+  const w=el('div'); w.style.marginBottom='16px';
+
+  if(msg.rol==='yo'){
+    const c=el('div');
+    c.style.cssText='background:color-mix(in oklab,var(--m1) 12%,transparent);border-radius:12px;'+
+      'padding:12px 15px;max-width:80%;margin-left:auto;white-space:pre-wrap';
+    c.textContent=msg.texto;
+    w.append(c);
+    return w;
+  }
+
+  if(msg.tools?.length){
+    const tl=el('div'); tl.style.cssText='display:flex;flex-direction:column;gap:3px;margin-bottom:10px';
+    msg.tools.forEach(t=>{
+      const f=el('div','tiny muted');
+      f.style.cssText='display:flex;gap:8px;align-items:center';
+      const arg=t.input?.file_path||t.input?.pattern||t.input?.path||'';
+      f.innerHTML=`<span style="opacity:.6">${ICONO_TOOL[t.nombre]||'·'}</span>
+        <span>${esc(t.nombre)}</span><span class="mono" style="opacity:.75">${esc(String(arg).slice(0,70))}</span>`;
+      tl.append(f);
+    });
+    w.append(tl);
+  }
+
+  if(msg.reintento) w.append(el('div','tiny',`<span style="color:var(--warn)">${esc(msg.reintento)}</span>`));
+
+  if(msg.pensando && !msg.texto){
+    const p=el('div','tiny muted','pensando…'); p.style.padding='4px 0'; w.append(p);
+  }
+
+  if(msg.texto){
+    const art=el('article','prose'); art.style.cssText='max-width:none;font-size:14.5px';
+    art.innerHTML=renderMd(msg.texto);
+    enhance(art);
+    w.append(art);
+  }
+
+  if(msg.error) w.append(el('div','alert bad',esc(msg.error)));
+
+  (msg.propuestas||[]).forEach((p,i)=>w.append(pintarPropuesta(p,msg,i)));
+  if(msg.escrituras) w.append(pintarEscrituras(msg.escrituras,msg));
+
+  if(msg.costo!=null){
+    const u=el('div','tiny muted'); u.style.marginTop='8px';
+    u.textContent=`${msg.modelo||''} · ${msg.uso?`${msg.uso.input_tokens} entrada / ${msg.uso.output_tokens} salida · `:''}~US$ ${(msg.costo||0).toFixed(4)} estimado`;
+    w.append(u);
+  }
+  return w;
+}
+
+function pintarPropuesta(p,msg,i){
+  const c=el('div','card'); c.style.marginTop='12px';
+  const sp=el('div','spread');
+  const izq=el('div');
+  izq.append(el('div','',`<b>${p.existe?'Modificar':'Crear'}</b> <span class="mono">${esc(p.rel)}</span>`));
+  const lineas=p.contenido.split('\n').length;
+  izq.append(el('div','tiny muted',`${lineas} líneas · ${p.contenido.split(/\s+/).filter(Boolean).length} palabras`));
+  sp.append(izq);
+  const der=el('div','row'); der.style.gap='6px';
+  const bVer=el('button','btn sm','Ver diff');
+  const bOk=el('button','btn primary sm', p.existe?'Aplicar':'Crear');
+  der.append(bVer,bOk); sp.append(der);
+  c.append(sp);
+
+  const zona=el('div'); zona.style.cssText='display:none;margin-top:12px'; c.append(zona);
+  bVer.onclick=()=>{
+    const abierto=zona.style.display!=='none';
+    zona.style.display=abierto?'none':'block';
+    bVer.textContent=abierto?'Ver diff':'Ocultar';
+    if(!abierto&&!zona.dataset.listo){
+      zona.append(pintarDiff(p.actual||'', p.contenido));
+      zona.dataset.listo='1';
+    }
+  };
+
+  const msgOk=el('div','tiny'); msgOk.style.marginTop='8px'; c.append(msgOk);
+  bOk.onclick=async()=>{
+    bOk.disabled=true; msgOk.textContent='Escribiendo…'; msgOk.style.color='';
+    try{
+      await api('/api/nota',{method:p.existe?'PUT':'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({rel:p.rel,contenido:p.contenido})});
+      await load(true);
+      msgOk.style.color='var(--good)';
+      msgOk.innerHTML=`✓ Escrito. <a class="wl" href="#/nota?rel=${encodeURIComponent(p.rel)}">Abrir la nota</a>`;
+      bOk.textContent='Hecho';
+      p.aplicada=true;
+    }catch(e){ msgOk.style.color='var(--crit)'; msgOk.textContent=e.message; bOk.disabled=false; }
+  };
+  if(p.aplicada){ bOk.disabled=true; bOk.textContent='Hecho'; }
+
+  c.append(el('div','tiny muted','El asistente no tiene permiso de escritura. Este archivo lo escribe el hub, y sólo cuando apretás.'));
+  return c;
+}
+
+
+/* ---------- Lo que el asistente escribió, y cómo deshacerlo ---------- */
+
+function pintarEscrituras(esc_,msg){
+  const c=el('div','card'); c.style.marginTop='12px';
+  if(!esc_.archivos.length){
+    c.append(el('div','tiny muted','No tocó ningún archivo en este turno.'));
+    return c;
+  }
+  const sp=el('div','spread');
+  const izq=el('div');
+  izq.append(el('div','',`<b>Escribió ${esc_.archivos.length} archivo${esc_.archivos.length===1?'':'s'}</b>`));
+  izq.append(el('div','tiny muted',`Punto de restauración: <span class="mono">${esc(esc_.desde)}</span>`));
+  sp.append(izq);
+  const bU=el('button','btn sm','Deshacer todo');
+  bU.style.borderColor='color-mix(in oklab,var(--crit) 45%,transparent)';
+  sp.append(bU); c.append(sp);
+
+  const lista=el('div'); lista.style.marginTop='12px';
+  esc_.archivos.forEach(a=>{
+    const f=el('div'); f.style.cssText='padding:7px 0;border-bottom:1px solid var(--grid)';
+    const sp2=el('div','spread');
+    const col=a.estado==='nuevo'?'var(--good)':'var(--warn)';
+    sp2.append(el('div','',`<span style="color:${col}">●</span>
+      <span class="mono" style="font-size:12.5px">${esc(a.ruta)}</span>
+      ${a.mas||a.menos?`<span class="tiny muted"> +${a.mas} −${a.menos}</span>`:`<span class="tiny muted"> ${esc(a.estado)}</span>`}`));
+    const acc=el('div','row'); acc.style.gap='6px';
+    const bD=el('button','btn sm','Ver cambio');
+    const bA=el('a','btn sm','Abrir'); bA.href=`#/nota?rel=${encodeURIComponent(a.ruta)}`;
+    acc.append(bD,bA); sp2.append(acc);
+    const zona=el('div'); zona.style.cssText='display:none;margin-top:10px';
+    bD.onclick=async()=>{
+      const abierto=zona.style.display!=='none';
+      zona.style.display=abierto?'none':'block';
+      bD.textContent=abierto?'Ver cambio':'Ocultar';
+      if(!abierto&&!zona.dataset.listo){
+        zona.textContent='Cargando…';
+        try{
+          const d=await api(`/api/git/diff?sha=${encodeURIComponent(esc_.desde)}&ruta=${encodeURIComponent(a.ruta)}`);
+          zona.innerHTML=''; zona.append(pintarDiff(d.antes||'', d.ahora||''));
+        }catch(e){ zona.textContent=e.message; }
+        zona.dataset.listo='1';
+      }
+    };
+    f.append(sp2,zona); lista.append(f);
+  });
+  c.append(lista);
+
+  const res=el('div','tiny'); res.style.marginTop='10px'; c.append(res);
+  bU.onclick=async()=>{
+    if(!confirm(`Volver el vault al punto ${esc_.desde}. Se pierde todo lo que el asistente escribió en este turno. ¿Seguro?`)) return;
+    bU.disabled=true; res.textContent='Revirtiendo…';
+    try{
+      await api('/api/git/revertir',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({sha:esc_.desde})});
+      await load(true);
+      res.style.color='var(--good)';
+      res.textContent='✓ Revertido. El vault volvió a como estaba antes del turno.';
+      msg.escrituras=null;
+    }catch(e){ res.style.color='var(--crit)'; res.textContent=e.message; bU.disabled=false; }
+  };
+  return c;
+}
+
+/* ---------- git ---------- */
+
+async function panelGit(){
+  const m=$('#main');
+  const g=(await api('/api/git/estado').catch(()=>({repo:false})));
+  const c=el('div','card'); c.style.maxWidth='680px';
+  c.append(el('h3','','Control de versiones del vault'));
+
+  if(!g.repo){
+    c.append(el('div','sec',`El vault todavía no está bajo git. Es lo que hace falta para que el asistente
+      pueda escribir solo: cada turno arranca con un punto de restauración y cualquier desastre se deshace
+      con un botón.`));
+    c.append(el('div','tiny muted',`Se versiona sólo el markdown. Quedan afuera <span class="mono">datos/</span>
+      (claves y estado local), las librerías del hub y <span class="mono">99-Material-Catedra/</span>, que son
+      los PDFs de la cátedra y pesan.`));
+    const msg=el('div','tiny'); msg.style.margin='12px 0';
+    const b=el('button','btn primary','Inicializar git en el vault');
+    b.onclick=async()=>{
+      b.disabled=true; msg.textContent='Creando el repo y el primer commit…';
+      try{
+        const r=await api('/api/git/init',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        if(r.error) throw new Error(r.error);
+        msg.style.color='var(--good)';
+        msg.textContent=`✓ Listo. Commit inicial en ${r.head||''}.`;
+        setTimeout(()=>{AG.est=null;pintarPanel();go('#/ajustes');},900);
+      }catch(e){ msg.style.color='var(--crit)'; msg.textContent=e.message; b.disabled=false; }
+    };
+    c.append(msg,b);
+  }else{
+    const t=el('div');
+    t.innerHTML=`<div class="tiny muted">Último commit</div>
+      <div style="margin:4px 0 14px"><span class="mono">${esc(g.ultimo.sha||'')}</span> — ${esc(g.ultimo.mensaje||'')}
+      <span class="tiny muted">${esc((g.ultimo.fecha||'').slice(0,16))}</span></div>`;
+    c.append(t);
+    if(g.limpio){
+      c.append(el('div','alert ok','El árbol está limpio: no hay cambios sin guardar.'));
+    }else{
+      const a=el('div','alert warn');
+      a.innerHTML=`<div><b>${g.cambios} archivos con cambios sin commitear.</b>
+        <div class="tiny" style="margin-top:6px">${g.archivos.map(x=>`<span class="mono">${esc(x.ruta)}</span>`).join('<br>')}</div></div>`;
+      c.append(a);
+      const bC=el('button','btn'); bC.style.marginTop='12px'; bC.textContent='Guardar un punto ahora';
+      const msg2=el('div','tiny'); msg2.style.marginTop='8px';
+      bC.onclick=async()=>{
+        bC.disabled=true;
+        const r=await api('/api/git/checkpoint',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({motivo:'manual desde el hub'})});
+        msg2.style.color='var(--good)'; msg2.textContent=`✓ Punto guardado: ${r.sha}`;
+        setTimeout(()=>panelGit(),800);
+      };
+      c.append(bC,msg2);
+    }
+    c.append(el('div','tiny muted','Desde la terminal: <span class="mono">git log</span> para ver la historia y <span class="mono">git diff HEAD~1</span> para el último cambio. El hub sólo hace commits, nunca push.'));
+  }
+  const bv=el('button','btn'); bv.textContent='Volver'; bv.style.marginTop='14px';
+  bv.onclick=()=>go('#/ajustes');
+  c.append(bv);
+  m.innerHTML=''; m.append(c);
+}
+
 const VIEWS={hub:viewHub,materia:viewMateria,materias:viewMaterias,notas:viewNotas,nota:viewNota,
   editar:viewEditar,nueva:viewNueva,calendario:viewCalendario,grafo:viewGrafo,salud:viewSalud,
-  ajustes:viewAjustes,graficos:viewGraficos,
-  repaso:viewRepaso,cobertura:viewCobertura,capturar:viewCapturar,ingerir:viewIngerir};
+  ajustes:viewAjustes,
+  repaso:viewRepaso,cobertura:viewCobertura,capturar:viewCapturar,ingerir:viewIngerir,codigo:viewCodigo};
 
 function go(hash){ location.hash=hash; }
 
@@ -2808,8 +3705,15 @@ async function route(){
   // Salir de una captura: guardar lo pendiente y devolver la barra lateral.
   if(S.capturaCleanup && name!=='capturar'){ try{S.capturaCleanup();}catch(e){} S.capturaCleanup=null; }
   if(name!=='capturar') salirFoco();
+  if(name!=='agente') S.paramsPrevios=params;
   S.view=name; S.params=params;
   buildNav();
+  if(AG.abierto) setTimeout(()=>{
+    const c=$('#pan-ctx');
+    if(c) contextoDeVista().then(t=>{ c.textContent = t ? '◈ '+primeraOracion(t) : ''; });
+    const h=$('#pan-hilo');
+    if(h && !AG.mensajes.length) panelSugerencias().then(n=>{h.innerHTML='';h.append(n);});
+  },30);
   window.scrollTo(0,0);
   try{ await VIEWS[name](); }
   catch(e){ $('#main').innerHTML=`<div class="empty">Error: ${esc(e.message)}</div>`; }
@@ -2829,11 +3733,12 @@ function buildNav(){
   n.append(item('#/calendario','▤','Calendario','calendario'));
   n.append(item('#/cobertura','▣','Cobertura','cobertura'));
   n.append(item('#/grafo','⁂','Mapa','grafo'));
-  n.append(item('#/graficos','◠','Gráficos','graficos'));
   n.append(item('#/ingerir','⇥','Importar PDF','ingerir'));
+  n.append(item('#/codigo','⌥','Código','codigo'));
   n.append(item('#/salud','✓','Salud','salud'));
   n.append(el('div','sep','Materias'));
-  (S.data?.materias||[]).forEach(m=>{
+  // Las materias archivadas no van al menú: se llegan desde Administrar.
+  (S.data?.materias||[]).filter(m=>!m.archivada).forEach(m=>{
     const a=el('a',(S.view==='materia'&&S.params.id===m.id?'on':''),
       `<span class="dotk" style="background:${matColor(m.id)}"></span>${esc(m.corto)}`);
     a.href=`#/materia?id=${encodeURIComponent(m.id)}`; n.append(a);
@@ -2995,6 +3900,7 @@ function marcarEnNota(raiz,q){
 }
 omniQ.addEventListener('input',renderOmni);
 addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='j'){e.preventDefault();togglePanel();return;}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openOmni();return;}
   // Atajos de la sesión de repaso: espacio revela, 1 a 4 califican.
   if(S.view==='repaso' && !omni.classList.contains('on') && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)){
@@ -3040,6 +3946,8 @@ async function load(silent){
     return;
   }
   addEventListener('hashchange',route);
+  $('#fab').onclick=()=>togglePanel(true);
+  if(localStorage.getItem('hub-panel')==='1') togglePanel(true);
   route();
 })();
 </script>

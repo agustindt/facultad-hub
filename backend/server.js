@@ -19,15 +19,16 @@ const url = require('url');
 // Configuración
 // ---------------------------------------------------------------------------
 
-const HUB_DIR = __dirname;
+// El server vive en <hub>/backend/. La raíz del proyecto es una arriba.
+const HUB_DIR = path.resolve(__dirname, '..');
 // Por defecto el hub vive en <vault>/00-Sistema/_hub/ → el vault está dos arriba.
 const VAULT = path.resolve(process.env.VAULT_DIR || path.join(HUB_DIR, '..', '..'));
+// En docker el frontend lo sirve nginx y esto no se usa; suelto, lo sirve el server.
+const PUBLIC_DIR = path.resolve(process.env.PUBLIC_DIR || path.join(HUB_DIR, 'frontend', 'public'));
 const PORT = Number(process.env.PORT || 4177);
-const HUB_DATA = path.join(HUB_DIR, 'datos');
-const EVENTS_FILE = path.join(HUB_DATA, 'eventos.json');
+const HUB_DATA = path.resolve(process.env.DATA_DIR || path.join(HUB_DIR, 'datos'));
 const MATERIAS_FILE = path.join(HUB_DATA, 'materias.json');
 const CONFIG_FILE = path.join(HUB_DATA, 'config.json');
-const IA_LOG = path.join(HUB_DATA, 'ia-log.json');
 const PAPELERA = path.join(VAULT, '00-Sistema', '_papelera');
 
 // Subcarpetas de una materia, según 00-Sistema/Convenciones.md.
@@ -359,6 +360,13 @@ const MATERIA_META = {
   OAE: { nombre: 'Organización y Administración de Empresas', slot: 1, corto: 'OAE', orden: 1 },
   CompuGrafica: { nombre: 'Computación Gráfica', slot: 2, corto: 'Comp. Gráfica', orden: 2 },
   Economia: { nombre: 'Economía', slot: 3, corto: 'Economía', orden: 3 },
+  'Ing-Software-III': {
+    nombre: 'Ingeniería de Software III',
+    slot: 4,
+    corto: 'Ing. SW III',
+    orden: 4,
+    sufijo: 'isw3',
+  },
   'Ing-Software-II': {
     nombre: 'Ingeniería de Software II',
     slot: 0,
@@ -489,7 +497,12 @@ async function crearMateria({ id, nombre, corto, sufijo, conProyecto }) {
   }
 
   const subs = SUBCARPETAS.filter((s) => conProyecto || s !== '03-Proyecto-Catedra');
-  for (const s of subs) await fsp.mkdir(path.join(dir, s), { recursive: true });
+  for (const s of subs) {
+    await fsp.mkdir(path.join(dir, s), { recursive: true });
+    // git no versiona carpetas vacías: sin esto, un "deshacer" del asistente se
+    // llevaría puesta la estructura de la materia.
+    await fsp.writeFile(path.join(dir, s, '.gitkeep'), '', 'utf8');
+  }
 
   const hoy = new Date().toISOString().slice(0, 10);
   const escribir = (rel, txt) => fsp.writeFile(path.join(dir, rel), txt, 'utf8');
@@ -753,18 +766,8 @@ async function derivedEvents() {
   return final.sort((a, b) => a.fecha.localeCompare(b.fecha));
 }
 
-async function readUserEvents() {
-  try {
-    return JSON.parse(await fsp.readFile(EVENTS_FILE, 'utf8'));
-  } catch {
-    return [];
-  }
-}
-
-async function writeUserEvents(list) {
-  await fsp.mkdir(HUB_DATA, { recursive: true });
-  await fsp.writeFile(EVENTS_FILE, JSON.stringify(list, null, 2), 'utf8');
-}
+const readUserEvents = () => almacen.leer('eventos', []);
+const writeUserEvents = (list) => almacen.escribir('eventos', list);
 
 async function allEvents() {
   const [auto, user] = await Promise.all([derivedEvents(), readUserEvents()]);
@@ -931,9 +934,9 @@ RESPUESTA: solo un objeto JSON válido, sin markdown alrededor, con estas claves
   "cambios": ["frase corta describiendo cada cambio importante que hiciste"]
 }`;
 
-async function ordenarNota({ rel, contenido }) {
+async function ordenarNota({ rel, contenido, motor: motorPedido }) {
   const cfg = await readConfig();
-  if (!cfg.apiKey) throw new Error('Falta configurar la clave de API en Ajustes');
+  const elegido = await motorDisponible(motorPedido);
   const modelo = cfg.modelo || 'claude-haiku-4-5';
 
   const ctx = await contextoVault(rel);
@@ -960,21 +963,41 @@ Ruta: ${rel}
 ${contenido}`;
 
   const t0 = Date.now();
-  const resp = await anthropic(cfg.apiKey, '/v1/messages', 'POST', {
-    model: modelo,
-    max_tokens: 8000,
-    system: SISTEMA_ORDENAR,
-    messages: [{ role: 'user', content: usuario }],
-  });
-
-  const texto = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
   let parsed;
-  try {
-    parsed = JSON.parse(texto);
-  } catch {
-    const m = texto.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error('El modelo no devolvió JSON reconocible');
-    parsed = JSON.parse(m[0]);
+  let usoMotor = {};
+
+  if (elegido.motor === 'cli') {
+    // Por el CLI: consume la suscripción, no se cobra por token.
+    const r = await claudeJSON({
+      instruccion: 'Ordená la nota según las reglas. El material va por la entrada estándar.',
+      cuerpo: usuario,
+      sistema: SISTEMA_ORDENAR,
+      schema: SCHEMA_ORDENAR,
+      tools: 'Read,Grep,Glob',
+    });
+    parsed = r.datos;
+    usoMotor = r.uso;
+  } else {
+    const resp = await anthropic(cfg.apiKey, '/v1/messages', 'POST', {
+      model: modelo,
+      max_tokens: 8000,
+      system: SISTEMA_ORDENAR,
+      messages: [{ role: 'user', content: usuario }],
+    });
+    const texto = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
+    try {
+      parsed = JSON.parse(texto);
+    } catch {
+      const m = texto.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('El modelo no devolvió JSON reconocible');
+      parsed = JSON.parse(m[0]);
+    }
+    usoMotor = {
+      modelo,
+      tokens_entrada: resp.usage?.input_tokens ?? null,
+      tokens_salida: resp.usage?.output_tokens ?? null,
+      costo_usd: null,
+    };
   }
   if (!parsed.nota) throw new Error('La respuesta no trae la nota ordenada');
 
@@ -991,20 +1014,15 @@ ${contenido}`;
   const uso = {
     fecha: new Date().toISOString(),
     rel,
-    modelo,
-    tokens_entrada: resp.usage?.input_tokens ?? null,
-    tokens_salida: resp.usage?.output_tokens ?? null,
+    motor: elegido.motor,
+    ...usoMotor,
     ms: Date.now() - t0,
   };
-  let log = [];
-  try {
-    log = JSON.parse(await fsp.readFile(IA_LOG, 'utf8'));
-  } catch {}
-  log.push(uso);
-  await fsp.mkdir(HUB_DATA, { recursive: true });
-  await fsp.writeFile(IA_LOG, JSON.stringify(log, null, 2), 'utf8');
+  await registrarUso(uso);
 
   return {
+    motor: elegido.motor,
+    aviso: elegido.aviso || null,
     nota: parsed.nota,
     conceptos_nuevos: Array.isArray(parsed.conceptos_nuevos) ? parsed.conceptos_nuevos : [],
     cambios: Array.isArray(parsed.cambios) ? parsed.cambios : [],
@@ -1110,24 +1128,14 @@ function raices(s) {
 // repaso, en datos/repaso.json, para no tocar el markdown.
 // ---------------------------------------------------------------------------
 
-const REPASO_FILE = path.join(HUB_DATA, 'repaso.json');
 const EASE_INI = 2.5;
 const EASE_MIN = 1.3;
 const EASE_MAX = 2.8;
 const NUEVAS_TOPE = 12;
 const NUEVAS_PISO = 3;
 
-async function readRepaso() {
-  try {
-    return JSON.parse(await fsp.readFile(REPASO_FILE, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-async function writeRepaso(st) {
-  await fsp.mkdir(HUB_DATA, { recursive: true });
-  await fsp.writeFile(REPASO_FILE, JSON.stringify(st, null, 2), 'utf8');
-}
+const readRepaso = () => almacen.leer('repaso', {});
+const writeRepaso = (st) => almacen.escribir('repaso', st);
 
 /** Deriva las tarjetas del vault. Una por nota con "## En el parcial" con contenido. */
 async function tarjetas() {
@@ -1518,9 +1526,9 @@ RESPUESTA: sólo un objeto JSON válido, sin markdown alrededor:
   "descartados": ["temas que aparecen en el PDF y decidiste no convertir en nota, con el motivo"]
 }`;
 
-async function ingerir({ materia, unidad, texto, fuente, modelo: modeloPedido }) {
+async function ingerir({ materia, unidad, texto, fuente, modelo: modeloPedido, motor: motorPedido }) {
   const cfg = await readConfig();
-  if (!cfg.apiKey) throw new Error('Falta configurar la clave de API en Ajustes');
+  const elegido = await motorDisponible(motorPedido);
   const modelo = modeloPedido || cfg.modelo || 'claude-haiku-4-5';
   const { notes, byStem } = await buildIndex();
   const carpetas = await carpetasMateria();
@@ -1561,21 +1569,41 @@ ${ajenos.join(' · ') || '(ninguno)'}
 ${material}`;
 
   const t0 = Date.now();
-  const resp = await anthropic(cfg.apiKey, '/v1/messages', 'POST', {
-    model: modelo,
-    max_tokens: 16000,
-    system: SISTEMA_INGERIR,
-    messages: [{ role: 'user', content: usuario }],
-  });
-
-  const salida = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
   let parsed;
-  try {
-    parsed = JSON.parse(salida);
-  } catch {
-    const m = salida.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error('El modelo no devolvió JSON reconocible');
-    parsed = JSON.parse(m[0]);
+  let usoMotor = {};
+
+  if (elegido.motor === 'cli') {
+    // El texto del PDF va por stdin: 120k caracteres no entran en argv.
+    const r = await claudeJSON({
+      instruccion: `Convertí en notas el material que viene por la entrada estándar. Materia: ${materia}. Unidad: ${unidad || '(deducila)'}.`,
+      cuerpo: usuario,
+      sistema: SISTEMA_INGERIR,
+      schema: SCHEMA_INGERIR,
+      tools: 'Read,Grep,Glob',
+    });
+    parsed = r.datos;
+    usoMotor = r.uso;
+  } else {
+    const resp = await anthropic(cfg.apiKey, '/v1/messages', 'POST', {
+      model: modelo,
+      max_tokens: 16000,
+      system: SISTEMA_INGERIR,
+      messages: [{ role: 'user', content: usuario }],
+    });
+    const salida = (resp.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
+    try {
+      parsed = JSON.parse(salida);
+    } catch {
+      const m = salida.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('El modelo no devolvió JSON reconocible');
+      parsed = JSON.parse(m[0]);
+    }
+    usoMotor = {
+      modelo,
+      tokens_entrada: resp.usage?.input_tokens ?? null,
+      tokens_salida: resp.usage?.output_tokens ?? null,
+      costo_usd: null,
+    };
   }
 
   const propuestas = [];
@@ -1609,20 +1637,15 @@ ${material}`;
   const uso = {
     fecha: new Date().toISOString(),
     rel: `ingesta:${fuente || materia}`,
-    modelo,
-    tokens_entrada: resp.usage?.input_tokens ?? null,
-    tokens_salida: resp.usage?.output_tokens ?? null,
+    motor: elegido.motor,
+    ...usoMotor,
     ms: Date.now() - t0,
   };
-  let log = [];
-  try {
-    log = JSON.parse(await fsp.readFile(IA_LOG, 'utf8'));
-  } catch {}
-  log.push(uso);
-  await fsp.mkdir(HUB_DATA, { recursive: true });
-  await fsp.writeFile(IA_LOG, JSON.stringify(log, null, 2), 'utf8');
+  await registrarUso(uso);
 
   return {
+    motor: elegido.motor,
+    aviso: elegido.aviso || null,
     propuestas,
     resumen: parsed.resumen || '',
     descartados: Array.isArray(parsed.descartados) ? parsed.descartados : [],
@@ -1630,6 +1653,1021 @@ ${material}`;
     caracteres: crudo.length,
     uso,
   };
+}
+
+// ---------------------------------------------------------------------------
+// GitHub
+//
+// Para las materias donde el material y la entrega viven en un repo (Ingeniería
+// de Software III), el vault solo no alcanza: la fuente de verdad es el repo de
+// la cátedra y lo que se evalúa es TU repo. Esto conecta las dos cosas.
+//
+// Sin token funciona en modo lectura sobre repos públicos (60 llamadas por hora,
+// que es el límite de GitHub para anónimos). Con token, 5000 y acceso a repos
+// privados, a la creación de repos y al calendario de contribuciones.
+// ---------------------------------------------------------------------------
+
+const GITHUB_FILE = path.join(HUB_DATA, 'github.json');
+
+async function readGithub() {
+  try {
+    const j = JSON.parse(await fsp.readFile(GITHUB_FILE, 'utf8'));
+    return { vinculos: [], visto: {}, ...j };
+  } catch {
+    return { vinculos: [], visto: {} };
+  }
+}
+async function writeGithub(g) {
+  await fsp.mkdir(HUB_DATA, { recursive: true });
+  await fsp.writeFile(GITHUB_FILE, JSON.stringify(g, null, 2), 'utf8');
+}
+
+let ULTIMO_LIMITE = null;
+
+// Se puede apuntar a otro host: GitHub Enterprise, o un mock para probar.
+const GITHUB_API = process.env.GITHUB_API_HOST || 'api.github.com';
+const GITHUB_HTTP = process.env.GITHUB_API_HOST ? require('http') : https;
+
+function ghRequest(token, { host = GITHUB_API, ruta, metodo = 'GET', cuerpo = null }) {
+  return new Promise((resolve, reject) => {
+    const payload = cuerpo ? JSON.stringify(cuerpo) : null;
+    const req = GITHUB_HTTP.request(
+      {
+        hostname: host.split(':')[0],
+        port: host.includes(':') ? Number(host.split(':')[1]) : undefined,
+        path: ruta,
+        method: metodo,
+        headers: {
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'User-Agent': 'hub-facultad',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}),
+        },
+        timeout: 30000,
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (c) => (data += c));
+        res.on('end', () => {
+          if (res.headers['x-ratelimit-remaining'] != null) {
+            ULTIMO_LIMITE = {
+              restante: Number(res.headers['x-ratelimit-remaining']),
+              total: Number(res.headers['x-ratelimit-limit']),
+              reset: Number(res.headers['x-ratelimit-reset']) * 1000,
+            };
+          }
+          if (res.statusCode === 404) return resolve({ __404: true });
+          let json;
+          try {
+            json = data ? JSON.parse(data) : {};
+          } catch {
+            return reject(new Error(`Respuesta no válida de GitHub (HTTP ${res.statusCode})`));
+          }
+          if (res.statusCode >= 400) {
+            let msg = json?.message || `HTTP ${res.statusCode}`;
+            if (res.statusCode === 403 && ULTIMO_LIMITE && ULTIMO_LIMITE.restante === 0) {
+              const min = Math.ceil((ULTIMO_LIMITE.reset - Date.now()) / 60000);
+              msg = `Se acabó el límite de GitHub (${ULTIMO_LIMITE.total} llamadas por hora). Se repone en ${min} minutos. Con un token el límite pasa a 5000.`;
+            }
+            if (res.statusCode === 401) msg = 'GitHub rechazó el token. ¿Expiró o no tiene los permisos?';
+            return reject(new Error(msg));
+          }
+          resolve(json);
+        });
+      }
+    );
+    req.on('timeout', () => req.destroy(new Error('GitHub tardó demasiado en responder')));
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
+const gh = (token, ruta, metodo, cuerpo) => ghRequest(token, { ruta, metodo, cuerpo });
+
+async function ghGraphQL(token, query, variables) {
+  const r = await ghRequest(token, { ruta: '/graphql', metodo: 'POST', cuerpo: { query, variables } });
+  if (r.errors?.length) throw new Error(r.errors[0].message);
+  return r.data;
+}
+
+async function ghToken() {
+  const cfg = await readConfig();
+  return cfg.githubToken || null;
+}
+
+/** Normaliza lo que el usuario pegue: URL completa, con .git, o ya owner/repo. */
+function normalizarRepo(s) {
+  let t = String(s || '').trim();
+  t = t.replace(/^https?:\/\/(www\.)?github\.com\//i, '').replace(/\.git$/, '').replace(/\/+$/, '');
+  const m = t.match(/^([\w.-]+)\/([\w.-]+)/);
+  return m ? `${m[1]}/${m[2]}` : null;
+}
+
+// ---------------------------------------------------------------------------
+// Novedades: qué subió la cátedra desde la última vez que miraste
+// ---------------------------------------------------------------------------
+
+async function ghNovedades() {
+  const token = await ghToken();
+  const g = await readGithub();
+  const out = [];
+  for (const v of g.vinculos) {
+    let commits;
+    try {
+      commits = await gh(token, `/repos/${v.full_name}/commits?per_page=30`);
+    } catch (err) {
+      out.push({ ...v, error: err.message });
+      continue;
+    }
+    if (commits.__404) {
+      out.push({ ...v, error: 'El repo no existe o es privado y el token no lo alcanza' });
+      continue;
+    }
+    const visto = g.visto[v.full_name]?.sha || null;
+    const nuevos = [];
+    for (const c of commits) {
+      if (c.sha === visto) break;
+      nuevos.push({
+        sha: c.sha,
+        corto: c.sha.slice(0, 7),
+        fecha: c.commit?.author?.date || null,
+        autor: c.commit?.author?.name || c.author?.login || '—',
+        mensaje: (c.commit?.message || '').split('\n')[0],
+        url: c.html_url,
+      });
+    }
+    out.push({
+      ...v,
+      ultimo: commits[0]
+        ? {
+            sha: commits[0].sha,
+            corto: commits[0].sha.slice(0, 7),
+            fecha: commits[0].commit?.author?.date,
+            mensaje: (commits[0].commit?.message || '').split('\n')[0],
+          }
+        : null,
+      // Si nunca se marcó nada como visto, no se inventan "novedades": todo el
+      // historial no es una novedad. Se muestran los últimos y listo.
+      primeraVez: !visto,
+      nuevos: visto ? nuevos : [],
+      recientes: commits.slice(0, 8).map((c) => ({
+        corto: c.sha.slice(0, 7),
+        fecha: c.commit?.author?.date,
+        autor: c.commit?.author?.name || '—',
+        mensaje: (c.commit?.message || '').split('\n')[0],
+        url: c.html_url,
+      })),
+    });
+  }
+  return { repos: out, limite: ULTIMO_LIMITE };
+}
+
+/** Archivos que tocó un commit — para saber si lo que subió te importa. */
+async function ghArchivosDeCommit(full_name, sha) {
+  const token = await ghToken();
+  const c = await gh(token, `/repos/${full_name}/commits/${sha}`);
+  if (c.__404) return [];
+  return (c.files || []).map((f) => ({ ruta: f.filename, estado: f.status, mas: f.additions, menos: f.deletions }));
+}
+
+// ---------------------------------------------------------------------------
+// Actividad: la matriz de commits
+// ---------------------------------------------------------------------------
+
+const GQL_CONTRIB = `query($login:String!, $from:DateTime!, $to:DateTime!){
+  user(login:$login){
+    contributionsCollection(from:$from, to:$to){
+      totalCommitContributions
+      contributionCalendar{
+        totalContributions
+        weeks{ contributionDays{ date weekday contributionCount } }
+      }
+    }
+  }
+}`;
+
+async function ghActividad({ dias = 371 } = {}) {
+  const token = await ghToken();
+  const hasta = new Date();
+  const desde = new Date(hasta.getTime() - dias * 86400000);
+
+  // Camino bueno: el calendario real de GitHub, vía GraphQL. Necesita token.
+  if (token) {
+    try {
+      const me = await gh(token, '/user');
+      const d = await ghGraphQL(token, GQL_CONTRIB, {
+        login: me.login,
+        from: desde.toISOString(),
+        to: hasta.toISOString(),
+      });
+      const cal = d.user.contributionsCollection.contributionCalendar;
+      const dias_ = [];
+      for (const w of cal.weeks) for (const dd of w.contributionDays) dias_.push({ fecha: dd.date, n: dd.contributionCount });
+      return {
+        origen: 'contribuciones',
+        usuario: me.login,
+        total: cal.totalContributions,
+        dias: dias_,
+      };
+    } catch (err) {
+      // Si el token no tiene el scope de lectura de usuario, se cae al plan B.
+      if (!/scope|permission|token/i.test(err.message)) throw err;
+    }
+  }
+
+  // Plan B, sin token: se arma con los commits de los repos vinculados. NO es
+  // el calendario de contribuciones de GitHub y se declara como tal.
+  const g = await readGithub();
+  const conteo = new Map();
+  let total = 0;
+  for (const v of g.vinculos) {
+    try {
+      const cs = await gh(token, `/repos/${v.full_name}/commits?per_page=100&since=${desde.toISOString()}`);
+      if (cs.__404 || !Array.isArray(cs)) continue;
+      for (const c of cs) {
+        const f = (c.commit?.author?.date || '').slice(0, 10);
+        if (!f) continue;
+        conteo.set(f, (conteo.get(f) || 0) + 1);
+        total++;
+      }
+    } catch {}
+  }
+  const dias_ = [];
+  for (let d = new Date(desde); d <= hasta; d.setDate(d.getDate() + 1)) {
+    const f = ymd(d);
+    dias_.push({ fecha: f, n: conteo.get(f) || 0 });
+  }
+  return { origen: 'repos-vinculados', usuario: null, total, dias: dias_, repos: g.vinculos.map((v) => v.full_name) };
+}
+
+// ---------------------------------------------------------------------------
+// Entregables: el checklist contra lo que la cátedra pide
+//
+// Ingeniería de Software III no toma parciales escritos: se evalúa el repo y su
+// defensa. Estas son las condiciones que se pueden verificar solas.
+// ---------------------------------------------------------------------------
+
+const ENTREGABLES = [
+  { id: 'readme', txt: 'README.md en la raíz', tipo: 'archivo', ruta: 'README.md',
+    por: 'El TP2 pide los pasos exactos para levantar el sistema en una máquina limpia.' },
+  { id: 'decisiones', txt: 'decisiones.md en la raíz', tipo: 'archivo', ruta: 'decisiones.md',
+    por: 'Entregable de TODOS los TPs. Vale 25 % junto con evidencias.md, y adentro va la declaración de uso de IA.' },
+  { id: 'evidencias', txt: 'evidencias.md en la raíz', tipo: 'archivo', ruta: 'evidencias.md',
+    por: 'Entregable de todos los TPs: las capturas marcadas 📸.' },
+  { id: 'gitignore', txt: '.gitignore', tipo: 'archivo', ruta: '.gitignore',
+    por: 'TP1 lo pide completo.' },
+  { id: 'envexample', txt: '.env.example commiteado', tipo: 'archivo', ruta: '.env.example',
+    por: 'TP2: los secretos van por .env NO commiteado, con .env.example sí commiteado.' },
+  { id: 'envfuera', txt: '.env NO commiteado', tipo: 'ausente', ruta: '.env',
+    por: 'TP2, y es pregunta de defensa: "¿por qué el .env no está en el repo?".' },
+  { id: 'compose', txt: 'docker-compose.yml', tipo: 'archivo', ruta: 'docker-compose.yml',
+    por: 'TP2: levanta front + back + BD con docker compose up -d.' },
+  { id: 'tag', txt: 'Al menos un tag semver', tipo: 'tag',
+    por: 'TP1 pide v1.0.0 sobre main; TP2, v0.1.0 en el registry.' },
+  { id: 'release', txt: 'Release publicada', tipo: 'release',
+    por: 'TP1: la release con sus notas de qué incluye.' },
+  { id: 'pr', txt: 'Al menos un Pull Request cerrado', tipo: 'pr',
+    por: 'decisiones.md y evidencias.md entran POR PR, no directo a main.' },
+  { id: 'proteccion', txt: 'main protegido', tipo: 'proteccion',
+    por: 'TP1: pregunta de defensa sobre el push directo rechazado. Requiere token con permiso de admin.' },
+];
+
+async function ghEntregables(full_name) {
+  const token = await ghToken();
+  const repo = await gh(token, `/repos/${full_name}`);
+  if (repo.__404) throw new Error('No encuentro ese repo (o es privado y el token no llega)');
+
+  const [raiz, tags, releases, prs] = await Promise.all([
+    gh(token, `/repos/${full_name}/contents/`).catch(() => []),
+    gh(token, `/repos/${full_name}/tags?per_page=20`).catch(() => []),
+    gh(token, `/repos/${full_name}/releases?per_page=10`).catch(() => []),
+    gh(token, `/repos/${full_name}/pulls?state=closed&per_page=20`).catch(() => []),
+  ]);
+  const archivos = new Set(Array.isArray(raiz) ? raiz.map((f) => f.name) : []);
+
+  let proteccion = null;
+  if (token) {
+    try {
+      const p = await gh(token, `/repos/${full_name}/branches/${repo.default_branch}/protection`);
+      proteccion = p.__404 ? false : true;
+    } catch {
+      proteccion = null; // sin permiso para saberlo
+    }
+  }
+
+  const filas = ENTREGABLES.map((e) => {
+    let ok = null;
+    let detalle = '';
+    if (e.tipo === 'archivo') { ok = archivos.has(e.ruta); }
+    else if (e.tipo === 'ausente') { ok = !archivos.has(e.ruta); if (!ok) detalle = '⚠️ está commiteado'; }
+    else if (e.tipo === 'tag') {
+      const semver = (Array.isArray(tags) ? tags : []).filter((t) => /^v?\d+\.\d+\.\d+$/.test(t.name));
+      ok = semver.length > 0;
+      detalle = semver.map((t) => t.name).slice(0, 4).join(' · ');
+    } else if (e.tipo === 'release') {
+      ok = Array.isArray(releases) && releases.length > 0;
+      detalle = ok ? releases.map((r) => r.tag_name).slice(0, 3).join(' · ') : '';
+    } else if (e.tipo === 'pr') {
+      const merged = (Array.isArray(prs) ? prs : []).filter((p) => p.merged_at);
+      ok = merged.length > 0;
+      detalle = merged.length ? `${merged.length} mergeados` : '';
+    } else if (e.tipo === 'proteccion') {
+      ok = proteccion;
+      if (proteccion === null) detalle = 'no lo puedo verificar sin token con permiso de admin';
+    }
+    return { ...e, ok, detalle };
+  });
+
+  return {
+    repo: {
+      full_name: repo.full_name,
+      privado: repo.private,
+      url: repo.html_url,
+      rama: repo.default_branch,
+      descripcion: repo.description,
+      push: repo.pushed_at,
+    },
+    filas,
+    listos: filas.filter((f) => f.ok === true).length,
+    total: filas.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Crear repo, con el andamiaje que pide la cátedra
+// ---------------------------------------------------------------------------
+
+const SCAFFOLD = {
+  'README.md': (n) => `# ${n}
+
+Trabajo práctico de Ingeniería de Software III — UCC 2026.
+
+## Cómo levantarlo en una máquina limpia
+
+\`\`\`bash
+git clone <url-de-este-repo>
+cd ${n}
+cp .env.example .env      # completar los valores
+docker compose up -d
+\`\`\`
+
+## Qué hay acá
+
+| Archivo | Qué es |
+|---|---|
+| \`decisiones.md\` | Por qué se hizo cada cosa, y la declaración de uso de IA |
+| \`evidencias.md\` | Las capturas 📸 que pide cada TP |
+`,
+  'decisiones.md': () => `# Decisiones
+
+> Se escribe hacia abajo: cada TP agrega su sección, no se reemplaza.
+> El historial del semestre es uno solo.
+
+## TP1 — Git colaborativo
+
+### Qué decidí y por qué
+
+<!-- Por qué Git no pudo resolver el conflicto solo. -->
+
+### Problemas que encontré y cómo los resolví
+
+<!-- Las cicatrices bien explicadas valen más que un repo perfecto sin explicación. -->
+
+### Declaración de uso de IA
+
+<!-- Qué usaste, para qué, y cómo verificaste lo que te devolvió. -->
+`,
+  'evidencias.md': () => `# Evidencias
+
+> Una captura por ítem, con el 📸 y una línea de qué se está mirando.
+
+## TP1 — Git colaborativo
+
+- [ ] 📸 Push directo a \`main\` rechazado
+- [ ] 📸 Aviso de conflicto en el Pull Request
+- [ ] 📸 Marcadores del conflicto en el archivo
+- [ ] 📸 Release publicada
+`,
+  '.gitignore': () => `# Entorno
+.env
+*.local
+
+# Dependencias
+node_modules/
+__pycache__/
+venv/
+.venv/
+
+# Build
+dist/
+build/
+target/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+`,
+  '.env.example': () => `# Copiá este archivo a .env y completá los valores.
+# El .env NO se commitea nunca.
+
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=app
+DB_USER=app
+DB_PASSWORD=cambiar
+`,
+};
+
+async function ghCrearRepo({ nombre, descripcion, privado = true, scaffold = true, materia }) {
+  const token = await ghToken();
+  if (!token) throw new Error('Para crear un repo hace falta un token de GitHub con permiso sobre repositorios');
+  if (!/^[\w.-]{1,90}$/.test(String(nombre || ''))) throw new Error('Nombre de repo inválido');
+
+  const repo = await gh(token, '/user/repos', 'POST', {
+    name: nombre,
+    description: descripcion || '',
+    private: !!privado,
+    auto_init: true,
+  });
+
+  const creados = [];
+  if (scaffold) {
+    for (const [ruta, gen] of Object.entries(SCAFFOLD)) {
+      try {
+        await gh(token, `/repos/${repo.full_name}/contents/${ruta}`, 'PUT', {
+          message: `Andamiaje: ${ruta}`,
+          content: Buffer.from(gen(nombre), 'utf8').toString('base64'),
+        });
+        creados.push(ruta);
+      } catch (err) {
+        creados.push(`${ruta} (falló: ${err.message})`);
+      }
+    }
+  }
+
+  if (materia) {
+    const g = await readGithub();
+    if (!g.vinculos.some((v) => v.full_name === repo.full_name))
+      g.vinculos.push({ materia, full_name: repo.full_name, rol: 'propio' });
+    await writeGithub(g);
+  }
+
+  return { repo: { full_name: repo.full_name, url: repo.html_url, privado: repo.private }, creados };
+}
+
+// ---------------------------------------------------------------------------
+// La declaración de uso de IA, generada desde el registro real del hub
+// ---------------------------------------------------------------------------
+
+async function declaracionIA({ desde, hasta } = {}) {
+  const log = await almacen.leer('ia-log', []);
+  const filtrado = log.filter((l) => (!desde || l.fecha >= desde) && (!hasta || l.fecha <= hasta));
+  if (!filtrado.length)
+    return {
+      markdown: '### Declaración de uso de IA\n\nNo usé asistentes de IA para este trabajo.\n',
+      llamadas: 0,
+    };
+
+  const porModelo = new Map();
+  let tokIn = 0, tokOut = 0;
+  const notas = new Set();
+  for (const l of filtrado) {
+    porModelo.set(l.modelo, (porModelo.get(l.modelo) || 0) + 1);
+    tokIn += l.tokens_entrada || 0;
+    tokOut += l.tokens_salida || 0;
+    if (l.rel) notas.add(l.rel);
+  }
+  const f = (s) => String(s).slice(0, 10);
+  const md = `### Declaración de uso de IA
+
+Usé un asistente de IA (Claude, vía la API de Anthropic) integrado en una herramienta propia
+que escribe sobre mis apuntes. El registro que sigue no es una estimación: sale del log que
+la herramienta escribe en cada llamada.
+
+| | |
+|---|---|
+| Llamadas | ${filtrado.length} |
+| Período | ${f(filtrado[0].fecha)} a ${f(filtrado[filtrado.length - 1].fecha)} |
+| Modelos | ${[...porModelo.entries()].map(([m, n]) => `${m} (${n})`).join(' · ')} |
+| Tokens | ${tokIn.toLocaleString('es-AR')} de entrada · ${tokOut.toLocaleString('es-AR')} de salida |
+| Archivos tocados | ${notas.size} |
+
+**Para qué lo usé:** ordenar apuntes escritos a mano alzada en clase según una convención de
+formato, y proponer borradores de notas a partir de material de cátedra.
+
+**Cómo verifiqué la salida:** la herramienta no aplica nada sola. Muestra un diff línea por
+línea contra el texto original y hay que aceptarlo explícitamente. Además valida del lado del
+servidor que todo enlace propuesto apunte a un archivo que existe de verdad, y marca en rojo
+los que no — o sea que no confío en que el modelo no invente referencias: lo chequeo.
+
+**Qué NO le delegué:** <!-- completar: las decisiones técnicas, el diseño de la solución, etc. -->
+`;
+  return { markdown: md, llamadas: filtrado.length, tokens: { entrada: tokIn, salida: tokOut } };
+}
+
+// ---------------------------------------------------------------------------
+// Asistente
+//
+// Corre el CLI de Claude Code como proceso hijo, parado en el vault. La ventaja
+// no es ahorrarse la API: es que el agente ABRE los archivos por su cuenta, así
+// que no hay que adivinar qué contexto meterle. El vault ya tiene un CLAUDE.md
+// por materia y Convenciones.md — eso se carga solo.
+//
+// Dos decisiones que importan:
+//
+// 1. NO se le dan herramientas de escritura. Ninguna. Para cambiar un archivo
+//    tiene que emitir un bloque ```hub:escribir <ruta> y el hub lo muestra como
+//    diff. Las escrituras las hace el hub, nunca el agente. En modo -p el CLI no
+//    tiene forma de pedir permiso interactivo, así que ésta es la única manera
+//    honesta de tener "confirmación".
+//
+// 2. Se BORRA ANTHROPIC_API_KEY del entorno del hijo. Si está seteada, Claude
+//    Code la usa y factura la API en vez de consumir la suscripción. El hub
+//    guarda una clave para otras funciones: no debe filtrarse acá.
+// ---------------------------------------------------------------------------
+
+const { spawn } = require('child_process');
+const { crearAlmacen } = require('./db/almacen');
+
+// Estado propio del hub: repaso, eventos y registro de IA. Va a Postgres si hay
+// DATABASE_URL, a archivos si no. Las notas NUNCA pasan por acá: son .md.
+const almacen = crearAlmacen(HUB_DATA);
+
+const AGENTE_TOOLS = 'Read,Glob,Grep';
+// Modo directo: escribe solo. Se habilita únicamente con git de por medio, así
+// que cada turno tiene un punto de restauración y un botón de deshacer.
+const AGENTE_TOOLS_ESCRITURA = 'Read,Glob,Grep,Write,Edit,MultiEdit,NotebookEdit';
+const AGENTE_TIMEOUT = 10 * 60 * 1000;
+
+let CLI_CACHE = null;
+
+/** ¿Está el CLI instalado? Se cachea: no tiene sentido preguntarlo por turno. */
+function cliDisponible(force = false) {
+  if (CLI_CACHE && !force) return Promise.resolve(CLI_CACHE);
+  return new Promise((resolve) => {
+    let salida = '';
+    let listo = false;
+    // El timeout NO puede pisar el caché después de que el proceso ya respondió:
+    // si lo hace, ocho segundos más tarde el CLI "deja de existir" solo.
+    const terminar = (r) => {
+      if (listo) return;
+      listo = true;
+      clearTimeout(reloj);
+      CLI_CACHE = r;
+      resolve(r);
+    };
+    const p = spawn('claude', ['--version'], { env: entornoLimpio() });
+    p.stdout.on('data', (c) => (salida += c));
+    p.on('error', () => terminar({ ok: false, error: 'no encontré el comando `claude` en el PATH' }));
+    p.on('close', (code) => {
+      if (code !== 0) return terminar({ ok: false, error: `\`claude --version\` salió con código ${code}` });
+      terminar({ ok: true, version: salida.trim() });
+    });
+    const reloj = setTimeout(() => { p.kill(); terminar({ ok: false, error: 'el CLI no respondió' }); }, 8000);
+  });
+}
+
+/**
+ * El entorno del proceso hijo, sin la clave de API.
+ * Con ANTHROPIC_API_KEY presente, Claude Code cobra la API en vez de usar la
+ * suscripción. Es el error más caro que puede tener esta integración.
+ */
+function entornoLimpio() {
+  const env = { ...process.env };
+  delete env.ANTHROPIC_API_KEY;
+  delete env.ANTHROPIC_AUTH_TOKEN;
+  delete env.ANTHROPIC_BASE_URL;
+  return env;
+}
+
+const SISTEMA_AGENTE = `Sos el asistente de estudio de Agustín, integrado en un hub web que vive sobre su vault de Obsidian. Estás parado en la raíz del vault y podés leer cualquier archivo.
+
+## Cómo hablás
+
+Español rioplatense, voseo. Directo, sin relleno, sin "es importante destacar". Si no sabés algo, leelo antes de contestar: tenés las herramientas.
+
+## Las reglas del vault
+
+Están en 00-Sistema/Convenciones.md y cada materia tiene su CLAUDE.md. Leelos cuando vayas a escribir o proponer algo. Lo esencial: wikilinks siempre (nunca rutas), sin stems duplicados entre materias, Mermaid nunca ASCII art, fórmulas en LaTeX, notas de concepto atómicas con bloque ## Conexiones de 3 a 6 enlaces y bloque ## En el parcial.
+
+El bloque "## En el parcial" no es decorativo: el hub lo convierte en tarjeta de repaso espaciado. Escribí ahí una consigna concreta y accionable, no una generalidad.
+
+## DÓNDE PODÉS TOCAR, EN CUALQUIER MODO
+
+Sólo archivos .md dentro del vault. Nunca:
+
+- \`00-Sistema/_hub/\` — es el código de la app, no una nota
+- \`**/99-Material-Catedra/\` — son los PDFs originales de la cátedra
+- \`.git/\`, \`.obsidian/\`, ni nada fuera de la raíz del vault
+
+Antes de crear una nota, verificá que el stem no exista ya en OTRA materia: es la regla que más fácil se rompe y la que rompe el grafo.
+
+## MODO PROPUESTA
+
+No tenés herramientas de escritura, y es a propósito. Cuando quieras crear o modificar un archivo, emitilo así, con el contenido COMPLETO del archivo resultante:
+
+\`\`\`hub:escribir Economia/04-Conceptos/Nombre del Concepto.md
+---
+tipo: concepto
+materia: Economia
+---
+
+# Nombre del Concepto
+
+...el archivo entero, no un fragmento...
+\`\`\`
+
+El hub se lo muestra a Agustín como diff línea por línea y él decide si se aplica. Vos proponés, él acepta. Podés emitir varios bloques en una misma respuesta.
+
+Reglas de esos bloques: la ruta va relativa a la raíz del vault y siempre termina en .md; el contenido es el archivo COMPLETO, porque reemplaza al anterior; nunca los uses para archivos fuera del vault ni dentro de 00-Sistema/_hub/.
+
+## No inventes
+
+Si algo no está en los archivos que leíste, no lo afirmes. Un hueco declarado vale más que un dato inventado — es la regla con la que está construido todo este vault.`;
+
+/** Foto compacta del estado del hub, para que no tenga que ir a buscarlo. */
+async function contextoHub() {
+  const partes = [];
+  try {
+    const r = await repasoEstado();
+    const p = r.plan.map((x) => `${x.materia}: ${x.total} tarjetas, ${x.sinVer} sin ver${x.dias != null ? `, parcial en ${x.dias} días` : ''}`);
+    partes.push(`Repaso hoy: ${r.resumen.pendientes} pendientes de ${r.resumen.totalTarjetas}. ${p.join(' · ')}`);
+  } catch {}
+  try {
+    const h = await health();
+    partes.push(`Salud: ${(h.rotos || []).length} wikilinks rotos, ${(h.duplicados || []).length} stems duplicados, ${(h.huerfanos || []).length} conceptos huérfanos.`);
+  } catch {}
+  try {
+    const evs = await allEvents();
+    const hoy = hoyISO();
+    const prox = evs.filter((e) => e.fecha >= hoy).slice(0, 5)
+      .map((e) => `${e.fecha} ${e.titulo} (${e.materia || '—'})`);
+    if (prox.length) partes.push(`Próximos hitos: ${prox.join(' · ')}`);
+  } catch {}
+  try {
+    const cob = await cobertura(null);
+    const c = cob.filter((x) => !x.sinPrograma)
+      .map((x) => `${x.materia}: ${x.nota}/${x.total} temas con nota, ${x.falta} sin cubrir`);
+    if (c.length) partes.push(`Cobertura del programa: ${c.join(' · ')}`);
+  } catch {}
+  if (!partes.length) return '';
+  return `\n\n## Estado del hub ahora mismo\n\n${partes.map((p) => '- ' + p).join('\n')}\n\nEs una foto del momento: si necesitás el detalle, leé los archivos.`;
+}
+
+/**
+ * Lanza un turno y devuelve el proceso. Los eventos de stream-json salen por
+ * stdout, una línea por evento; el router los reenvía tal cual al navegador.
+ */
+const SISTEMA_DIRECTO = `
+
+## MODO DIRECTO — tenés Write y Edit
+
+En este turno SÍ podés escribir archivos, sin pedir permiso. El vault está bajo git y el hub hizo un punto de restauración antes de largarte, así que un error es reversible con un botón. Eso no es excusa para ser descuidado: es la razón por la que podés trabajar sin interrumpir.
+
+Cómo trabajar bien acá:
+
+1. **Leé antes de escribir.** Nunca reemplaces un archivo que no abriste. Si vas a tocar una nota, leela entera primero.
+2. **Preferí Edit sobre Write** en archivos que ya existen. Write pisa todo; Edit cambia lo que hay que cambiar y deja el resto intacto.
+3. **Verificá al final.** Después de escribir, releé lo que escribiste. Si creaste wikilinks, comprobá con Glob o Grep que las notas destino existan de verdad.
+4. **Contá lo que hiciste.** Terminá el turno con un resumen corto: qué archivos tocaste y por qué. Es lo que Agustín va a leer para decidir si lo deja o lo revierte.
+5. **Si algo es ambiguo, preguntá en vez de adivinar.** Tener permiso de escritura no es una orden de escribir.
+
+No uses los bloques \`hub:escribir\` en este modo: escribí directamente.`;
+
+async function agenteTurno({ prompt, sesion, contexto, modelo, modo }) {
+  const disp = await cliDisponible();
+  if (!disp.ok) throw new Error(`No puedo usar el asistente: ${disp.error}`);
+
+  const directo = modo === 'directo';
+  const sistema = SISTEMA_AGENTE + (directo ? SISTEMA_DIRECTO : '') + (await contextoHub()) +
+    (contexto ? `\n\n## Dónde está parado Agustín\n\n${contexto}` : '');
+
+  const args = [
+    '-p', prompt,
+    '--output-format', 'stream-json',
+    '--verbose',
+    '--include-partial-messages',
+    '--allowedTools', directo ? AGENTE_TOOLS_ESCRITURA : AGENTE_TOOLS,
+    '--append-system-prompt', sistema,
+  ];
+  if (directo) args.push('--permission-mode', 'acceptEdits');
+  if (modelo) args.push('--model', modelo);
+  if (sesion) args.push('--resume', sesion);
+
+  // Sin --bare: hace falta para que use la suscripción y para que cargue los
+  // CLAUDE.md del vault, que es de donde sale la mitad del contexto útil.
+  return spawn('claude', args, { cwd: VAULT, env: entornoLimpio() });
+}
+
+/** Saca los bloques ```hub:escribir del texto final. */
+function extraerPropuestas(texto) {
+  const out = [];
+  const re = /```hub:escribir\s+([^\n]+)\n([\s\S]*?)```/g;
+  let m;
+  while ((m = re.exec(texto)) !== null) {
+    const rel = m[1].trim();
+    if (!rel.endsWith('.md')) continue;
+    if (rel.includes('..') || rel.startsWith('/') || rel.startsWith('00-Sistema/_hub/')) continue;
+    out.push({ rel, contenido: m[2].replace(/\n$/, '') });
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Git sobre el vault
+//
+// Es la red que hace posible dejar que el asistente escriba solo. Antes de cada
+// turno en modo directo se hace un checkpoint; si el resultado no gusta, se
+// vuelve con un botón. Sin esto, "que edite por mí" sobre 200 notas sin control
+// de versiones es una mala idea.
+// ---------------------------------------------------------------------------
+
+function git(args, { timeout = 30000 } = {}) {
+  return new Promise((resolve) => {
+    let out = '';
+    let err = '';
+    const p = spawn('git', args, { cwd: VAULT, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
+    p.stdout.on('data', (c) => (out += c));
+    p.stderr.on('data', (c) => (err += c));
+    p.on('error', (e) => resolve({ ok: false, code: -1, out: '', err: e.message }));
+    // `raw` sin trim: el porcelain de git arranca con un espacio significativo.
+    p.on('close', (code) => resolve({ ok: code === 0, code, out: out.trim(), raw: out, err: err.trim() }));
+    setTimeout(() => p.kill(), timeout);
+  });
+}
+
+const GIT_ID = ['-c', 'user.email=hub@local', '-c', 'user.name=Hub Facultad'];
+
+async function gitEstado() {
+  const rev = await git(['rev-parse', '--is-inside-work-tree']);
+  if (!rev.ok) return { repo: false, motivo: rev.err || 'no es un repositorio git' };
+  const [head, sucio, ultimo] = await Promise.all([
+    git(['rev-parse', '--short', 'HEAD']),
+    git(['status', '--porcelain']),
+    git(['log', '-1', '--format=%h|%ad|%s', '--date=iso']),
+  ]);
+  const [sha, fecha, msg] = (ultimo.out || '||').split('|');
+  // Se usa `raw` y no `out`: el porcelain de git arranca con un espacio
+  // significativo (" M archivo") que un trim() se comería, y la ruta saldría
+  // cortada un carácter.
+  const cambios = (sucio.raw || '').split('\n').filter((l) => l.length > 3);
+  return {
+    repo: true,
+    head: head.out,
+    limpio: cambios.length === 0,
+    cambios: cambios.length,
+    archivos: cambios.slice(0, 40).map((l) => ({ estado: l.slice(0, 2).trim(), ruta: desquotear(l.slice(3)) })),
+    ultimo: { sha, fecha, mensaje: msg },
+  };
+}
+
+/** Inicializa el repo. Lo corre el hub en la máquina del usuario, no a mano. */
+async function gitInicializar() {
+  const rev = await git(['rev-parse', '--is-inside-work-tree']);
+  if (rev.ok) return { ya: true, ...(await gitEstado()) };
+
+  const gi = path.join(VAULT, '.gitignore');
+  if (!fs.existsSync(gi)) {
+    await fsp.writeFile(gi, `# El hub entero. Tiene su propio repo: versionarlo también acá significa
+# que un "deshacer" sobre el vault te revierte el código de la app.
+00-Sistema/_hub/
+
+# Material de cátedra: pesado y no es propio.
+**/99-Material-Catedra/
+
+# Papelera y paquetes de transferencia.
+00-Sistema/_papelera/
+*.tgz
+*.zip
+
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.trash/
+
+# Sistema
+.DS_Store
+node_modules/
+*.log
+`, 'utf8');
+  }
+  await sembrarGitkeep();
+  const init = await git(['init', '-b', 'main']);
+  if (!init.ok) return { error: init.err || 'no pude inicializar el repo' };
+  await git(['add', '-A']);
+  const c = await git([...GIT_ID, 'commit', '-m', 'Vault de Facultad — estado inicial']);
+  if (!c.ok && !/nothing to commit/i.test(c.out + c.err)) return { error: c.err || c.out };
+  return { creado: true, ...(await gitEstado()) };
+}
+
+/**
+ * Pone un .gitkeep en cada subcarpeta de materia vacía. git no versiona carpetas
+ * vacías, así que sin esto el botón de deshacer (que corre `git clean -fd`) se
+ * llevaría puesta la estructura del vault.
+ */
+async function sembrarGitkeep() {
+  let puestos = 0;
+  const carpetas = await carpetasMateria();
+  for (const m of carpetas) {
+    for (const sub of SUBCARPETAS) {
+      const d = path.join(VAULT, m, sub);
+      if (!fs.existsSync(d)) continue;
+      try {
+        const hay = await fsp.readdir(d);
+        if (hay.filter((x) => !x.startsWith('.')).length) continue;
+        await fsp.writeFile(path.join(d, '.gitkeep'), '', 'utf8');
+        puestos++;
+      } catch {}
+    }
+  }
+  return puestos;
+}
+
+/**
+ * Deja el árbol limpio antes de una operación que va a escribir sola.
+ * Devuelve el sha al que se puede volver.
+ */
+async function gitCheckpoint(motivo) {
+  const st = await gitEstado();
+  if (!st.repo) return { repo: false };
+  if (st.limpio) return { repo: true, sha: st.head, nuevo: false };
+  await git(['add', '-A']);
+  const c = await git([...GIT_ID, 'commit', '-m', `checkpoint: ${motivo || 'antes del asistente'}`]);
+  if (!c.ok && !/nothing to commit/i.test(c.out + c.err)) return { repo: true, error: c.err || c.out };
+  const head = await git(['rev-parse', '--short', 'HEAD']);
+  return { repo: true, sha: head.out, nuevo: true };
+}
+
+/**
+ * git cita las rutas con espacios o acentos: "Economia/Bien Giffen.md". Sin
+ * desarmar eso, la ruta que llega al navegador no abre ningún archivo.
+ */
+function desquotear(r) {
+  if (!r.startsWith('"')) return r;
+  try { return JSON.parse(r); } catch { return r.slice(1, -1); }
+}
+
+/** Qué cambió desde un sha, en archivos y líneas. */
+async function gitCambiosDesde(sha) {
+  if (!sha) return { archivos: [] };
+  const [stat, nombres] = await Promise.all([
+    git(['diff', '--numstat', sha, '--']),
+    git(['status', '--porcelain']),
+  ]);
+  const archivos = [];
+  for (const l of (stat.out || '').split('\n').filter(Boolean)) {
+    const [mas, menos, ruta] = l.split('\t');
+    archivos.push({ ruta: desquotear(ruta), mas: Number(mas) || 0, menos: Number(menos) || 0, estado: 'modificado' });
+  }
+  // Lo que todavía no está commiteado (el asistente acaba de escribirlo).
+  for (const l of (nombres.raw || '').split('\n').filter((x) => x.length > 3)) {
+    const ruta = desquotear(l.slice(3));
+    if (archivos.some((a) => a.ruta === ruta)) continue;
+    archivos.push({ ruta, mas: 0, menos: 0, estado: l.slice(0, 2).trim() === '??' ? 'nuevo' : 'modificado' });
+  }
+  return { archivos };
+}
+
+/** Vuelve el árbol al sha, tirando todo lo posterior. Es el botón de deshacer. */
+async function gitRevertir(sha) {
+  if (!/^[0-9a-f]{4,40}$/i.test(String(sha || ''))) throw new Error('sha inválido');
+  const existe = await git(['cat-file', '-e', `${sha}^{commit}`]);
+  if (!existe.ok) throw new Error('no encuentro ese punto de restauración');
+  const r = await git(['reset', '--hard', sha]);
+  if (!r.ok) throw new Error(r.err || 'no pude revertir');
+  const limpiar = await git(['clean', '-fd']);
+  await buildIndex(true);
+  return { ok: true, sha, salida: (r.out + '\n' + limpiar.out).trim() };
+}
+
+/** Diff de un archivo contra un punto, para mostrarlo en el navegador. */
+async function gitDiffArchivo(sha, ruta) {
+  const antes = await git(['show', `${sha}:${ruta}`]);
+  let ahora = '';
+  try {
+    ahora = await fsp.readFile(safeVaultPath(ruta), 'utf8');
+  } catch {}
+  return { antes: antes.ok ? antes.out : '', ahora, existiaAntes: antes.ok };
+}
+
+// ---------------------------------------------------------------------------
+// Motor: CLI o API
+//
+// Las funciones que generan (ordenar una nota, ingerir un PDF) pueden correr por
+// el CLI de Claude Code —que consume la suscripción— o por la API con clave, que
+// se cobra por token. Se prefiere el CLI cuando está; la clave queda de respaldo.
+// ---------------------------------------------------------------------------
+
+/**
+ * Un turno de una sola vuelta con salida estructurada, por el CLI.
+ * El grueso del texto va por stdin, no por argumento: un PDF de 120k caracteres
+ * no entra en la línea de comandos de ningún sistema.
+ */
+function claudeJSON({ instruccion, cuerpo, sistema, schema, modelo, tools = 'Read,Grep,Glob' }) {
+  return new Promise((resolve, reject) => {
+    const args = [
+      '-p', instruccion,
+      '--output-format', 'json',
+      '--allowedTools', tools,
+      '--append-system-prompt', sistema,
+    ];
+    if (schema) args.push('--json-schema', JSON.stringify(schema));
+    if (modelo) args.push('--model', modelo);
+
+    const p = spawn('claude', args, { cwd: VAULT, env: entornoLimpio() });
+    let out = '';
+    let err = '';
+    const cortar = setTimeout(() => p.kill('SIGTERM'), 8 * 60 * 1000);
+    p.stdout.on('data', (c) => (out += c));
+    p.stderr.on('data', (c) => (err += c));
+    p.on('error', (e) => { clearTimeout(cortar); reject(new Error(`No pude ejecutar el CLI: ${e.message}`)); });
+    p.on('close', (code) => {
+      clearTimeout(cortar);
+      if (code !== 0) return reject(new Error(err.trim().slice(0, 400) || `el CLI salió con código ${code}`));
+      let j;
+      try {
+        j = JSON.parse(out);
+      } catch {
+        return reject(new Error('El CLI no devolvió JSON reconocible'));
+      }
+      if (j.is_error) return reject(new Error(String(j.result || 'el CLI reportó un error').slice(0, 400)));
+      let datos = j.structured_output;
+      if (!datos && typeof j.result === 'string') {
+        const m = j.result.match(/\{[\s\S]*\}/);
+        if (m) { try { datos = JSON.parse(m[0]); } catch {} }
+      }
+      if (!datos) return reject(new Error('El CLI no devolvió la estructura esperada'));
+      resolve({
+        datos,
+        uso: {
+          modelo: j.modelUsage ? Object.keys(j.modelUsage)[0] : (modelo || 'cli'),
+          tokens_entrada: j.usage?.input_tokens ?? null,
+          tokens_salida: j.usage?.output_tokens ?? null,
+          costo_usd: j.total_cost_usd ?? null,
+          ms: j.duration_ms ?? null,
+        },
+      });
+    });
+    if (cuerpo) { p.stdin.write(cuerpo); }
+    p.stdin.end();
+  });
+}
+
+/** Qué motor conviene usar, y por qué. */
+async function motorDisponible(preferido) {
+  const cli = await cliDisponible();
+  const cfg = await readConfig();
+  const hayClave = !!cfg.apiKey;
+  if (preferido === 'api' && hayClave) return { motor: 'api' };
+  if (preferido === 'cli' && !cli.ok) throw new Error(`No puedo usar el CLI: ${cli.error}`);
+  if (cli.ok) return { motor: 'cli', version: cli.version };
+  if (hayClave) return { motor: 'api', aviso: 'El CLI no está instalado: se usa la clave de API, que SÍ se cobra por token.' };
+  throw new Error('No hay motor disponible: instalá el CLI de Claude Code, o cargá una clave de API en Ajustes.');
+}
+
+const SCHEMA_ORDENAR = {
+  type: 'object',
+  properties: {
+    nota: { type: 'string', description: 'el markdown completo de la nota, frontmatter incluido' },
+    conceptos_nuevos: { type: 'array', items: { type: 'string' } },
+    cambios: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['nota', 'conceptos_nuevos', 'cambios'],
+};
+
+const SCHEMA_INGERIR = {
+  type: 'object',
+  properties: {
+    unidad: {
+      type: 'object',
+      properties: { stem: { type: 'string' }, contenido: { type: 'string' } },
+      required: ['stem', 'contenido'],
+    },
+    conceptos: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { stem: { type: 'string' }, contenido: { type: 'string' } },
+        required: ['stem', 'contenido'],
+      },
+    },
+    resumen: { type: 'string' },
+    descartados: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['conceptos', 'resumen'],
+};
+
+/** Anota la llamada en el registro, venga del motor que venga. */
+async function registrarUso(uso) {
+  const log = await almacen.leer('ia-log', []);
+  log.push(uso);
+  await almacen.escribir('ia-log', log);
 }
 
 // ---------------------------------------------------------------------------
@@ -1776,8 +2814,8 @@ const MIME = {
 };
 
 async function serveStatic(res, name) {
-  const file = path.join(HUB_DIR, 'public', name);
-  if (!file.startsWith(path.join(HUB_DIR, 'public'))) return json(res, { error: 'no' }, 400);
+  const file = path.join(PUBLIC_DIR, name);
+  if (!file.startsWith(PUBLIC_DIR)) return json(res, { error: 'no' }, 400);
   try {
     const buf = await fsp.readFile(file);
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
@@ -1948,10 +2986,7 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/config' && req.method === 'GET') {
       const cfg = await readConfig();
-      let log = [];
-      try {
-        log = JSON.parse(await fsp.readFile(IA_LOG, 'utf8'));
-      } catch {}
+      const log = await almacen.leer('ia-log', []);
       const gastos = log.reduce(
         (a, u) => ({ entrada: a.entrada + (u.tokens_entrada || 0), salida: a.salida + (u.tokens_salida || 0) }),
         { entrada: 0, salida: 0 }
@@ -1982,6 +3017,14 @@ const server = http.createServer(async (req, res) => {
       return json(res, { ok: true });
     }
 
+    if (pathname === '/api/motor') {
+      try {
+        return json(res, await motorDisponible(q.preferido ? String(q.preferido) : null));
+      } catch (err) {
+        return json(res, { motor: null, error: err.message });
+      }
+    }
+
     if (pathname === '/api/modelos') {
       const cfg = await readConfig();
       if (!cfg.apiKey) return json(res, { error: 'Falta la clave de API' }, 400);
@@ -1994,7 +3037,11 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       if (!b.contenido || !String(b.contenido).trim())
         return json(res, { error: 'La nota está vacía' }, 400);
-      return json(res, await ordenarNota({ rel: String(b.rel || ''), contenido: String(b.contenido) }));
+      return json(res, await ordenarNota({
+        rel: String(b.rel || ''),
+        contenido: String(b.contenido),
+        motor: b.motor ? String(b.motor) : null,
+      }));
     }
 
     if (pathname === '/api/buscar') {
@@ -2052,6 +3099,249 @@ const server = http.createServer(async (req, res) => {
       }));
     }
 
+    // --- Git ---------------------------------------------------------------
+    // Healthcheck del contenedor: barato, sin tocar el vault.
+    if (pathname === '/api/vivo') {
+      return json(res, { ok: true, almacen: await almacen.salud(), version: 3 });
+    }
+
+    if (pathname === '/api/git/estado') return json(res, await gitEstado());
+
+    if (pathname === '/api/git/init' && req.method === 'POST') {
+      return json(res, await gitInicializar());
+    }
+
+    if (pathname === '/api/git/checkpoint' && req.method === 'POST') {
+      const b = await readBody(req);
+      return json(res, await gitCheckpoint(b.motivo ? String(b.motivo) : null));
+    }
+
+    if (pathname === '/api/git/revertir' && req.method === 'POST') {
+      const b = await readBody(req);
+      return json(res, await gitRevertir(String(b.sha || '')));
+    }
+
+    if (pathname === '/api/git/diff') {
+      return json(res, await gitDiffArchivo(String(q.sha || ''), String(q.ruta || '')));
+    }
+
+    // --- Asistente ---------------------------------------------------------
+    if (pathname === '/api/agente/estado') {
+      const [d, g] = await Promise.all([cliDisponible(q.force === '1'), gitEstado()]);
+      return json(res, {
+        ...d,
+        herramientas: AGENTE_TOOLS.split(','),
+        herramientasEscritura: AGENTE_TOOLS_ESCRITURA.split(','),
+        git: g,
+        vault: VAULT,
+      });
+    }
+
+    if (pathname === '/api/agente' && req.method === 'POST') {
+      const b = await readBody(req);
+      const prompt = String(b.prompt || '').trim();
+      if (!prompt) return json(res, { error: 'falta el prompt' }, 400);
+
+      const directo = b.modo === 'directo';
+      // El modo directo NO existe sin git: el punto de restauración es lo único
+      // que convierte "que escriba solo" en una operación reversible.
+      let checkpoint = null;
+      if (directo) {
+        checkpoint = await gitCheckpoint('antes del asistente');
+        if (!checkpoint.repo)
+          return json(res, { error: 'El modo directo necesita que el vault esté bajo git. Inicializalo desde Ajustes.' }, 409);
+        if (checkpoint.error) return json(res, { error: `No pude hacer el punto de restauración: ${checkpoint.error}` }, 500);
+      }
+
+      let hijo;
+      try {
+        hijo = await agenteTurno({
+          prompt,
+          sesion: b.sesion ? String(b.sesion) : null,
+          contexto: b.contexto ? String(b.contexto).slice(0, 4000) : null,
+          modelo: b.modelo ? String(b.modelo) : null,
+          modo: directo ? 'directo' : 'propuesta',
+        });
+      } catch (err) {
+        return json(res, { error: err.message }, 503);
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-store',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      });
+
+      const enviar = (tipo, dato) => {
+        if (res.writableEnded) return;
+        res.write(`event: ${tipo}\ndata: ${JSON.stringify(dato)}\n\n`);
+      };
+
+      let buf = '';
+      let textoFinal = '';
+      let errStd = '';
+
+      hijo.stdout.on('data', (chunk) => {
+        buf += chunk;
+        let i;
+        while ((i = buf.indexOf('\n')) >= 0) {
+          const linea = buf.slice(0, i).trim();
+          buf = buf.slice(i + 1);
+          if (!linea) continue;
+          let ev;
+          try {
+            ev = JSON.parse(linea);
+          } catch {
+            continue;
+          }
+          if (ev.type === 'result' && typeof ev.result === 'string') textoFinal = ev.result;
+          enviar('evento', ev);
+        }
+      });
+
+      hijo.stderr.on('data', (c) => { errStd += c; });
+
+      const cortar = setTimeout(() => {
+        enviar('error', { mensaje: 'El asistente tardó demasiado y lo corté.' });
+        hijo.kill('SIGTERM');
+      }, AGENTE_TIMEOUT);
+
+      hijo.on('error', (err) => {
+        clearTimeout(cortar);
+        enviar('error', { mensaje: err.message });
+        if (!res.writableEnded) res.end();
+      });
+
+      hijo.on('close', async (code) => {
+        clearTimeout(cortar);
+        // Las propuestas de escritura se extraen del lado del servidor, no del
+        // navegador: es el mismo criterio que con los wikilinks del ordenador.
+        const propuestas = extraerPropuestas(textoFinal).map((p) => {
+          let actual = null;
+          try {
+            actual = fs.readFileSync(safeVaultPath(p.rel), 'utf8');
+          } catch {}
+          return { ...p, existe: actual !== null, actual };
+        });
+        let escrituras = null;
+        if (directo && checkpoint?.sha) {
+          await buildIndex(true);
+          const d = await gitCambiosDesde(checkpoint.sha);
+          escrituras = { desde: checkpoint.sha, archivos: d.archivos };
+        }
+        enviar('fin', {
+          code,
+          propuestas,
+          escrituras,
+          stderr: code === 0 ? '' : errStd.slice(0, 2000),
+        });
+        if (!res.writableEnded) res.end();
+      });
+
+      req.on('close', () => {
+        clearTimeout(cortar);
+        if (hijo.exitCode === null) hijo.kill('SIGTERM');
+      });
+      return;
+    }
+
+    // --- GitHub ------------------------------------------------------------
+    if (pathname === '/api/github/estado') {
+      const token = await ghToken();
+      const g = await readGithub();
+      let usuario = null;
+      if (token) {
+        try {
+          const u = await gh(token, '/user');
+          usuario = { login: u.login, nombre: u.name, avatar: u.avatar_url, repos: u.public_repos };
+        } catch (err) {
+          return json(res, { token: true, tokenError: err.message, vinculos: g.vinculos, limite: ULTIMO_LIMITE });
+        }
+      }
+      return json(res, { token: !!token, usuario, vinculos: g.vinculos, visto: g.visto, limite: ULTIMO_LIMITE });
+    }
+
+    if (pathname === '/api/github/config' && req.method === 'POST') {
+      const b = await readBody(req);
+      const token = String(b.token || '').trim();
+      const cfg = await readConfig();
+      if (!token) {
+        delete cfg.githubToken;
+        await writeConfig(cfg);
+        return json(res, { ok: true, token: false });
+      }
+      const u = await gh(token, '/user'); // valida antes de guardar
+      cfg.githubToken = token;
+      await writeConfig(cfg);
+      return json(res, { ok: true, token: true, usuario: { login: u.login, nombre: u.name } });
+    }
+
+    if (pathname === '/api/github/vinculo' && req.method === 'POST') {
+      const b = await readBody(req);
+      const full = normalizarRepo(b.full_name);
+      if (!full) return json(res, { error: 'No entiendo ese repo. Pegá la URL o owner/repo.' }, 400);
+      const carpetas = await carpetasMateria();
+      if (!carpetas.includes(String(b.materia || ''))) return json(res, { error: 'Materia desconocida' }, 400);
+      const r = await gh(await ghToken(), `/repos/${full}`);
+      if (r.__404) return json(res, { error: `No encuentro ${full}. Si es privado, hace falta un token que lo alcance.` }, 404);
+      const g = await readGithub();
+      g.vinculos = g.vinculos.filter((v) => v.full_name !== full);
+      g.vinculos.push({
+        materia: String(b.materia),
+        full_name: full,
+        rol: b.rol === 'propio' ? 'propio' : 'catedra',
+        url: r.html_url,
+        privado: r.private,
+      });
+      await writeGithub(g);
+      return json(res, { ok: true, vinculos: g.vinculos });
+    }
+
+    if (pathname === '/api/github/vinculo' && req.method === 'DELETE') {
+      const b = await readBody(req);
+      const g = await readGithub();
+      g.vinculos = g.vinculos.filter((v) => v.full_name !== b.full_name);
+      delete g.visto[b.full_name];
+      await writeGithub(g);
+      return json(res, { ok: true, vinculos: g.vinculos });
+    }
+
+    if (pathname === '/api/github/novedades') return json(res, await ghNovedades());
+
+    if (pathname === '/api/github/visto' && req.method === 'POST') {
+      const b = await readBody(req);
+      const g = await readGithub();
+      g.visto[String(b.full_name)] = { sha: String(b.sha || ''), fecha: new Date().toISOString() };
+      await writeGithub(g);
+      return json(res, { ok: true });
+    }
+
+    if (pathname === '/api/github/commit') {
+      return json(res, { archivos: await ghArchivosDeCommit(String(q.full_name || ''), String(q.sha || '')) });
+    }
+
+    if (pathname === '/api/github/actividad') {
+      return json(res, await ghActividad({ dias: Number(q.dias) || 371 }));
+    }
+
+    if (pathname === '/api/github/entregables') {
+      return json(res, await ghEntregables(normalizarRepo(q.full_name)));
+    }
+
+    if (pathname === '/api/github/repo' && req.method === 'POST') {
+      const b = await readBody(req);
+      return json(res, await ghCrearRepo({
+        nombre: String(b.nombre || ''),
+        descripcion: String(b.descripcion || ''),
+        privado: b.privado !== false,
+        scaffold: b.scaffold !== false,
+        materia: b.materia ? String(b.materia) : null,
+      }));
+    }
+
+    if (pathname === '/api/github/declaracion-ia') return json(res, await declaracionIA(q));
+
     // --- Ingesta de material de cátedra ------------------------------------
     if (pathname === '/api/ingerir' && req.method === 'POST') {
       const b = await readBody(req);
@@ -2092,7 +3382,14 @@ if (!fs.existsSync(VAULT)) {
   process.exit(1);
 }
 
-server.listen(PORT, '127.0.0.1', async () => {
+const HOST = process.env.HOST || '127.0.0.1';
+
+server.listen(PORT, HOST, async () => {
+  try {
+    await almacen.iniciar();
+  } catch (err) {
+    console.error(`No pude inicializar el almacén (${almacen.modo}): ${err.message}`);
+  }
   const idx = await buildIndex(true);
   console.log('');
   console.log('  ┌────────────────────────────────────────────┐');

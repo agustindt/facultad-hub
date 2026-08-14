@@ -1,6 +1,10 @@
-# Datos locales: clave de API, eventos propios, registro de uso de IA.
-# NUNCA se versionan.
+# Datos locales: clave de API, token de GitHub, eventos propios, calendario de
+# repaso, registro de uso de IA. NUNCA se versionan.
 datos/
+backend/datos/
+
+# Secretos de compose. El .env.example SÍ va.
+.env
 
 node_modules/
 .DS_Store

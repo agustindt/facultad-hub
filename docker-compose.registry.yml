@@ -1,0 +1,55 @@
+# La variante que BAJA las imágenes en vez de construirlas.
+#
+#   docker compose -f docker-compose.registry.yml up -d
+#
+# Sirve para probar que las imágenes publicadas funcionan en una máquina que no
+# tiene el código. No hay ningún `build:` acá: si esto levanta, las imágenes del
+# registry están bien.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - datos-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    image: ghcr.io/${GH_USER}/facultad-hub-backend:${TAG:-v0.1.0}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      VAULT_DIR: /vault
+      DATA_DIR: /app/datos
+      HOST: 0.0.0.0
+      PORT: 4177
+    volumes:
+      - ${VAULT_PATH}:/vault
+      - datos-hub:/app/datos
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "4177"
+
+  frontend:
+    image: ghcr.io/${GH_USER}/facultad-hub-frontend:${TAG:-v0.1.0}
+    restart: unless-stopped
+    ports:
+      - "${PUERTO_WEB:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  datos-db:
+  datos-hub:

@@ -1,0 +1,68 @@
+# Hub Facultad — orquestación local.
+#
+#   cp .env.example .env    (y completá los valores)
+#   docker compose up -d
+#
+# Tres servicios: nginx sirviendo el frontend y proxyando /api, el backend Node,
+# y Postgres con volumen nombrado. El frontend es el único que publica un puerto
+# al host: al backend se llega a través suyo, y a la base no se llega de afuera.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      # Volumen NOMBRADO, no un bind mount: es lo que hace que los datos
+      # sobrevivan a `docker compose down` y se borren con `down -v`.
+      - datos-db:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready responde recién cuando Postgres acepta conexiones. Sin esto,
+      # `depends_on` sólo garantiza que el contenedor arrancó — no que la base
+      # esté lista, que es otra cosa.
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # `db` es el nombre del servicio: lo resuelve el DNS de la red de compose.
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      VAULT_DIR: /vault
+      DATA_DIR: /app/datos
+      HOST: 0.0.0.0
+      PORT: 4177
+    volumes:
+      # El vault vive en tu disco, no en la imagen: eso es el corazón del
+      # proyecto. Entra como bind mount desde la ruta que pongas en .env.
+      - ${VAULT_PATH}:/vault
+      - datos-hub:/app/datos
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "4177"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PUERTO_WEB:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  datos-db:
+  datos-hub:

@@ -8,8 +8,12 @@ Servidor Node con **cero dependencias de npm** (solo stdlib: `http`, `fs`, `path
 y un front-end de un solo archivo. Las librerías de terceros están vendorizadas en
 `public/vendor/`, así que funciona sin internet.
 
-```
-node server.js          →  http://localhost:4177
+```bash
+# suelto, sin contenedores
+node backend/server.js            →  http://localhost:4177
+
+# con docker compose (TP2 de Ingeniería de Software III)
+cp .env.example .env && docker compose up -d    →  http://localhost:8080
 ```
 
 ---
@@ -23,6 +27,8 @@ node server.js          →  http://localhost:4177
 | **Capturar** | Hoja en blanco para escribir en clase, con autosave y el frontmatter oculto |
 | **Cobertura** | Los temas del programa de la cátedra contra las notas que existen |
 | **Importar PDF** | Un PDF de cátedra entra; salen borradores de nota de unidad y de conceptos |
+| **Código** | GitHub: novedades del repo de la cátedra, matriz de actividad, checklist de entregables, creación de repos |
+| **Asistente** | Chat sobre el vault: corre el CLI de Claude Code como proceso hijo, en solo lectura |
 | **Notas** | Índice con búsqueda y filtros por materia, tipo y estado |
 | **Editor** | Markdown con vista previa en vivo (Mermaid + LaTeX), barra de inserción y autocompletado de wikilinks |
 | **Calendario** | Fechas extraídas de las tablas de `00-Seguimiento/` + eventos propios + export `.ics` |
@@ -39,11 +45,36 @@ Documentación de usuario completa: [`LEEME.txt`](LEEME.txt).
 ## Arquitectura
 
 ```
-server.js            ~1.200 líneas · stdlib de Node · escucha en 127.0.0.1
-public/index.html    SPA de un solo archivo · sin build step
-public/vendor/       marked 12.0.2 · d3 7.9.0 · mermaid 10.9.1 · katex 0.16.11 · pdf.js 4.2.67
-datos/               NO versionado — clave de API, eventos propios, log de IA
+backend/server.js         ~3.000 líneas · stdlib de Node
+backend/db/almacen.js     Postgres si hay DATABASE_URL, archivos JSON si no
+backend/test/             node --test, sin dependencias de test
+backend/Dockerfile        multi-stage: deps → runtime alpine
+frontend/public/          SPA de un solo archivo · sin build step
+frontend/public/vendor/   marked · d3 · mermaid · katex · pdf.js
+frontend/nginx.conf       estáticos + proxy /api + fallback SPA
+frontend/Dockerfile       multi-stage: verificación → nginx alpine
+docker-compose.yml        frontend + backend + postgres con healthcheck
+datos/                    NO versionado — clave de API, token, secretos
 ```
+
+## Arquitectura en contenedores
+
+```
+navegador → :8080 → [frontend nginx] ──/api/──→ [backend node:4177] ──→ [postgres]
+                          │                            │                     │
+                     public/ estático          bind mount del vault    volumen datos-db
+```
+
+Tres cosas persisten de forma distinta y a propósito:
+
+| Qué | Dónde | Sobrevive a `down` | Sobrevive a `down -v` |
+|---|---|---|---|
+| Las notas `.md` | bind mount del host | Sí | Sí — están en tu disco |
+| Repaso, eventos, log de IA | volumen `datos-db` | Sí | **No** |
+| Clave de API y token | volumen `datos-hub` | Sí | No |
+
+Las notas nunca entran a la base. Esa es la decisión que define el proyecto: la
+fuente de verdad es el markdown, y Obsidian tiene que poder abrirlo.
 
 El vault se resuelve así:
 
@@ -78,6 +109,21 @@ transpilación. `git clone` + `node server.js`.
 | GET | `/api/cobertura` | programa vs. vault, por unidad y por tema |
 | POST | `/api/captura` | crea la nota de captura rápida |
 | POST | `/api/ingerir` | texto de un PDF → propuesta de notas |
+| GET | `/api/github/estado` | token, usuario, repos vinculados, rate limit |
+| POST/DELETE | `/api/github/vinculo` | vincular un repo a una materia |
+| GET | `/api/github/novedades` | commits nuevos desde el último visto, por repo |
+| GET | `/api/github/actividad` | matriz de contribuciones (GraphQL) o commits de los repos |
+| GET | `/api/github/entregables` | checklist del repo contra lo que pide la cátedra |
+| POST | `/api/github/repo` | crear repo con el andamiaje de la materia |
+| GET | `/api/github/declaracion-ia` | declaración de uso de IA desde el log real |
+| GET | `/api/agente/estado` | ¿está el CLI instalado? versión y herramientas |
+| POST | `/api/agente` | un turno del asistente, respuesta SSE en streaming |
+| GET | `/api/motor` | qué motor se va a usar: CLI (suscripción) o API (por token) |
+| GET | `/api/git/estado` | rama, HEAD, archivos sucios |
+| POST | `/api/git/init` | inicializa el repo del vault con su .gitignore |
+| POST | `/api/git/checkpoint` | punto de restauración antes de escribir |
+| POST | `/api/git/revertir` | `reset --hard` + `clean -fd` a un sha |
+| GET | `/api/git/diff` | contenido antes/ahora de un archivo contra un sha |
 
 ---
 
@@ -132,6 +178,88 @@ El matching es por conjuntos de raíces, con **F1 y no recall**: si el título d
 nota trae palabras que el tema no tiene, el match vale menos. Cada fila muestra la
 nota elegida y las otras candidatas, porque la heurística falla y conviene que se
 vea. La columna `Nota` del archivo de programa es el override manual.
+
+## Asistente
+
+El servidor lanza el CLI de Claude Code con `child_process.spawn` (stdlib — la propiedad de
+cero dependencias se mantiene), parado en la raíz del vault, y hace proxy de su salida
+`stream-json` al navegador por SSE.
+
+```js
+const args = ['-p', prompt, '--output-format', 'stream-json', '--verbose',
+              '--include-partial-messages', '--allowedTools', 'Read,Glob,Grep',
+              '--append-system-prompt', sistema];
+if (sesion) args.push('--resume', sesion);
+return spawn('claude', args, { cwd: VAULT, env: entornoLimpio() });
+```
+
+### Dos modos
+
+`propuesta` (por defecto) corre con `--allowedTools Read,Glob,Grep`. `directo` agrega
+`Write,Edit,MultiEdit` y `--permission-mode acceptEdits`.
+
+El modo directo **no existe sin git**. Antes de cada turno:
+
+```js
+const checkpoint = await gitCheckpoint('antes del asistente');
+if (!checkpoint.repo) return json(res, { error: 'El modo directo necesita git…' }, 409);
+```
+
+y al cerrar el turno el servidor devuelve `gitCambiosDesde(checkpoint.sha)`, que el cliente
+pinta como lista de archivos con su diff y un botón de deshacer (`reset --hard` + `clean -fd`).
+
+El `.gitignore` del vault excluye `00-Sistema/_hub/` entero: el hub tiene su propio repo, y
+versionarlo también en el vault hace que un "deshacer" sobre las notas revierta el código de
+la app. Y cada subcarpeta vacía de materia lleva un `.gitkeep`, porque git no versiona
+directorios vacíos y `clean -fd` se llevaría la estructura.
+
+### Tres decisiones deliberadas
+
+**Sin herramientas de escritura en modo propuesta.** Para cambiar un archivo el agente emite un bloque
+` ```hub:escribir <ruta> ` con el contenido completo. El servidor lo extrae, lee la versión
+actual del disco y manda las dos al cliente, que las muestra como diff. La escritura la hace
+el hub por su `/api/nota`. En modo `-p` el CLI no puede pedir permiso interactivo, así que
+ésta es la única forma real de tener confirmación — y cierra el vector de inyección por
+contenido leído.
+
+**`entornoLimpio()` borra `ANTHROPIC_API_KEY`.** Con esa variable presente, Claude Code
+factura la API en vez de consumir la suscripción Pro/Max. El hub guarda una clave para otras
+funciones; que se filtrara al hijo sería un cobro silencioso.
+
+**Sin `--bare`.** El flag acelera el arranque pero no lee las credenciales de la suscripción
+y no carga los `CLAUDE.md` — que es de donde sale la mitad del contexto útil de este vault.
+
+## GitHub
+
+Ingeniería de Software III no se cursa en el campus: el material vive en un repo de la
+cátedra y la entrega es un repo propio. El módulo `Código` conecta las dos puntas.
+
+**Novedades.** Guarda el SHA del último commit visto por repo en `datos/github.json` y
+muestra sólo lo posterior. La primera vez no marca todo como novedad — sería ruido; muestra
+los últimos y espera que marques visto.
+
+**Actividad.** Con token usa la GraphQL de GitHub (`contributionsCollection`), que es el
+calendario real. Sin token lo deriva de los commits de los repos vinculados y **lo declara
+como tal en la UI**, porque no es lo mismo. Los cortes de color son cuartiles de los días con
+actividad del propio usuario, no umbrales fijos.
+
+La rampa es secuencial de un solo tono, validada con el validador de dataviz contra las dos
+superficies reales del hub: L monótona, saltos ≥ 0.06 y el paso más claro despegando de la
+superficie (2.00:1 en claro, 2.12:1 en oscuro). El nivel 0 es el gris de grilla, no un verde
+desvaído. Hay vista de tabla para no depender del color.
+
+**Entregables.** Verifica contra la API lo que la cátedra pide y se puede verificar solo:
+archivos en la raíz, `.env` fuera del repo, tag semver, release, PR mergeado, `main`
+protegido. Cada fila declara de qué TP sale la exigencia. No pretende reemplazar la defensa
+oral, que es el 50 % de la nota.
+
+**Declaración de uso de IA.** La cátedra la exige dentro de `decisiones.md`. Se genera desde
+`datos/ia-log.json` — el registro real de cada llamada del hub — con números, no estimaciones.
+
+**Escrituras.** Lo único que el hub escribe en GitHub es crear un repo, y sólo con el botón.
+No commitea ni pushea por su cuenta. Los repos nacen privados por defecto.
+
+`GITHUB_API_HOST` permite apuntar a otro host (GitHub Enterprise, o un mock para probar).
 
 ## Ordenar notas con Claude (opcional)
 
