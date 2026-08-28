@@ -195,3 +195,71 @@ antes de mergear.
 
 No delegué la duración del sprint ni el número del WIP: salen del calendario
 de P1 y de la regla de la cátedra.
+
+---
+
+## TP4 — CI: pipelines as code
+
+### Estructura del pipeline
+
+Dos jobs, `build-backend` y `build-frontend`, **sin `needs:`**: corren en
+paralelo, cada uno en su runner. No comparten filesystem ni capas: por eso cada
+uno hace su propio `checkout` y tiene su propio `scope` de cache (`backend` /
+`frontend`). Si compartieran el estante default (`buildkit`), el último en
+terminar pisaría el cache del otro.
+
+No hay un job de tests: eso es el TP5. Hoy el pipeline verifica que las
+**imágenes del TP2 se construyan** en una máquina limpia.
+
+Triggers: `pull_request` a `main` (verifica *antes* del merge, alimenta el
+gate) y `push` a `main` (deja la corrida que lee el badge y el cache que
+después reutilizan los PRs).
+
+### Qué cachea y qué pasa si desaparece
+
+Cachea **capas de Docker**, no artefactos. `cache-from`/`cache-to: type=gha`
+con `mode=max`. En la segunda corrida del PR #11 ambos jobs mostraron
+`CACHED` (backend #8–#13, frontend #11–#15):
+https://github.com/agustindt/facultad-hub/actions/runs/33191229066
+
+Si el cache desaparece, el pipeline **sigue en verde**: tarda más, no falla.
+Si fallara sin cache, no era cache: era una dependencia escondida.
+
+### Por qué construye con el Dockerfile y no con `npm`/`node` a mano
+
+Hay **una** definición de build: el Dockerfile del TP2. Si el pipeline
+corriera `npm install` por su cuenta, verificaríamos otra receta que la que
+después se despliega, y las dos divergen. El YAML no sabe Node: sabe `docker
+build` con `context: ./backend` y `./frontend`.
+
+El hub **no compila ni empaqueta**. Un `import` inventado no rompe `docker
+build`. Para demostrar el gate rompí **las dependencias**:
+`estonoexiste-tp4` en `package.json` → `npm install` del Dockerfile → 404 →
+job `build-backend` en rojo → merge `BLOCKED`. El fix lo sacó. PR #13:
+https://github.com/agustindt/facultad-hub/pull/13
+
+`strict: true` se ve en el PR #12: después de mergear el #13 quedó
+`mergeStateStatus: BEHIND` y hubo que *Update branch*.
+https://github.com/agustindt/facultad-hub/pull/12
+
+### Problemas que encontré y cómo los resolví
+
+- **El PUT de protecciones reescribe todo.** Hay que re-declarar 0 approvals
+  + `enforce_admins: true` junto con los status checks. Si omitís eso, el
+  dueño vuelve a poder pushear a `main`.
+- **Los checks no aparecen en el buscador hasta que corrieron.** Por eso el
+  workflow entra primero (PR #11), y el gate se configura después.
+- **`strict: true` no se ve con un solo PR.** Dejé abierto el #12: cuando
+  mergeé el #13, el #12 pidió *Update branch*.
+- **ghcr nace privado** y la API no cambia visibilidad (PATCH 404). Hay que
+  hacerlo a mano en Package settings → Change visibility.
+
+### Declaración de uso de IA
+
+Cursor armó el YAML (el de la guía de la cátedra, adaptado a estos
+Dockerfiles), los comandos de `gh` y esta redacción. Verifiqué yo: las dos
+corridas del #11 con `CACHED`, el PUT del gate, el `docker build ./backend`
+en rojo por el 404, el PR #13 en `BLOCKED` y el merge después del fix.
+
+No delegué los nombres de los jobs (`build-backend` / `build-frontend`): son
+el id que exige el gate.

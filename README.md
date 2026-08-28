@@ -1,5 +1,7 @@
 # facultad-hub
 
+[![CI](https://github.com/agustindt/facultad-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/agustindt/facultad-hub/actions/workflows/ci.yml)
+
 Un hub web sobre un vault de Obsidian. Lee y escribe **los mismos archivos `.md`**:
 no hay copia, ni base de datos, ni sincronización que se pueda desincronizar.
 Obsidian y el hub pueden estar abiertos al mismo tiempo sobre el mismo vault.
