@@ -3590,6 +3590,7 @@ const server = http.createServer(async (req, res) => {
 
     // --- Git ---------------------------------------------------------------
     // Healthcheck del contenedor: barato, sin tocar el vault.
+    // El pipeline de CI (TP4) no pega este endpoint: hoy sólo construye la imagen.
     if (pathname === '/api/vivo') {
       return json(res, { ok: true, almacen: await almacen.salud(), version: 3 });
     }
