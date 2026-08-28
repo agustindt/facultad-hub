@@ -64,17 +64,19 @@ nombrado `datos-db` es la diferencia.
 
 ### Registry
 
-Las imágenes están en ghcr, tag `v0.1.0`:
+![packages públicos](img/ghcr-packages.png)
+
+Los dos packages en **public**. Landing sin login: HTTP 200.
 
 - https://github.com/users/agustindt/packages/container/package/facultad-hub-backend
 - https://github.com/users/agustindt/packages/container/package/facultad-hub-frontend
 
-El push pidió alcance `write:packages` (un `docker login` con el token de `gh`
-sin ese scope da `permission_denied`). Los packages nacen **privados**; la API
-de GitHub no cambia visibilidad (PATCH 404). Hay que pasarlos a **públicos**
-en Package settings → Change visibility, y después probar
-`docker logout` + `docker pull` + `docker compose -f docker-compose.registry.yml
-up -d` (la columna IMAGE tiene que decir `ghcr.io/...`, no `facultad-hub-backend`).
+![compose del registry](img/registry-compose.png)
+
+`docker logout ghcr.io`, borré las imágenes locales, `docker pull` anónimo y
+`docker compose -f docker-compose.registry.yml up -d`. La columna IMAGE es
+`ghcr.io/agustindt/facultad-hub-{backend,frontend}:v0.1.0` (no el nombre local).
+Los tres servicios `healthy`. `/api/vivo` habla con Postgres.
 
 ---
 

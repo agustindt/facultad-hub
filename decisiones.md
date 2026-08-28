@@ -136,13 +136,18 @@ runner amd64 no las puede correr tal cual: en TP7 se resuelve con `buildx`.
   `repo`/`workflow`/`project`, no `write:packages`. Hay que refrescar el
   alcance (y el token tiene que ser classic: los fine-grained no sirven para
   ghcr).
+- **Los packages nacen privados y la API no cambia visibilidad** (PATCH 404).
+  Se pasa a público a mano: perfil → Packages → Package settings → Danger
+  Zone. La URL `.../settings` directa da 404 si el package no está linkeado
+  al repo. La prueba de que quedó público es `docker logout` + `docker pull`
+  + `docker compose -f docker-compose.registry.yml up -d`.
 
 ### Declaración de uso de IA
 
 Cursor armó Dockerfiles, compose y esta redacción. Verifiqué yo el
-`docker compose ps` en healthy, el 502 y el arreglo del resolver, y la
-prueba de persistencia: `down` deja el evento `TP2 persistencia`;
-`down -v` lo borra (`/api/vivo` pasa de 1 clave a 0).
+`docker compose ps` en healthy, el 502 y el arreglo del resolver, la
+prueba de persistencia (`down` deja el evento; `down -v` lo borra) y el
+pull anónimo desde ghcr con `docker-compose.registry.yml`.
 
 No delegué la decisión de dejar las notas fuera de Postgres ni el proxy
 same-origin.
