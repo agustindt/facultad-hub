@@ -64,11 +64,17 @@ nombrado `datos-db` es la diferencia.
 
 ### Registry
 
-Las imágenes se tagean `ghcr.io/agustindt/facultad-hub-{backend,frontend}:v0.1.0`.
-El push pide alcance `write:packages` (un `docker login` con el token de `gh`
-sin ese scope da `permission_denied`). Cuando el alcance está, hay que pasar
-los packages a **públicos** y probar `docker-compose.registry.yml` desde una
-carpeta limpia.
+Las imágenes están en ghcr, tag `v0.1.0`:
+
+- https://github.com/users/agustindt/packages/container/package/facultad-hub-backend
+- https://github.com/users/agustindt/packages/container/package/facultad-hub-frontend
+
+El push pidió alcance `write:packages` (un `docker login` con el token de `gh`
+sin ese scope da `permission_denied`). Los packages nacen **privados**; la API
+de GitHub no cambia visibilidad (PATCH 404). Hay que pasarlos a **públicos**
+en Package settings → Change visibility, y después probar
+`docker logout` + `docker pull` + `docker compose -f docker-compose.registry.yml
+up -d` (la columna IMAGE tiene que decir `ghcr.io/...`, no `facultad-hub-backend`).
 
 ---
 
