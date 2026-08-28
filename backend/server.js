@@ -102,6 +102,8 @@ async function walk(dir, out = []) {
       if (SKIP_DIRS.has(entry.name) || entry.name.startsWith('.')) continue;
       await walk(abs, out);
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
+      // Convenciones.md: "CLAUDE.md ← contexto para Claude Code (no es una nota)".
+      if (entry.name === 'CLAUDE.md') continue;
       out.push(abs);
     }
   }
@@ -3184,6 +3186,7 @@ async function health() {
   const contador = new Map();
   for (const n of notes) {
     if (!n.estadoRaw) continue;
+    if (n.rel.startsWith('00-Sistema/Plantillas/')) continue; // moldes, no notas
     const v = n.estadoRaw.toLowerCase();
     if (ESTADOS_CANON.includes(v)) continue;
     if (v.includes('|')) continue; // la línea de ejemplo de Convenciones.md
@@ -3203,11 +3206,13 @@ async function health() {
   for (const n of notes) for (const l of n.links) linkeadas.add(l);
   for (const n of notes) {
     if (n.tipo !== 'concepto') continue;
+    if (n.rel.startsWith('00-Sistema/Plantillas/')) continue;
     if (!linkeadas.has(n.stem)) huerfanas.push(n.rel);
   }
 
   const conexionesPobres = notes
-    .filter((n) => n.tipo === 'concepto' && n.links.length < 3)
+    .filter((n) => n.tipo === 'concepto' && n.links.length < 3
+                && !n.rel.startsWith('00-Sistema/Plantillas/'))
     .map((n) => ({ rel: n.rel, enlaces: n.links.length }));
 
   return {

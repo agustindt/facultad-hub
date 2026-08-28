@@ -9,3 +9,6 @@ backend/datos/
 node_modules/
 .DS_Store
 *.log
+
+# Empaquetado de la app de macOS
+app/dist/
