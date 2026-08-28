@@ -1,0 +1,33 @@
+{
+  "name": "facultad-hub-app",
+  "productName": "Facultad Hub",
+  "version": "1.0.0",
+  "description": "Facultad Hub como app de escritorio de macOS",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "ar.com.agustin.facultadhub",
+    "productName": "Facultad Hub",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "package.json", "build/trayTemplate.png", "build/trayTemplate@2x.png"],
+    "extraResources": [
+      { "from": "../backend", "to": "backend", "filter": ["**/*", "!test/**"] },
+      { "from": "../frontend/public", "to": "frontend/public" },
+      { "from": "../LEEME.txt", "to": "LEEME.txt" }
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "icon": "build/icon.png",
+      "target": [{ "target": "dmg", "arch": ["arm64"] }],
+      "identity": null
+    }
+  }
+}
