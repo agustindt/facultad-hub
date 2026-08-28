@@ -1,4 +1,4 @@
-# Proyecto IngSoft3 - versión A
+# Proyecto IngSoft3 - versión B
 
 Un hub web sobre un vault de Obsidian. Lee y escribe **los mismos archivos `.md`**:
 no hay copia, ni base de datos, ni sincronización que se pueda desincronizar.
