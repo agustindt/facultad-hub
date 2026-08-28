@@ -32,59 +32,52 @@ es versión A. Git no elige: marca las dos y pide una decisión de contenido.
 
 ### 4. Release publicada
 
-_(se agrega en el PR siguiente, en cuanto exista el tag `v1.0.0` y su release)_
+![release v1.0.0](img/release-v1.0.0.png)
+
+Release `v1.0.0` en https://github.com/agustindt/facultad-hub/releases/tag/v1.0.0
 
 ---
 
 ## TP2 — Contenedores
 
-- [ ] **`docker compose up -d` desde cero, todos los servicios sanos**
-      `docker compose ps` mostrando los tres en `healthy`.
+### Sistema levantado
 
-- [ ] **Funcionalidad end-to-end**
-      El hub abierto en `localhost:8080`, mostrando notas del vault (frontend →
-      backend → filesystem) y una tarjeta de repaso calificada (frontend →
-      backend → Postgres).
+![compose ps](img/compose-ps.png)
 
-- [ ] **Prueba de persistencia**
-      Tres capturas encadenadas:
-      1. Calificás tarjetas en Repaso.
-      2. `docker compose down` y `up -d` → el calendario sigue ahí.
-      3. `docker compose down -v` y `up -d` → el calendario arrancó de cero.
-      La diferencia entre 2 y 3 es todo el punto del volumen nombrado.
+`docker compose up -d --build`. Los tres servicios `healthy`. `/api/vivo` habla
+con Postgres. `/api/estado` indexó 260 notas del vault.
 
-- [ ] **Comparación de tamaño**
-      `docker images` con la imagen final del backend al lado de `node:22`.
+### Persistencia
 
-- [ ] **Imágenes públicas en el registry**
-      La página de los paquetes en ghcr.io con visibilidad pública.
+![persistencia](img/persistencia.png)
 
-- [ ] **`docker-compose.registry.yml up` sin código local**
-      Desde una carpeta limpia, con sólo el `.yml` y el `.env`: baja las imágenes
-      y levanta. Si esto anda, las imágenes publicadas están bien.
+Creé el evento `TP2 persistencia`. `down` + `up`: `/api/vivo` sigue con 1 clave
+y el evento está. `down -v` + `up`: 0 claves, el evento desapareció. El volumen
+nombrado `datos-db` es la diferencia.
 
-### Comandos que usé
+### Tamaños
 
-```bash
-# levantar
-cp .env.example .env
-docker compose up -d
-docker compose ps
+![docker images](img/docker-images.png)
 
-# persistencia
-docker compose down && docker compose up -d      # los datos siguen
-docker compose down -v && docker compose up -d   # los datos se fueron
+`node:22` 1.63 GB vs imagen final del backend 230 MB. El frontend 84.3 MB sobre
+`nginx:1.27-alpine` 76.8 MB.
 
-# tamaños
-docker images | grep -E "facultad-hub|node"
+### Registry
 
-# publicar
-echo $GHCR_TOKEN | docker login ghcr.io -u agustindt --password-stdin
-docker build -t ghcr.io/agustindt/facultad-hub-backend:v0.1.0 ./backend
-docker build -t ghcr.io/agustindt/facultad-hub-frontend:v0.1.0 ./frontend
-docker push ghcr.io/agustindt/facultad-hub-backend:v0.1.0
-docker push ghcr.io/agustindt/facultad-hub-frontend:v0.1.0
+Las imágenes se tagean `ghcr.io/agustindt/facultad-hub-{backend,frontend}:v0.1.0`.
+El push pide alcance `write:packages` (un `docker login` con el token de `gh`
+sin ese scope da `permission_denied`). Cuando el alcance está, hay que pasar
+los packages a **públicos** y probar `docker-compose.registry.yml` desde una
+carpeta limpia.
 
-# probar desde el registry, en una carpeta vacía
-docker compose -f docker-compose.registry.yml up -d
-```
+---
+
+## TP3 — Planificación
+
+No hay capturas: el Project es público.
+
+- Project: https://github.com/users/agustindt/projects/5
+- Épica #4 → historia #5 → tareas #6 y #7 (sub-issues)
+- Bug #8 al costado
+- Sprint 1 (7 días desde 2026-08-28) asignado a #5, #6 y #7
+- PR del esqueleto de CI cierra la tarea #6

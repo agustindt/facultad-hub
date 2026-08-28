@@ -9,3 +9,8 @@ backend/datos/
 node_modules/
 .DS_Store
 *.log
+
+# salidas crudas de evidencia, las capturas son los png
+img/*.txt
+img/*.json
+img/*.err
