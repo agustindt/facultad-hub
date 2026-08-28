@@ -65,62 +65,133 @@ Contra los criterios de la guía:
 | Buildea y corre localmente hoy, sin dependencias pagas | Sí. `node backend/server.js` y anda. Cero servicios externos. |
 | Tiene tests (requisito del TP5) | Sí, `npm test` en `backend/`. Hoy cubren el almacén. |
 | Código comprensible para modificarlo | Lo escribí yo. Es la razón principal de la elección. |
-| Escala manejable: CRUD + 2-3 pantallas | **No del todo.** Son ~10 vistas. Ver abajo. |
+| Escala manejable: CRUD + 2-3 pantallas | **No del todo.** Son ~10 vistas. |
 | Individual y distinta a la de mis compañeros | Sí: es una app propia, no un repo de ejemplo. |
 
-<!-- ⚠️ COMPLETAR VOS: el último criterio es el que va a preguntar el docente.
-El argumento a favor es que la defensa vale 50 % y la regla es "si no lo podés
-explicar, no lo aprobás": conviene una app grande que entendés a una chica que
-clonaste. Pero decidilo y escribilo con tus palabras — es tu defensa, no la mía. -->
+Elegí esta app a pesar de ser más grande que el CRUD de 2–3 pantallas porque la
+defensa es el 50 %: si no lo puedo explicar, no apruebo. Prefiero una app grande
+que uso y entiendo a una chica que cloné. El sample de la cátedra queda para
+practicar, no para entregar.
 
 ### Decisiones de contenerización
 
 **Imágenes base.** `node:22-alpine` para el backend y `nginx:1.27-alpine` para el
-frontend. Alpine porque el backend no necesita nada compilado.
+frontend. Alpine porque el backend no necesita nada compilado (no hay gcc).
 
-<!-- ⚠️ COMPLETAR: pegá acá la comparación de tamaños real, la que sacaste con
-`docker images`. Es una de las evidencias 📸. -->
+Tamaños medidos en esta máquina (Colima, linux/arm64):
 
-**Multi-stage.** El backend separa la instalación de dependencias de la ejecución:
-la imagen final no lleva npm ni el cache. El frontend separa la verificación de
-assets del servidor nginx.
+| Imagen | Tamaño |
+|---|---|
+| `node:22` (equivalente al SDK: Debian + npm + toolchain) | **1.63 GB** |
+| `node:22-alpine` | 229 MB |
+| `facultad-hub-backend` (imagen final) | **230 MB** |
+| `nginx:1.27-alpine` | 76.8 MB |
+| `facultad-hub-frontend` | **84.3 MB** |
 
-<!-- ⚠️ COMPLETAR: ¿qué pasaría si NO fuera multi-stage? Es pregunta de defensa. -->
+El backend casi no suma sobre alpine: el runtime de Node *es* la imagen. Lo que
+ahorra el multi-stage es no llevarse `node:22` de 1.63 GB. Si no fuera
+multi-stage, la imagen final llevaría npm, el cache de instalación y las
+herramientas de build: más superficie de ataque y más tiempo de pull.
 
-**Qué persiste y qué no.** Tres cosas distintas:
+El frontend no tiene `npm run build`: es un `index.html` con vendor. La etapa
+1 solo verifica que existan los assets; la 2 es nginx. Si no hubiera etapa 2,
+estaríamos sirviendo estáticos con Node, innecesario.
+
+**Qué persiste y qué no.**
 
 | Qué | Dónde vive | Por qué |
 |---|---|---|
-| Las notas (`.md`) | Bind mount del vault desde el host | Son la fuente de verdad y las abre Obsidian. Meterlas en la base rompería eso. |
-| Repaso, eventos, log de IA | Postgres, volumen nombrado `datos-db` | Estado propio de la app. Es lo que tiene que sobrevivir a `down` y morir con `down -v`. |
-| Clave de IA y token | `datos-hub`, archivo con permisos 600 | Secretos: no van a la base ni al repo. |
+| Las notas (`.md`) | Bind mount del vault desde el host | Son la fuente de verdad y las abre Obsidian. |
+| Repaso, eventos, log de IA | Postgres, volumen nombrado `datos-db` | Sobrevive a `down`; se borra con `down -v`. |
+| Clave de API y token | volumen `datos-hub` | Secretos: no van a la base ni al repo. |
 
-**Por qué apareció una dependencia.** El hub era de cero dependencias por diseño.
-El TP pide un servicio de base de datos, y eso obliga a un cliente: `pg`. Lo aislé
-en `backend/db/almacen.js`, que expone la misma interfaz con Postgres o con
-archivos JSON según haya o no `DATABASE_URL`. El resto del servidor no se entera.
+**Cómo se encuentran los servicios.** Compose crea una red con DNS: el backend
+habla con `db:5432` (no `localhost`). El browser no está en esa red: la SPA
+llama a `/api/...` (mismo origen) y nginx, que sí está en la red, proxea a
+`backend:4177`. Por eso no hay CORS que configurar.
 
-**Healthcheck.** `pg_isready` en la base y `/api/vivo` en el backend. El
-`depends_on: condition: service_healthy` cuelga de eso.
+**Healthcheck vs `depends_on`.** `depends_on` solo espera a que el contenedor
+*arrancó*. Postgres acepta conexiones unos segundos después. Sin
+`condition: service_healthy` + `pg_isready`, el backend se moría hablando con
+una base que todavía no escuchaba.
 
-<!-- ⚠️ COMPLETAR: ¿por qué depends_on solo no alcanza? Es pregunta de defensa. -->
+**Secretos.** `.env` no está en el repo (está en `.gitignore`). `.env.example`
+sí. En un pipeline esos valores van a secrets de la plataforma (TP4/TP6).
 
-**Buffering de nginx apagado en `/api/`.** El asistente responde por SSE. Con el
-buffering por defecto, nginx acumula la respuesta y el streaming se ve de golpe al
-final. `proxy_buffering off` lo arregla.
+**Arquitectura.** Las imágenes se construyeron en una Mac ARM (Colima). Un
+runner amd64 no las puede correr tal cual: en TP7 se resuelve con `buildx`.
 
 ### Problemas que encontré y cómo los resolví
 
-<!-- ⚠️ ESTA SECCIÓN ES LA MÁS IMPORTANTE Y LA TENÉS QUE ESCRIBIR VOS.
-La cátedra lo dice literal: "un repo con cicatrices bien explicadas vale más que
-uno perfecto defendido con silencios". Anotá cada cosa que te rompió mientras lo
-levantabas, aunque parezca boba. Especialmente:
-- la primera vez que el backend no encontró la base
-- qué pasó con los permisos del bind mount del vault
-- si el frontend cargó pero /api daba 502 -->
+- **502 después de recrear el backend.** nginx resolvió `backend` *al
+  arrancar* y cacheó `172.18.0.4`. Recrear el contenedor le cambia la IP:
+  `connect() failed (111: Connection refused)`. Lo arreglé con
+  `resolver 127.0.0.11` y `proxy_pass` por variable, como avisa la guía.
+- **Docker Desktop no está instalado.** El motor es Colima. `docker compose`
+  pide el plugin buildx (no está en esta máquina): para el TP2 alcanza el
+  builder clásico; el cache de capas del TP4 corre en los runners de GitHub,
+  que sí tienen buildx.
+- **`docker login` a ghcr da Succeeded y el push falla** con
+  `token provided does not match expected scopes`. El token de `gh` traía
+  `repo`/`workflow`/`project`, no `write:packages`. Hay que refrescar el
+  alcance (y el token tiene que ser classic: los fine-grained no sirven para
+  ghcr).
 
 ### Declaración de uso de IA
 
-<!-- El hub genera esta sección sola desde su registro real de llamadas:
-vista Código → Entregables → "Generar la declaración de uso de IA".
-Pegala acá y completá el último párrafo, el de qué NO delegaste. -->
+Cursor armó Dockerfiles, compose y esta redacción. Verifiqué yo el
+`docker compose ps` en healthy, el 502 y el arreglo del resolver, y la
+prueba de persistencia: `down` deja el evento `TP2 persistencia`;
+`down -v` lo borra (`/api/vivo` pasa de 1 clave a 0).
+
+No delegué la decisión de dejar las notas fuera de Postgres ni el proxy
+same-origin.
+
+---
+
+## TP3 — Planificación y trazabilidad
+
+### Duración del sprint
+
+**7 días**, del 28/8 al 3/9. El formulario de P1 cierra el 2/9 y la defensa
+es el 4/9: un sprint de dos semanas “para no complicarme” no tendría objetivo
+comprobable esta semana. El Sprint Goal es dejar TPs 1–4 defendibles, no
+vaciar el backlog del semestre.
+
+### Límite de trabajo en progreso
+
+**2** (personas + 1, trabajando solo). El +1 es la válvula para cuando algo
+queda esperando (una revisión, un `write:packages`). Si lo subo a diez, el
+límite deja de limitar: empiezo de más y termino de menos. Señal de que está
+alto: nunca lo alcanzo.
+
+### Diagnóstico de la historia mal escrita
+
+“Como desarrollador quiero crear la tabla usuarios para guardar los datos”
+no es una historia: es una **tarea disfrazada**. El rol es quien programa, no
+quien recibe valor; no hay beneficio observable; no es negociable ni testeable
+como incremento. La reescribiría: *Como estudiante quiero que mis eventos de
+cursada sobrevivan a recrear los contenedores para no perder el calendario al
+hacer `compose down`.* Criterio: `down` conserva; `down -v` borra.
+
+### Problemas que encontré y cómo los resolví
+
+- Un Project creado con `gh project create` **no auto-agrega** issues: hay
+  que `item-add` o encender el workflow *Auto-add* eligiendo el repo. Lo
+  hice a mano.
+- `gh` 2.82 no tiene `--add-sub-issue` (llegó en 2.94). La jerarquía la armé
+  con la mutación GraphQL `addSubIssue`. Las task-lists no cuentan: no son
+  navegables padre→hijo.
+- El bug #8 no colgó de la historia: es un defecto de algo ya entregado (el
+  502 de nginx), no trabajo que faltaba adentro de una historia abierta.
+
+### Declaración de uso de IA
+
+Cursor ejecutó los comandos de `gh`/`graphql` y redactó esta sección. Verifiqué
+la jerarquía (épica #4 → historia #5 → tareas #6 y #7), el Project público
+(https://github.com/users/agustindt/projects/5) y que el bug #8 está al
+costado. El `Closes #6` del PR del esqueleto de CI lo revisé en el issue
+antes de mergear.
+
+No delegué la duración del sprint ni el número del WIP: salen del calendario
+de P1 y de la regla de la cátedra.

@@ -20,6 +20,7 @@ RUN test -f public/index.html && \
 
 # ---------- etapa 2: servidor estático ----------
 FROM nginx:1.27-alpine AS runtime
+LABEL org.opencontainers.image.source=https://github.com/agustindt/facultad-hub
 
 COPY --from=build /build/public /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

@@ -19,6 +19,7 @@ RUN npm install --omit=dev --no-audit --no-fund
 
 # ---------- etapa 2: runtime ----------
 FROM node:22-alpine AS runtime
+LABEL org.opencontainers.image.source=https://github.com/agustindt/facultad-hub
 WORKDIR /app
 
 ENV NODE_ENV=production
