@@ -1,0 +1,168 @@
+GUION DEFENSA P1 — comandos
+===========================
+Grupo A · vie 4/9 · puesto 25 · ~15:32 · ~5:07
+Repo:  cd ~/Documents/github.com/facultad-hub
+
+
+0) ANTES DE SENTARTE (en el aula, con tiempo)
+---------------------------------------------
+HACÉ ESTO PRIMERO. El paso 1 termina con git reset --hard:
+si no stashás, perdés los cambios de LEEME/README/server.js/index.html.
+
+    cd ~/Documents/github.com/facultad-hub
+    git stash push -u -m "wip antes de la defensa"
+
+    colima start
+    docker compose -f docker-compose.registry.yml up -d
+    docker compose -f docker-compose.registry.yml ps
+
+IMAGE tiene que decir:
+    ghcr.io/agustindt/facultad-hub-backend:v0.1.0
+    ghcr.io/agustindt/facultad-hub-frontend:v0.1.0
+db en healthy.
+
+Abrí estas pestañas (una por línea):
+
+    https://github.com/agustindt/facultad-hub
+    https://github.com/agustindt/facultad-hub/pull/2
+    https://github.com/agustindt/facultad-hub/releases/tag/v1.0.0
+    https://github.com/users/agustindt/projects/5
+    https://github.com/agustindt/facultad-hub/issues/6
+    https://github.com/agustindt/facultad-hub/pull/10
+    https://github.com/agustindt/facultad-hub/pull/13
+    https://github.com/agustindt/facultad-hub/actions
+    https://github.com/agustindt/facultad-hub/blob/main/.gitignore
+    https://github.com/agustindt/facultad-hub/blob/main/.env.example
+
+Terminal: parada en el repo, logueado (gh auth status).
+
+
+1) TP1 — push rechazado  (~25s)
+-------------------------------
+    cd ~/Documents/github.com/facultad-hub
+
+    echo "prueba-defensa" >> README.md
+    git add README.md
+    git commit -m "prueba"
+    git push origin main
+
+Esperado: GH006 / protected branch hook declined
+          (no se sube nada)
+
+    git reset --hard HEAD~1
+
+Decís: Main protegida con enforce_admins: ni el dueño pushea.
+       Todo entra por PR.
+
+
+2) TP1 — release y conflicto  (~25s)
+------------------------------------
+No hay comando. En el navegador:
+
+    PR #2     https://github.com/agustindt/facultad-hub/pull/2
+    Release   https://github.com/agustindt/facultad-hub/releases/tag/v1.0.0
+
+Decís: v1.0.0 congela el TP1. El #2 y el #1 tocaron la misma
+       línea, las dos ramas nacidas de main. Git no elige:
+       marca las dos. Quedó versión B.
+
+
+3) TP2 — compose del registry  (~30s)
+-------------------------------------
+    docker compose -f docker-compose.registry.yml ps
+
+Mirás la columna IMAGE: ghcr.io/agustindt/...:v0.1.0
+STATUS: healthy (sobre todo db).
+
+Decís: No las construí acá: las bajé de ghcr.
+       Las armé con mis Dockerfiles multi-stage y las publiqué.
+
+
+4) TP2 — .env y volúmenes  (~30s)
+---------------------------------
+Navegador (GitHub, no tu disco):
+
+    .gitignore     https://github.com/agustindt/facultad-hub/blob/main/.gitignore
+                   (línea: .env)
+    .env.example   https://github.com/agustindt/facultad-hub/blob/main/.env.example
+                   (.env NO aparece en el repo)
+
+En la terminal, para mostrar que .env no está trackeado:
+
+    git ls-files .env
+    (no imprime nada = no está en el repo)
+
+    docker volume ls
+
+Buscá:  facultad-hub_datos-db   y   facultad-hub_datos-hub
+
+Decís: El secreto no viaja en el repo.
+       datos-db sobrevive a down; down -v lo borra.
+       Las notas son bind mount: Obsidian las abre, no viven en Postgres.
+
+
+5) TP3 — tarea → PR → commit → historia → épica  (~50s)
+-------------------------------------------------------
+No hay comando. Orden de clics:
+
+    1. Project     https://github.com/users/agustindt/projects/5
+                   Board: columna Done → #6
+    2. Issue #6    https://github.com/agustindt/facultad-hub/issues/6
+                   (cerrada, linked PR #10)
+    3. PR #10      https://github.com/agustindt/facultad-hub/pull/10
+                   (Closes #6, mergeado)
+    4. En el PR: pestaña Commits → el commit
+    5. Issue #5    https://github.com/agustindt/facultad-hub/issues/5
+                   (historia, SIGUE ABIERTA)
+    6. Issue #4    https://github.com/agustindt/facultad-hub/issues/4
+                   (épica)
+    Bug al costado, si pregunta:
+                   https://github.com/agustindt/facultad-hub/issues/8
+
+Decís: Closes #6 cerró la tarea al mergear.
+       La historia sigue abierta: tests y artefacto son TP5.
+       El bug #8 está al costado: defecto de algo ya entregado.
+
+
+6) TP4 — gate rojo → verde  (~80s)
+----------------------------------
+No hay comando. Navegador:
+
+    PR #13     https://github.com/agustindt/facultad-hub/pull/13
+               Checks: el primero FALLÓ (build-backend rojo)
+               el de después del fix está VERDE
+               mergeado
+
+    Actions    https://github.com/agustindt/facultad-hub/actions
+    Badge      https://github.com/agustindt/facultad-hub
+               (chapita CI en el README)
+
+Decís: Dos jobs en paralelo, sin needs: cada uno en su runner,
+       cada uno con su cache. Construyen los Dockerfiles del TP2,
+       no un npm aparte. Rompí el build con un paquete que no
+       existe porque este stack no compila: un import inventado
+       no cae en docker build.
+
+
+7) TU CASO  (~60s)
+------------------
+Nada que ejecutar. Escuchás.
+
+
+DESPUÉS DE LA DEFENSA (en casa)
+-------------------------------
+    git stash pop
+    (vuelven LEEME / README / server.js / index.html)
+
+
+SI ALGO FALLA EN LA MESA
+------------------------
+Push NO rechaza:
+    no improvises. «main tiene que devolver GH006».
+
+IMAGE no dice ghcr.io:
+    estás en el compose que buildea. Cortá y corré:
+    docker compose -f docker-compose.registry.yml ps
+
+Volúmenes no aparecen:
+    docker volume ls | grep facultad

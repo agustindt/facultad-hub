@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P1 · Facultad Hub · Di Tomaso</title>
+<style>
+  :root {
+    --bg: #101114;
+    --panel: #1a1c21;
+    --line: #2c3038;
+    --text: #ececec;
+    --muted: #9aa0aa;
+    --say: #e8c36a;
+    --do: #7ec8e3;
+    --ok: #7dbe8f;
+    --bad: #e07a7a;
+    --link: #8bb4ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 8px 16px; border-bottom: 1px solid var(--line); flex: 0 0 auto;
+    font-size: 13px; color: var(--muted);
+  }
+  header strong { color: var(--text); font-weight: 600; }
+  header .sp { flex: 1; }
+  header a { color: var(--link); text-decoration: none; }
+  header a:hover { text-decoration: underline; }
+  #prog { height: 3px; background: var(--line); flex: 0 0 auto; }
+  #prog > i { display: block; height: 100%; width: 0; background: var(--do); }
+  main { flex: 1; position: relative; overflow: hidden; }
+  .slide {
+    display: none; height: 100%; padding: 22px 28px 18px;
+    grid-template-rows: auto auto 1fr auto; gap: 12px;
+  }
+  .slide.on { display: grid; }
+  .kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 0; font-size: 32px; font-weight: 650; letter-spacing: -.02em; }
+  h2 { margin: 0; font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
+  .grid2 { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; min-height: 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-height: 0; overflow: auto; }
+  .card h3 { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+  .card.hace h3 { color: var(--do); }
+  .card.deci h3 { color: var(--say); }
+  .card.preg h3 { color: var(--ok); }
+  pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  pre { margin: 0; font-size: 13px; line-height: 1.45; white-space: pre-wrap; color: #d7dde6; }
+  .deci p, .preg p { margin: 0; font-size: 16px; line-height: 1.45; }
+  img.shot { width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 8px; border: 1px solid var(--line); }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; }
+  a.btn {
+    display: inline-block; padding: 8px 12px; border-radius: 8px;
+    background: #243044; color: var(--link); text-decoration: none; font-size: 13px; font-weight: 600;
+    border: 1px solid #33415c;
+  }
+  a.btn:hover { background: #2c3c58; }
+  a.btn.live { background: #1e3d32; border-color: #2e5c49; color: #b6e4c6; }
+  ul.clean { margin: 0; padding-left: 18px; font-size: 15px; line-height: 1.5; }
+  .stat { font-size: 13px; color: var(--muted); }
+  .stat b { color: var(--text); font-size: 20px; display: block; font-weight: 650; }
+  footer.bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted);
+  }
+  footer.bar .sp { flex: 1; }
+  button.nav {
+    background: var(--panel); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px;
+  }
+  button.nav:hover { border-color: #4a5160; }
+  .big-links { display: flex; flex-direction: column; gap: 8px; }
+  .path { font-size: 14px; }
+  .path span { color: var(--muted); }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.mini th, table.mini td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.mini th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .ok { color: var(--ok); }
+  .bad { color: var(--bad); }
+  .lead { font-size: 18px; line-height: 1.4; color: #c9cdd4; max-width: 42rem; }
+</style>
+</head>
+<body>
+<header>
+  <strong>Agustín Di Tomaso</strong>
+  <span>IngSoft III · P1 · facultad-hub</span>
+  <span class="sp"></span>
+  <a href="https://github.com/agustindt/facultad-hub" target="_blank">repo</a>
+  <a href="https://github.com/users/agustindt/projects/5" target="_blank">project</a>
+  <a href="https://github.com/agustindt/facultad-hub/pull/2" target="_blank">#2</a>
+  <a href="https://github.com/agustindt/facultad-hub/pull/10" target="_blank">#10</a>
+  <a href="https://github.com/agustindt/facultad-hub/pull/13" target="_blank">#13</a>
+  <a href="https://github.com/agustindt/facultad-hub/actions" target="_blank">Actions</a>
+  <span id="pos">1 / 15</span>
+</header>
+<div id="prog"><i></i></div>
+<main id="deck">
+
+<section class="slide on">
+  <div class="kicker">Portada · vos conducís · 5:07 · se corta en seco</div>
+  <h1>Facultad Hub — defensa P1 (TPs 1 a 4)</h1>
+  <div class="grid2">
+    <div class="card">
+      <p class="lead">App propia: hub sobre un vault de Obsidian. Backend Node, frontend SPA, Postgres. Repo público, mismo artefacto todo el semestre.</p>
+      <div class="grid3" style="margin-top:16px">
+        <div class="stat"><b>25%</b> repo en main · ya corregido</div>
+        <div class="stat"><b>25%</b> decisiones.md · ya leído</div>
+        <div class="stat"><b>50%</b> oral · 5 casillas 0·1·2</div>
+      </div>
+      <p class="stat" style="margin-top:16px">Grupo A · puesto 25 · ~15:32 · legajo 2319308</p>
+    </div>
+    <div class="card">
+      <h3>Hoy, en este orden</h3>
+      <table class="mini">
+        <tr><th>Paso</th><th>Peso</th><th>Qué vas a ver</th></tr>
+        <tr><td>TP1 Git</td><td>5%</td><td>push GH006 · PR #2 · v1.0.0</td></tr>
+        <tr><td>TP2 Docker</td><td>40%</td><td>compose registry · .env · volúmenes</td></tr>
+        <tr><td>TP3 Plan</td><td>10%</td><td>#6 → PR #10 → #5 → #4</td></tr>
+        <tr><td>TP4 CI</td><td>45%</td><td>PR #13 rojo→verde · badge</td></tr>
+        <tr><td>Tu caso</td><td>—</td><td>una pregunta sobre este repo</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="links">
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub" target="_blank">Abrir repo</a>
+    <a class="btn live" href="https://github.com/users/agustindt/projects/5" target="_blank">Abrir Project</a>
+    <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfDN9ytzgGD9RzPu9TDSG1REWhDY-uqlQroKnMWzcJGFArkpQ/viewform" target="_blank">Formulario P1</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Antes · el sistema ya tiene que estar arriba</div>
+  <h2>Lo que tiene que estar listo</h2>
+  <div class="grid2">
+    <div class="card hace">
+      <h3>Hacé esto antes de sentarte</h3>
+<pre>cd ~/Documents/github.com/facultad-hub
+git stash push -u -m "wip antes de la defensa"
+colima start
+docker compose -f docker-compose.registry.yml up -d
+docker compose -f docker-compose.registry.yml ps</pre>
+      <p class="stat" style="margin-top:10px">El <code>reset --hard</code> del paso 1 borra cambios sucios. Stash primero.</p>
+    </div>
+    <div class="card">
+      <h3>IMAGE tiene que decir ghcr.io — no el nombre local</h3>
+      <ul class="clean">
+        <li><code>ghcr.io/agustindt/facultad-hub-backend:v0.1.0</code></li>
+        <li><code>ghcr.io/agustindt/facultad-hub-frontend:v0.1.0</code></li>
+        <li>db <span class="ok">healthy</span></li>
+      </ul>
+      <p class="stat" style="margin-top:12px">Si IMAGE dice <code>facultad-hub-backend</code> sin ghcr, levantaste el compose que buildea. No vale.</p>
+    </div>
+  </div>
+  <div class="links">
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/blob/main/docker-compose.registry.yml" target="_blank">docker-compose.registry.yml</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP1 · ~50s · casilla 1 · mostrás el rechazo en vivo</div>
+  <h2>Push directo a main — tiene que fallar</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace">
+        <h3>Hacé</h3>
+<pre>echo "prueba-defensa" >> README.md
+git add README.md
+git commit -m "prueba"
+git push origin main</pre>
+        <p class="stat" style="margin-top:8px">Esperado: <span class="bad">GH006</span> · protected branch hook declined</p>
+<pre style="margin-top:8px">git reset --hard HEAD~1</pre>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Decí</h3>
+        <p>Main está protegida con <code>enforce_admins</code>: ni el dueño pushea. Todo entra por PR. Así un viernes no se rompe main sin que se vea.</p>
+      </div>
+      <div class="card preg" style="margin-top:12px">
+        <h3>Pregunta del PDF</h3>
+        <p>¿Por qué el flujo está armado así? — Porque main es el contrato. Confianza no reemplaza historial. El PR obliga a ver el diff, el conflicto y ahora el CI.</p>
+      </div>
+    </div>
+    <div>
+      <img class="shot" src="img/push-rechazado.png" alt="GH006 push rechazado">
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP1 · conflicto fabricado · PR #2</div>
+  <h2>Git no eligió: misma línea, dos ramas nacidas de main</h2>
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <h3>Resultado</h3>
+        <table class="mini">
+          <tr><td>PR #1</td><td>versión A · mergeado primero</td></tr>
+          <tr><td>PR #2</td><td><span class="bad">mergeable: CONFLICTING</span> · DIRTY</td></tr>
+          <tr><td>Resolución</td><td>versión B (la rama que estaba mergeando)</td></tr>
+        </table>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Decí</h3>
+        <p>Las dos ramas salieron de main y cambiaron la primera línea del README. Git fusiona solo regiones distintas. Para que no apareciera: tocar líneas distintas, o que B naciera después de mergear A.</p>
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/2" target="_blank">Abrir PR #2 en vivo</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/pull/1" target="_blank">PR #1 (A)</a>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-rows:1fr 1fr;gap:10px;min-height:0">
+      <img class="shot" src="img/aviso-conflicto.png" alt="PR 2 CONFLICTING">
+      <img class="shot" src="img/marcadores-conflicto.png" alt="marcadores en README">
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP1 · tag y release</div>
+  <h2>v1.0.0 congela el TP1</h2>
+  <div class="grid2">
+    <div>
+      <div class="card deci">
+        <h3>Decí</h3>
+        <p>Semver MAJOR.MINOR.PATCH. v1.0.0 es la primera entrega estable. Cada TP congela el suyo: v2, v3, v4. Si después corrijo, muevo el tag y lo cuento en decisiones.md.</p>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h3>Tags en este repo</h3>
+        <table class="mini">
+          <tr><td>v1.0.0</td><td>TP1 · protecciones, conflicto, PRs</td></tr>
+          <tr><td>v2.0.0</td><td>TP2 · registry público + pull anónimo</td></tr>
+          <tr><td>v3.0.0</td><td>TP3 · esqueleto CI, cierra #6</td></tr>
+          <tr><td>v4.0.0</td><td>TP4 · pipeline, gate, badge</td></tr>
+        </table>
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/releases/tag/v1.0.0" target="_blank">Release v1.0.0</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/releases" target="_blank">Todas las releases</a>
+      </div>
+    </div>
+    <img class="shot" src="img/release-v1.0.0.png" alt="gh release view v1.0.0">
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP2 · ~60s · casilla 2 · el compose que BAJA, no el que buildea</div>
+  <h2>Imágenes públicas · IMAGE = ghcr.io/…:v0.1.0</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace">
+        <h3>Hacé</h3>
+<pre>docker compose -f docker-compose.registry.yml ps</pre>
+        <p class="stat" style="margin-top:8px">Columna IMAGE: ghcr.io, no el nombre local. db healthy.</p>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Decí</h3>
+        <p>No las construí acá: las bajé de ghcr. Las armé con mis Dockerfiles multi-stage y las publiqué. Cualquiera clona, copia el .env.example y levanta. Probé pull anónimo: <code>docker logout</code> + pull + este compose.</p>
+      </div>
+      <div class="card preg" style="margin-top:12px">
+        <h3>Pregunta del PDF</h3>
+        <p>¿Por qué está armado así y qué pasa si falta una pieza? — Sin .env no hay password ni vault. Sin volumen, down pierde Postgres. Sin healthcheck, el back habla con una base que todavía no escucha. Sin el resolver de nginx, recrear el back deja 502. Sin ghcr público, este compose no baja nada.</p>
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a class="btn live" href="https://github.com/users/agustindt/packages/container/package/facultad-hub-backend" target="_blank">Package backend</a>
+        <a class="btn live" href="https://github.com/users/agustindt/packages/container/package/facultad-hub-frontend" target="_blank">Package frontend</a>
+      </div>
+    </div>
+    <img class="shot" src="img/registry-compose.png" alt="pull anónimo y compose registry">
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP2 · secretos y volúmenes · en GitHub, no en tu disco</div>
+  <h2>.env no viaja · el volumen sí (hasta down -v)</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace">
+        <h3>Hacé</h3>
+<pre>git ls-files .env
+# (vacío = no está en el repo)
+
+docker volume ls
+# facultad-hub_datos-db
+# facultad-hub_datos-hub</pre>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Decí</h3>
+        <p>El secreto no va en el repo: .env.example sí, .env en gitignore. El volumen <code>datos-db</code> sobrevive a <code>down</code>; <code>down -v</code> lo borra. Las notas son bind mount: Obsidian las abre, no viven en Postgres.</p>
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/blob/main/.gitignore" target="_blank">.gitignore (.env)</a>
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/blob/main/.env.example" target="_blank">.env.example</a>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-rows:1fr 1fr;gap:10px;min-height:0">
+      <img class="shot" src="img/persistencia.png" alt="down conserva, down -v borra">
+      <img class="shot" src="img/ghcr-packages.png" alt="packages public">
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP2 · si pregunta multi-stage o “cloná y levantalo”</div>
+  <h2>Por qué dos etapas · arranque en máquina limpia</h2>
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <h3>Tamaños medidos (Colima, linux/arm64)</h3>
+        <table class="mini">
+          <tr><td>node:22 (SDK)</td><td>1.63 GB</td></tr>
+          <tr><td>node:22-alpine</td><td>229 MB</td></tr>
+          <tr><td>backend final</td><td><b>230 MB</b></td></tr>
+          <tr><td>frontend (nginx alpine)</td><td><b>84.3 MB</b></td></tr>
+        </table>
+        <p class="stat" style="margin-top:10px">Sin multi-stage te llevás npm, cache y toolchain. CMD y no ENTRYPOINT: se puede pisar el comando (<code>compose run backend node --test</code>).</p>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Arranque (dos comandos, no uno)</h3>
+<pre>cp .env.example .env
+docker compose up -d          # buildea
+# o, en la mesa:
+docker compose -f docker-compose.registry.yml up -d</pre>
+        <p class="stat" style="margin-top:8px">El secreto es lo único que no viaja. No es un defecto del README.</p>
+      </div>
+    </div>
+    <img class="shot" src="img/docker-images.png" alt="tamaños de imagen">
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP3 · ~50s · casilla 3 · mostrá el camino, no el tablero entero</div>
+  <h2>Tarea cerrada → PR → commit → historia → épica</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace">
+        <h3>Clics, en este orden</h3>
+        <ol class="clean path">
+          <li>Project Board → Done → <b>#6</b></li>
+          <li>Issue #6 (cerrada) → linked PR <b>#10</b></li>
+          <li>PR #10 · pestaña Commits</li>
+          <li>Historia <b>#5</b> (sigue abierta)</li>
+          <li>Épica <b>#4</b></li>
+        </ol>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Decí</h3>
+        <p><code>Closes #6</code> cerró la tarea al mergear. La historia sigue abierta: tests y artefacto son TP5. El bug #8 está al costado: defecto de algo ya entregado (el 502 de nginx), no trabajo que faltaba adentro de la historia.</p>
+      </div>
+      <div class="card preg" style="margin-top:12px">
+        <h3>Pregunta del PDF</h3>
+        <p>¿Cómo se conecta lo planificado con lo hecho? — Del código al pedido: el commit del #10 cierra la #6, que cuelga de la #5, que cuelga de la #4. Un Trello desconectado del repo no te da esa vuelta.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Jerarquía (Project público)</h3>
+      <table class="mini">
+        <tr><td>#4 épica</td><td>Pipeline DevOps completo</td><td>abierta</td></tr>
+        <tr><td>#5 historia</td><td>CI en cada PR</td><td>abierta · sprint 1</td></tr>
+        <tr><td>#6 tarea</td><td>Escribir el workflow</td><td class="ok">Done · PR #10</td></tr>
+        <tr><td>#7 tarea</td><td>Artefacto de tests</td><td>Todo · TP5</td></tr>
+        <tr><td>#8 bug</td><td>Front sin lista / 502</td><td>al costado</td></tr>
+      </table>
+      <p class="stat" style="margin-top:10px">Sprint 7 días (28/8–3/9) · WIP 2 = personas+1. Historia mal escrita diagnosticada en decisiones.md.</p>
+      <div class="links" style="margin-top:12px">
+        <a class="btn live" href="https://github.com/users/agustindt/projects/5" target="_blank">Project</a>
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/issues/6" target="_blank">#6</a>
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/10" target="_blank">PR #10</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/issues/5" target="_blank">#5</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/issues/4" target="_blank">#4</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/issues/8" target="_blank">bug #8</a>
+      </div>
+      <img class="shot" src="img/slides/og-pr10.png" alt="PR 10" style="height:140px;margin-top:12px">
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP4 · ~80s · casilla 4 · lo que más pesa (45%)</div>
+  <h2>El gate actuó: rojo → BLOCKED → fix → verde → merge</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace">
+        <h3>Mostrá el PR #13</h3>
+        <table class="mini">
+          <tr><td>1º commit</td><td>rompe: paquete <code>estonoexiste-tp4</code></td></tr>
+          <tr><td>corrida</td><td><span class="bad">failure</span> build-backend · <a href="https://github.com/agustindt/facultad-hub/actions/runs/33191765998" target="_blank">run 33191765998</a></td></tr>
+          <tr><td>2º commit</td><td>fix: saca el paquete</td></tr>
+          <tr><td>corrida</td><td><span class="ok">success</span> · <a href="https://github.com/agustindt/facultad-hub/actions/runs/33191905516" target="_blank">run 33191905516</a></td></tr>
+        </table>
+      </div>
+      <div class="card deci" style="margin-top:12px">
+        <h3>Decí</h3>
+        <p>Dos jobs en paralelo, sin <code>needs:</code>: cada uno en su runner, cada uno con su cache. Construyen los Dockerfiles del TP2, no un npm aparte. Rompí el build con un paquete que no existe porque este stack no compila: un import inventado no cae en <code>docker build</code>.</p>
+      </div>
+      <div class="card preg" style="margin-top:12px">
+        <h3>Pregunta del PDF</h3>
+        <p>¿Qué frena un cambio y qué lo destraba? — Lo frenan <code>build-backend</code> o <code>build-frontend</code> en rojo, o una rama atrasada (<code>strict: true</code>). Lo destraba un commit que hace pasar el build, o Update branch. El cache no frena: si desaparece, tarda más y sigue verde.</p>
+      </div>
+      <div class="links" style="margin-top:12px">
+        <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/13" target="_blank">Abrir PR #13</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/actions/runs/33191765998" target="_blank">Corrida roja</a>
+        <a class="btn" href="https://github.com/agustindt/facultad-hub/actions/runs/33191905516" target="_blank">Corrida verde</a>
+      </div>
+    </div>
+    <div>
+      <img class="shot" src="img/slides/og-pr13.png" alt="PR 13">
+      <div class="card" style="margin-top:12px">
+        <h3>Main exige hoy</h3>
+        <ul class="clean">
+          <li>PR obligatorio · 0 approvals · <code>enforce_admins</code></li>
+          <li>required checks: <b>build-backend</b> + <b>build-frontend</b></li>
+          <li><code>strict: true</code> → Update branch si main se movió (lo vi en el PR #12)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP4 · cache, paralelo, badge</div>
+  <h2>El pipeline verifica las mismas imágenes que se despliegan</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Qué hay en el YAML</h3>
+      <ul class="clean">
+        <li>Triggers: <code>pull_request</code> y <code>push</code> a main</li>
+        <li>Jobs <code>build-backend</code> / <code>build-frontend</code> · sin <code>needs:</code></li>
+        <li>Cache GHA <code>mode=max</code> · scope distinto por job (si no, el último pisa al otro)</li>
+        <li>Segunda corrida del PR #11: capas <code>CACHED</code> — <a href="https://github.com/agustindt/facultad-hub/actions/runs/33191229066" target="_blank">run 33191229066</a></li>
+      </ul>
+      <p class="stat" style="margin-top:12px">Si el cache desaparece el pipeline sigue en verde: tarda más, no falla.</p>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Badge en el README</h3>
+        <p><img src="img/slides/badge-ci.svg" alt="CI badge" style="height:28px"></p>
+        <div class="links" style="margin-top:10px">
+          <a class="btn live" href="https://github.com/agustindt/facultad-hub" target="_blank">README con badge</a>
+          <a class="btn" href="https://github.com/agustindt/facultad-hub/actions" target="_blank">Actions</a>
+          <a class="btn" href="https://github.com/agustindt/facultad-hub/blob/main/.github/workflows/ci.yml" target="_blank">ci.yml</a>
+          <a class="btn" href="https://github.com/agustindt/facultad-hub/pull/12" target="_blank">PR #12 · Update branch</a>
+        </div>
+      </div>
+      <div class="card preg" style="margin-top:12px">
+        <h3>Si pregunta CI vs pipeline</h3>
+        <p>CI es integrar seguido en main. El pipeline es la máquina. Podés integrar todos los días a mano (CI sin pipeline) o tener un YAML que corre una vez al mes (pipeline sin CI).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Casilla 5 · no mostrás nada · escuchás</div>
+  <h2>Tu caso — lo que se ve en este decisiones.md</h2>
+  <table class="mini">
+    <tr><th>Si pregunta</th><th>Contestás</th></tr>
+    <tr><td>Los cuatro TPs el 28/8</td><td>La app ya existía. Ese día armé el proceso DevOps. No fabriqué historial semanal.</td></tr>
+    <tr><td>¿Por qué esta app si es grande?</td><td>Lo declaré: no cumple el CRUD chico. La defensa es el 50% y esta app la uso.</td></tr>
+    <tr><td>El 502</td><td>nginx cacheó la IP de backend al arrancar. Recrear el contenedor = 502. Arreglo: <code>resolver 127.0.0.11</code> + <code>proxy_pass</code> por variable. Bug #8.</td></tr>
+    <tr><td>¿Notas en Postgres?</td><td>No. Fuente de verdad = markdown. Postgres guarda lo que no es nota (repaso, eventos, log de IA).</td></tr>
+    <tr><td>ghcr privado / token</td><td>El token no tenía <code>write:packages</code>. Packages nacen privados; visibilidad a mano. Lo comprobé con logout + pull anónimo.</td></tr>
+    <tr><td>¿Qué hizo la IA?</td><td>Cursor: YAML, Dockerfiles, redacción. Yo verifiqué: GH006, persistencia, #13 BLOCKED, CACHED. No delegué: versión B, 0 approvals, notas fuera de PG, 7 días, WIP 2, nombres de los jobs.</td></tr>
+    <tr><td>Sprint / WIP</td><td>7 días: form el 2/9, defensa el 4/9. WIP 2 = personas+1. A diez deja de limitar.</td></tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="kicker">Reserva · si un movimiento no sale, pasá al siguiente</div>
+  <h2>Si se traba</h2>
+  <div class="grid3">
+    <div class="card">
+      <h3>Push no rechaza</h3>
+      <p>No improvises. «main tiene que devolver GH006». Mostrá la captura de evidencias.</p>
+      <img class="shot" src="img/push-rechazado.png" alt="" style="height:120px;margin-top:8px">
+    </div>
+    <div class="card">
+      <h3>IMAGE no dice ghcr.io</h3>
+      <p>Levantaste el compose que buildea. Cortá y corré:</p>
+<pre>docker compose -f docker-compose.registry.yml ps</pre>
+    </div>
+    <div class="card">
+      <h3>Se acaba el tiempo</h3>
+      <p>Priorizá TP4 (45%). Si hay que recortar, recortá TP1. Si la máquina no arranca pero lo sabés explicar, es 1, no 0.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <h3>Links de emergencia</h3>
+    <div class="links">
+      <a class="btn live" href="https://github.com/agustindt/facultad-hub" target="_blank">Repo</a>
+      <a class="btn live" href="https://github.com/agustindt/facultad-hub/blob/main/decisiones.md" target="_blank">decisiones.md</a>
+      <a class="btn live" href="https://github.com/agustindt/facultad-hub/blob/main/evidencias.md" target="_blank">evidencias.md</a>
+      <a class="btn" href="https://github.com/agustindt/facultad-hub/blob/main/.github/workflows/ci.yml" target="_blank">ci.yml</a>
+      <a class="btn" href="https://github.com/agustindt/facultad-hub/blob/main/frontend/nginx.conf" target="_blank">nginx.conf (resolver)</a>
+      <a class="btn" href="https://github.com/ingsoft3ucc/TPs_2026/blob/main/defensas/defensa-P1.pdf" target="_blank">PDF de la cátedra</a>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="bar">
+  <button class="nav" id="prev" type="button">← anterior</button>
+  <button class="nav" id="next" type="button">siguiente →</button>
+  <span>← → o espacio</span>
+  <span class="sp"></span>
+  <span>No leas las diapos: ejecutá y mirá al costado. Esto guía al que está sentado al lado.</span>
+</footer>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  let i = 0;
+  const pos = document.getElementById("pos");
+  const bar = document.querySelector("#prog > i");
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle("on", k === i));
+    pos.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+  }
+  document.getElementById("prev").onclick = () => show(i - 1);
+  document.getElementById("next").onclick = () => show(i + 1);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
+    if (e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace") { e.preventDefault(); show(i - 1); }
+    if (e.key === "Home") show(0);
+    if (e.key === "End") show(slides.length - 1);
+  });
+</script>
+</body>
+</html>
