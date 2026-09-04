@@ -24,7 +24,7 @@ cp .env.example .env && docker compose up -d    →  http://localhost:8080
 
 | Vista | Qué muestra |
 |---|---|
-| **Hub** | Próximo hito con cuenta regresiva, estado de estudio por materia, salud del vault, repaso de hoy |
+| **Hub** | Próximo hito con cuenta regresiva, estado de estudio y asistencia por materia, salud del vault, repaso de hoy |
 | **Repaso** | Repaso espaciado con tarjetas derivadas de las notas, planificado hacia atrás desde cada parcial |
 | **Capturar** | Hoja en blanco para escribir en clase, con autosave y el frontmatter oculto |
 | **Cobertura** | Los temas del programa de la cátedra contra las notas que existen |
@@ -95,8 +95,9 @@ transpilación. `git clone` + `node server.js`.
 
 | Método | Ruta | |
 |---|---|---|
-| GET | `/api/estado` | índice completo: materias, notas, hitos, salud |
+| GET | `/api/estado` | índice completo: materias (con asistencia), notas, hitos, salud |
 | GET/PUT/POST | `/api/nota` | leer, guardar, crear |
+| GET/PATCH/POST | `/api/asistencias` | planilla de asistencias por materia (markdown) |
 | GET | `/api/buscar?q=` | full-text con normalización de tildes |
 | GET | `/api/grafo` | nodos y aristas de wikilinks |
 | GET | `/api/salud` | validaciones de `Convenciones.md` |

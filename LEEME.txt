@@ -41,7 +41,8 @@ QUÉ TIENE
 ---------
 
 Hub          Próximo hito con cuenta regresiva, estado de estudio por materia,
-             hitos de los próximos días, salud del vault y el repaso de hoy.
+             asistencia, hitos de los próximos días, salud del vault y el repaso
+             de hoy.
 
 Asistente    Panel lateral (⌘J) con Claude leyendo tus archivos. Sabe en qué
              pantalla y en qué archivo estás parado. Ver abajo.
@@ -382,8 +383,9 @@ MATERIAS: ALTA, EDICIÓN Y BAJA
 ------------------------------
 
 ALTA. "+ Nueva materia" crea la carpeta completa con la estructura de
-Convenciones.md: las 8 subcarpetas, el MOC, el CLAUDE.md y los dos archivos de
-seguimiento ya sufijados (cronograma-<sufijo>.md, condiciones-<sufijo>.md).
+Convenciones.md: las 8 subcarpetas, el MOC, el CLAUDE.md y los tres archivos de
+seguimiento ya sufijados (cronograma-<sufijo>.md, condiciones-<sufijo>.md,
+asistencias-<sufijo>.md).
 
 El sufijo no es decorativo: Obsidian resuelve los wikilinks por nombre de
 archivo, y OAE ya ocupa cronograma.md y condiciones.md. El hub rechaza el alta
@@ -391,6 +393,12 @@ si el sufijo elegido produce un stem que ya existe — te avisa cuál choca.
 
 Los archivos de seguimiento nacen vacíos a propósito, con las tablas armadas y
 una sección de Faltantes. No se inventan fechas ni condiciones.
+
+En cada materia hay una planilla de asistencias (`asistencias-<sufijo>.md`). Se
+marca presente / ausente / justificado / feriado desde la ficha de la materia;
+el hub calcula el porcentaje contra los umbrales de condiciones (si están
+publicados). Las fechas de clase no salen del calendario: esa planilla no
+genera hitos.
 
 EDICIÓN. Cambiás nombre, nombre corto, color, orden y si está archivada. Eso vive
 en _hub/datos/materias.json, no toca tus notas.

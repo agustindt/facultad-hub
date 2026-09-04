@@ -141,6 +141,15 @@ h3{font-size:14px;font-weight:600;margin-bottom:8px}
 /* ---------- Meter ---------- */
 .meter{height:6px;border-radius:3px;background:color-mix(in oklab,var(--o1) 35%,var(--surface-1));overflow:hidden}
 .meter > i{display:block;height:100%;border-radius:3px;background:var(--o3)}
+.meter.asi > i.ok{background:var(--good)}
+.meter.asi > i.warn{background:var(--warn)}
+.meter.asi > i.bad{background:var(--crit)}
+.asi-btns{display:flex;gap:4px;flex-wrap:wrap}
+.asi-btns .btn.on.presente{background:var(--good);border-color:transparent;color:#fff}
+.asi-btns .btn.on.ausente{background:var(--crit);border-color:transparent;color:#fff}
+.asi-btns .btn.on.justificado{background:var(--warn);border-color:transparent;color:#0b0b0b}
+.asi-btns .btn.on.feriado{background:var(--ink-3);border-color:transparent;color:#fff}
+.asi-btns .btn.on.pendiente{background:color-mix(in oklab,var(--ink-1) 10%,transparent)}
 
 /* ---------- Tablas ---------- */
 table{border-collapse:collapse;width:100%;font-size:13.5px}
@@ -699,6 +708,17 @@ function viewHub(){
     const b=el('button','btn sm','Abrir'); b.onclick=()=>go(`#/materia?id=${encodeURIComponent(mat.id)}`);
     h.append(left,b); c.append(h);
     c.append(stackEstado(mat.conteo));
+    const as=mat.asistencia;
+    if(as && as.porcentaje!=null){
+      const ok=as.alcanzaPromo===true||(as.alcanzaPromo==null&&as.alcanzaRegular!==false);
+      const warn=as.alcanzaRegular===true&&as.alcanzaPromo===false;
+      const color=ok?'--good':warn?'--warn':'--crit';
+      const umbral=as.minPromo??as.minRegular;
+      c.append(el('div','tiny sec',
+        `<span style="color:var(${color});font-weight:650">${as.porcentaje}%</span> asistencia`+
+        (umbral!=null?` · umbral ${umbral}%`:'')));
+      c.lastChild.style.marginTop='10px';
+    }
     const evsM=evs.filter(e=>e.materia===mat.id).slice(0,2);
     if(evsM.length){
       const ul=el('div'); ul.style.marginTop='14px';
@@ -780,6 +800,8 @@ function viewMateria(){
   c.append(stackEstado(mat.conteo));
   m.append(c);
 
+  m.append(bloqueAsistencias(mat));
+
   const evs=(S.data.eventos||[]).filter(e=>e.materia===id && dias(e.fecha)>=0).slice(0,6);
   if(evs.length){
     const ce=el('div','card'); ce.style.marginBottom='16px';
@@ -821,6 +843,106 @@ function viewMateria(){
     g.append(card);
   });
   m.append(g);
+}
+
+const ASI_LBL={presente:'Presente',ausente:'Ausente',justificado:'Justif.',feriado:'Feriado',pendiente:'—'};
+const ASI_ORD=['presente','ausente','justificado','feriado','pendiente'];
+
+function bloqueAsistencias(mat){
+  const wrap=el('div','card'); wrap.style.marginBottom='16px';
+  const as=mat.asistencia;
+  const sp=el('div','spread'); sp.style.marginBottom='10px';
+  sp.append(el('h3','','Asistencias'));
+  if(as?.rel){
+    const a=el('button','btn sm','Abrir planilla');
+    a.onclick=()=>go(`#/nota?rel=${encodeURIComponent(as.rel)}`);
+    sp.append(a);
+  }
+  wrap.append(sp);
+
+  if(!as){
+    wrap.append(el('div','tiny muted','Esta materia no tiene planilla en 00-Seguimiento/asistencias-*.md.'));
+    return wrap;
+  }
+
+  const pct=as.porcentaje;
+  const color=pct==null?'--ink-3'
+    : as.alcanzaPromo===true||(as.minPromo==null&&as.alcanzaRegular!==false)?'--good'
+    : as.alcanzaRegular===true?'--warn':'--crit';
+  const hero=el('div','spread'); hero.style.alignItems='flex-end'; hero.style.marginBottom='10px';
+  const izq=el('div');
+  izq.append(el('div','',`<span class="hero" style="color:var(${color})">${pct==null?'—':pct}</span>${
+    pct==null?'':`<span class="hero-unit">%</span>`}`));
+  const umbrales=[
+    as.minRegular!=null?`regular ≥ ${as.minRegular}%`:null,
+    as.minPromo!=null?`promoción ≥ ${as.minPromo}%`:null,
+  ].filter(Boolean).join(' · ');
+  izq.append(el('div','note',
+    as.computables
+      ? `${as.presentes} presente · ${as.ausentes} ausente · ${as.justificados} justificado · ${as.computables} computables`
+      : 'Ninguna clase marcada todavía'));
+  if(umbrales) izq.append(el('div','tiny muted',umbrales));
+  hero.append(izq);
+  wrap.append(hero);
+
+  if(pct!=null){
+    const met=el('div','meter asi'); met.style.marginBottom='14px';
+    const bar=el('i', pct>=(as.minPromo??as.minRegular??0)?'ok':as.alcanzaRegular?'warn':'bad');
+    bar.style.width=Math.min(100,pct)+'%';
+    met.append(bar); wrap.append(met);
+  }
+
+  if(as.clases.length){
+    const t=el('table');
+    t.innerHTML='<thead><tr><th>Fecha</th><th>Tipo</th><th>Tema</th><th>Estado</th></tr></thead>';
+    const tb=el('tbody');
+    as.clases.forEach(cl=>{
+      const tr=el('tr');
+      const fechaTxt=cl.fecha?fmtFecha(cl.fecha):esc(cl.fechaRaw||'—');
+      const tdF=el('td','mono sec',fechaTxt);
+      const tdT=el('td','tiny sec',esc(cl.tipo||'—'));
+      const tdTema=el('td','tiny',esc(cl.tema||''));
+      const tdE=el('td');
+      const btns=el('div','asi-btns');
+      ASI_ORD.forEach(est=>{
+        const b=el('button','btn sm'+(cl.estado===est?' on '+est:''),ASI_LBL[est]);
+        b.onclick=async()=>{
+          try{
+            await api('/api/asistencias',{method:'PATCH',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({materia:mat.id,fecha:cl.fechaRaw||cl.fecha,tipo:cl.tipo,tema:cl.tema,estado:est})});
+            await load(true); viewMateria();
+          }catch(e){ alert(e.message); }
+        };
+        btns.append(b);
+      });
+      tdE.append(btns);
+      tr.append(tdF,tdT,tdTema,tdE);
+      tb.append(tr);
+    });
+    t.append(tb); wrap.append(t);
+  }
+
+  const add=el('div'); add.style.marginTop='12px';
+  const fila=el('div','row');
+  const iF=el('input','input'); iF.type='date'; iF.style.width='auto';
+  const iTipo=el('select','input'); iTipo.style.width='auto';
+  ['Teórico','Práctico','Parcial','Clase'].forEach(t=>iTipo.append(new Option(t,t)));
+  const iTema=el('input','input'); iTema.placeholder='Tema (opcional)'; iTema.style.flex='1'; iTema.style.minWidth='140px';
+  const bAdd=el('button','btn sm','+ Clase');
+  const msg=el('div','tiny muted'); msg.style.marginTop='6px';
+  bAdd.onclick=async()=>{
+    if(!iF.value){ msg.textContent='Falta la fecha.'; return; }
+    msg.textContent='Guardando…';
+    try{
+      await api('/api/asistencias',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({materia:mat.id,fecha:iF.value,tipo:iTipo.value,tema:iTema.value.trim()})});
+      await load(true); viewMateria();
+    }catch(e){ msg.textContent=e.message; }
+  };
+  fila.append(iF,iTipo,iTema,bAdd);
+  add.append(fila,msg);
+  wrap.append(add);
+  return wrap;
 }
 
 /* ---------- Materias: alta, edición y baja ---------- */
@@ -904,7 +1026,7 @@ async function viewMaterias(){
       campo('Nombre completo',nombre,'Como se muestra en los títulos.'),
       campo('Nombre corto',corto,'Para las tarjetas y la barra lateral.'),
       campo('Sufijo de seguimiento',sufijo,
-        'Se usa en cronograma-<sufijo>.md y condiciones-<sufijo>.md. La convención exige sufijar para que no se repitan stems entre materias.'),
+        'Se usa en cronograma-<sufijo>.md, condiciones-<sufijo>.md y asistencias-<sufijo>.md. La convención exige sufijar para que no se repitan stems entre materias.'),
       campo('Proyecto de cátedra',proyW));
     const msg=el('div','tiny'); msg.style.marginBottom='10px';
     const ok=el('button','btn primary','Crear materia');
@@ -3229,6 +3351,12 @@ async function contextoDeVista(){
     const m=(S.data?.materias||[]).find(x=>x.id===p.id);
     partes.push(`Está en la materia ${p.id}.`);
     if(m) partes.push(`${m.total} notas · ${m.conteo.pendiente} pendientes, ${m.conteo.borrador} en borrador, ${m.conteo.estudiado} estudiadas, ${m.conteo.dominado} dominadas.`);
+    if(m?.asistencia){
+      const a=m.asistencia;
+      partes.push(a.porcentaje==null
+        ? `Asistencias: planilla en \`${a.rel}\`, todavía sin clases marcadas.`
+        : `Asistencias: ${a.porcentaje}% (${a.presentes} presente, ${a.ausentes} ausente, ${a.justificados} justificado de ${a.computables} computables).`);
+    }
     partes.push(`El contexto de esa materia está en \`${p.id}/CLAUDE.md\`.`);
   }
   else if(v==='cobertura'){

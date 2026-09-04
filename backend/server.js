@@ -367,6 +367,13 @@ const MATERIA_META = {
     orden: 4,
     sufijo: 'isw3',
   },
+  'Redes-II': {
+    nombre: 'Redes Teleinformáticas II',
+    slot: 5,
+    corto: 'Redes II',
+    orden: 5,
+    sufijo: 'redes2',
+  },
   'Ing-Software-II': {
     nombre: 'Ingeniería de Software II',
     slot: 0,
@@ -400,7 +407,7 @@ async function carpetasMateria() {
   }
   for (const e of entries) {
     if (!e.isDirectory()) continue;
-    if (e.name.startsWith('.') || e.name === '00-Sistema') continue;
+    if (e.name.startsWith('.') || e.name.startsWith('_') || e.name === '00-Sistema') continue;
     out.push(e.name);
   }
   return out;
@@ -480,6 +487,28 @@ async function impactoMateria(id) {
   };
 }
 
+function plantillaAsistencias({ id, nombre, cronograma, condiciones, asistencias }) {
+  return `---
+tipo: seguimiento
+materia: ${id}
+estado: pendiente
+tags: [${id}, seguimiento, asistencias]
+---
+
+**Materia:** [[${id}]] · Ver también [[${cronograma}]] · [[${condiciones}]]
+
+# Asistencias — ${nombre}
+
+> Sin datos de Autogestión todavía. Marcá cada clase acá: el hub calcula el porcentaje
+> contra los umbrales de [[${condiciones}]] (si están publicados).
+>
+> Estados: \`presente\` · \`ausente\` · \`justificado\` · \`feriado\` · \`pendiente\`
+
+| Fecha | Tipo | Estado | Tema |
+|---|---|---|---|
+`;
+}
+
 /** Crea la carpeta de una materia con la estructura de Convenciones.md. */
 async function crearMateria({ id, nombre, corto, sufijo, conProyecto }) {
   const dir = safeVaultPath(id);
@@ -488,7 +517,8 @@ async function crearMateria({ id, nombre, corto, sufijo, conProyecto }) {
   const { byStem } = await buildIndex(true);
   const cronograma = `cronograma-${sufijo}`;
   const condiciones = `condiciones-${sufijo}`;
-  for (const stem of [id, cronograma, condiciones]) {
+  const asistencias = `asistencias-${sufijo}`;
+  for (const stem of [id, cronograma, condiciones, asistencias]) {
     if (byStem.has(stem)) {
       throw new Error(
         `El nombre "${stem}" ya existe en el vault. Los stems tienen que ser únicos entre materias.`
@@ -519,7 +549,7 @@ tags: [${id}, moc]
 
 > MOC de la materia. Solo enlaza: la teoría vive en las notas.
 
-**Seguimiento:** [[${cronograma}]] · [[${condiciones}]]
+**Seguimiento:** [[${cronograma}]] · [[${condiciones}]] · [[${asistencias}]]
 
 ## Unidades
 
@@ -552,7 +582,7 @@ autoevaluación → repaso espaciado. Nunca volcar un resumen completo de una so
 ## Reglas
 
 - Se respeta \`00-Sistema/Convenciones.md\`.
-- Archivos de seguimiento sufijados con \`-${sufijo}\` para no chocar stems con otras materias.
+- Archivos de seguimiento sufijados con \`-${sufijo}\` (cronograma, condiciones, asistencias) para no chocar stems con otras materias.
 - Diagramas en Mermaid, nunca ASCII.
 - No inventar fechas, docentes ni consignas que no estén publicadas.
 - \`99-Material-Catedra/\` es fuente de verdad y no se edita.
@@ -576,7 +606,7 @@ estado: pendiente
 tags: [${id}, seguimiento, cronograma]
 ---
 
-**Materia:** [[${id}]] · Ver también [[${condiciones}]]
+**Materia:** [[${id}]] · Ver también [[${condiciones}]] · [[${asistencias}]]
 
 # Cronograma ${nombre}
 
@@ -602,7 +632,7 @@ estado: pendiente
 tags: [${id}, seguimiento, condiciones]
 ---
 
-**Materia:** [[${id}]] · Ver también [[${cronograma}]]
+**Materia:** [[${id}]] · Ver también [[${cronograma}]] · [[${asistencias}]]
 
 # Condiciones de cursada — ${nombre}
 
@@ -622,6 +652,11 @@ tags: [${id}, seguimiento, condiciones]
 `
   );
 
+  await escribir(
+    `00-Seguimiento/${asistencias}.md`,
+    plantillaAsistencias({ id, nombre, cronograma, condiciones, asistencias })
+  );
+
   const cfg = await readMateriasCfg();
   cfg[id] = {
     nombre,
@@ -634,7 +669,7 @@ tags: [${id}, seguimiento, condiciones]
   };
   await writeMateriasCfg(cfg);
   await buildIndex(true);
-  return { id, creada: subs.length, archivos: 4 };
+  return { id, creada: subs.length, archivos: 5 };
 }
 
 /** No borra: mueve la carpeta a 00-Sistema/_papelera/ para que sea recuperable. */
@@ -671,12 +706,276 @@ function classifyEvento(texto) {
   return 'hito';
 }
 
+// ---------------------------------------------------------------------------
+// Asistencias: la planilla vive en 00-Seguimiento/asistencias-<sufijo>.md
+// ---------------------------------------------------------------------------
+
+const ASI_ESTADOS = ['presente', 'ausente', 'justificado', 'feriado', 'pendiente'];
+const ASI_ALIAS = {
+  presente: 'presente',
+  p: 'presente',
+  si: 'presente',
+  asistio: 'presente',
+  asistió: 'presente',
+  ausente: 'ausente',
+  a: 'ausente',
+  no: 'ausente',
+  falta: 'ausente',
+  justificado: 'justificado',
+  j: 'justificado',
+  justif: 'justificado',
+  feriado: 'feriado',
+  f: 'feriado',
+  pendiente: 'pendiente',
+  '': 'pendiente',
+  '—': 'pendiente',
+  '-': 'pendiente',
+};
+
+function celdasTabla(line) {
+  return line
+    .split('|')
+    .map((c) => c.trim())
+    .filter((c, i, a) => i > 0 && i < a.length - 1);
+}
+
+function canonAsistencia(raw) {
+  const v = String(raw || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  if (ASI_ALIAS[v]) return ASI_ALIAS[v];
+  if (ASI_ESTADOS.includes(v)) return v;
+  return 'pendiente';
+}
+
+function parseFechaCelda(raw, year) {
+  const hit = String(raw || '').trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);
+  if (!hit) return null;
+  return toISO(hit[1], hit[2], hit[3] || year || String(new Date().getFullYear()));
+}
+
+function parseAsistencias(text, rel) {
+  const { data } = parseFrontmatter(text);
+  const year = String(new Date().getFullYear());
+  const clases = [];
+  let headers = null;
+  for (const line of text.split('\n')) {
+    if (!line.trim().startsWith('|')) continue;
+    const cells = celdasTabla(line);
+    if (!cells.length) continue;
+    if (cells.every((c) => /^[-:]+$/.test(c))) continue;
+    if (!headers) {
+      const lower = cells.map((c) => c.toLowerCase());
+      const fecha = lower.findIndex((c) => c.includes('fecha'));
+      const estado = lower.findIndex((c) => c.includes('estado'));
+      if (fecha < 0 || estado < 0) continue;
+      headers = {
+        fecha,
+        estado,
+        tipo: lower.findIndex((c) => c === 'tipo' || c.includes('turno')),
+        tema: lower.findIndex((c) => /tema|clase|nota/.test(c)),
+      };
+      continue;
+    }
+    clases.push({
+      fecha: parseFechaCelda(cells[headers.fecha], year),
+      fechaRaw: cells[headers.fecha] || '',
+      tipo: headers.tipo >= 0 ? cells[headers.tipo] || '' : '',
+      estado: canonAsistencia(cells[headers.estado]),
+      tema: headers.tema >= 0 ? cells[headers.tema] || '' : '',
+    });
+  }
+  const minRegular = Number(data.min_regular ?? data.minRegular);
+  const minPromo = Number(data.min_promo ?? data.minPromo);
+  return {
+    rel,
+    minRegular: Number.isFinite(minRegular) ? minRegular : null,
+    minPromo: Number.isFinite(minPromo) ? minPromo : null,
+    clases,
+  };
+}
+
+function resumirAsistencia(planilla) {
+  const clases = planilla.clases || [];
+  let presentes = 0;
+  let ausentes = 0;
+  let justificados = 0;
+  let feriados = 0;
+  let pendientes = 0;
+  for (const c of clases) {
+    if (!c.fecha) {
+      pendientes += 1;
+      continue;
+    }
+    if (c.estado === 'presente') presentes += 1;
+    else if (c.estado === 'ausente') ausentes += 1;
+    else if (c.estado === 'justificado') justificados += 1;
+    else if (c.estado === 'feriado') feriados += 1;
+    else pendientes += 1;
+  }
+  const computables = presentes + ausentes + justificados;
+  const aFavor = presentes + justificados;
+  const porcentaje = computables ? Math.round((aFavor / computables) * 100) : null;
+  const { minRegular, minPromo } = planilla;
+  return {
+    rel: planilla.rel,
+    minRegular,
+    minPromo,
+    presentes,
+    ausentes,
+    justificados,
+    feriados,
+    pendientes,
+    computables,
+    porcentaje,
+    alcanzaRegular: porcentaje == null || minRegular == null ? null : porcentaje >= minRegular,
+    alcanzaPromo: porcentaje == null || minPromo == null ? null : porcentaje >= minPromo,
+    clases,
+  };
+}
+
+async function notaAsistencias(materiaId) {
+  const { notes } = await buildIndex();
+  return notes.find((n) => n.materia === materiaId && n.stem.startsWith('asistencias-')) || null;
+}
+
+async function leerAsistenciasDe(materiaId) {
+  const nota = await notaAsistencias(materiaId);
+  if (!nota) return null;
+  const text = await fsp.readFile(path.join(VAULT, nota.rel), 'utf8');
+  return resumirAsistencia(parseAsistencias(text, nota.rel));
+}
+
+async function leerAsistencias() {
+  const { notes } = await buildIndex();
+  const out = {};
+  for (const n of notes) {
+    if (!n.stem.startsWith('asistencias-') || !n.materia) continue;
+    let text;
+    try {
+      text = await fsp.readFile(path.join(VAULT, n.rel), 'utf8');
+    } catch {
+      continue;
+    }
+    out[n.materia] = resumirAsistencia(parseAsistencias(text, n.rel));
+  }
+  return out;
+}
+
+function fmtFechaAsistencia(iso) {
+  const [, m, d] = iso.split('-');
+  return `${d}/${m}`;
+}
+
+function headersAsistencia(lineas) {
+  for (const line of lineas) {
+    if (!line.trim().startsWith('|')) continue;
+    const cells = celdasTabla(line);
+    const lower = cells.map((c) => c.toLowerCase());
+    const fecha = lower.findIndex((c) => c.includes('fecha'));
+    const estado = lower.findIndex((c) => c.includes('estado'));
+    if (fecha < 0 || estado < 0) continue;
+    return {
+      fecha,
+      estado,
+      tipo: lower.findIndex((c) => c === 'tipo' || c.includes('turno')),
+      tema: lower.findIndex((c) => /tema|clase|nota/.test(c)),
+    };
+  }
+  return null;
+}
+
+function mismaClase(cells, headers, fechaRaw, tipo, tema) {
+  if ((cells[headers.fecha] || '') !== fechaRaw) return false;
+  if (tipo != null && tipo !== '' && headers.tipo >= 0 && (cells[headers.tipo] || '') !== tipo) return false;
+  if (tema != null && tema !== '' && headers.tema >= 0 && (cells[headers.tema] || '') !== tema) return false;
+  return true;
+}
+
+async function escribirFilaAsistencia(materiaId, { fecha, tipo, estado, tema, agregar }) {
+  const nota = await notaAsistencias(materiaId);
+  if (!nota) throw new Error('Esta materia no tiene planilla de asistencias');
+  const abs = path.join(VAULT, nota.rel);
+  const text = await fsp.readFile(abs, 'utf8');
+  const lineas = text.split('\n');
+  const headers = headersAsistencia(lineas);
+  if (!headers) throw new Error('La planilla no tiene una tabla con Fecha y Estado');
+
+  const year = String(new Date().getFullYear());
+  const fechaRaw = String(fecha || '').includes('-') ? fmtFechaAsistencia(fecha) : String(fecha || '');
+
+  if (agregar) {
+    if (!parseFechaCelda(fechaRaw, year)) throw new Error('Fecha inválida');
+    const tipoCel = tipo || 'Clase';
+    const temaCel = tema || '';
+    const fila = `| ${fechaRaw} | ${tipoCel} | pendiente | ${temaCel} |`;
+    let last = -1;
+    let vioTabla = false;
+    for (let i = 0; i < lineas.length; i++) {
+      if (!lineas[i].trim().startsWith('|')) {
+        if (vioTabla) break;
+        continue;
+      }
+      const cells = celdasTabla(lineas[i]);
+      if (cells.every((c) => /^[-:]+$/.test(c))) {
+        vioTabla = true;
+        last = i;
+        continue;
+      }
+      const lower = cells.map((c) => c.toLowerCase());
+      if (lower.some((c) => c.includes('fecha'))) {
+        vioTabla = true;
+        last = i;
+        continue;
+      }
+      if (vioTabla) last = i;
+    }
+    if (last < 0) throw new Error('No encontré la tabla de asistencias');
+    lineas.splice(last + 1, 0, fila);
+  } else {
+    if (estado && !ASI_ESTADOS.includes(estado)) throw new Error('Estado de asistencia inválido');
+    let hit = -1;
+    let vioTabla = false;
+    for (let i = 0; i < lineas.length; i++) {
+      if (!lineas[i].trim().startsWith('|')) {
+        if (vioTabla) break;
+        continue;
+      }
+      const cells = celdasTabla(lineas[i]);
+      if (!cells.length || cells.every((c) => /^[-:]+$/.test(c))) {
+        vioTabla = true;
+        continue;
+      }
+      const lower = cells.map((c) => c.toLowerCase());
+      if (lower.some((c) => c.includes('fecha')) && lower.some((c) => c.includes('estado'))) {
+        vioTabla = true;
+        continue;
+      }
+      vioTabla = true;
+      if (mismaClase(cells, headers, fechaRaw, tipo, tema)) {
+        hit = i;
+        break;
+      }
+    }
+    if (hit < 0) throw new Error('No encontré esa clase en la planilla');
+    const parts = lineas[hit].split('|');
+    if (estado) parts[headers.estado + 1] = ` ${estado} `;
+    lineas[hit] = parts.join('|');
+  }
+
+  await fsp.writeFile(abs, lineas.join('\n'), 'utf8');
+  await buildIndex(true);
+  return leerAsistenciasDe(materiaId);
+}
+
 /** Lee las tablas markdown de los archivos de 00-Seguimiento y saca fechas. */
 async function derivedEvents() {
   const { notes } = await buildIndex();
   const out = [];
   const seguimiento = notes.filter(
-    (n) => n.dir.endsWith('00-Seguimiento') || n.tipo === 'seguimiento'
+    (n) => (n.dir.endsWith('00-Seguimiento') || n.tipo === 'seguimiento') && !n.stem.startsWith('asistencias-')
   );
   for (const n of seguimiento) {
     let text;
@@ -3323,11 +3622,16 @@ const server = http.createServer(async (req, res) => {
   try {
     // --- API -------------------------------------------------------------
     if (pathname === '/api/estado') {
-      const [mats, evs, idx] = await Promise.all([materias(), allEvents(), buildIndex()]);
+      const [mats, evs, idx, asis] = await Promise.all([
+        materias(),
+        allEvents(),
+        buildIndex(),
+        leerAsistencias(),
+      ]);
       return json(res, {
         vault: VAULT,
         generado: new Date().toISOString(),
-        materias: mats,
+        materias: mats.map((m) => ({ ...m, asistencia: asis[m.id] || null })),
         eventos: evs,
         notas: idx.notes.map((n) => ({
           rel: n.rel,
@@ -3423,6 +3727,40 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/materia-impacto') {
       return json(res, await impactoMateria(String(q.id || '')));
+    }
+
+    if (pathname === '/api/asistencias' && req.method === 'GET') {
+      const id = String(q.materia || '');
+      if (!id) return json(res, { error: 'Falta materia' }, 400);
+      const planilla = await leerAsistenciasDe(id);
+      if (!planilla) return json(res, { error: 'Sin planilla de asistencias' }, 404);
+      return json(res, planilla);
+    }
+
+    if (pathname === '/api/asistencias' && req.method === 'PATCH') {
+      const b = await readBody(req);
+      const id = String(b.materia || '');
+      if (!id) return json(res, { error: 'Falta materia' }, 400);
+      const planilla = await escribirFilaAsistencia(id, {
+        fecha: String(b.fecha || ''),
+        tipo: b.tipo != null ? String(b.tipo) : '',
+        estado: b.estado != null ? String(b.estado) : null,
+        tema: b.tema != null ? String(b.tema) : null,
+      });
+      return json(res, { ok: true, asistencia: planilla });
+    }
+
+    if (pathname === '/api/asistencias' && req.method === 'POST') {
+      const b = await readBody(req);
+      const id = String(b.materia || '');
+      if (!id) return json(res, { error: 'Falta materia' }, 400);
+      const planilla = await escribirFilaAsistencia(id, {
+        fecha: String(b.fecha || ''),
+        tipo: b.tipo != null ? String(b.tipo) : 'Clase',
+        tema: b.tema != null ? String(b.tema) : '',
+        agregar: true,
+      });
+      return json(res, { ok: true, asistencia: planilla });
     }
 
     if (pathname === '/api/materia' && req.method === 'POST') {
