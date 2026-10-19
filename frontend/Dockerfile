@@ -7,14 +7,26 @@
 # Etapa 2 es nginx alpine, que pesa un orden de magnitud menos que cualquier
 # imagen con Node.
 
+# ---------- etapa 0: tests ----------
+# vitest con umbral. Si no llega, esta etapa falla y la imagen no se publica.
+FROM node:22-alpine AS test
+WORKDIR /app
+COPY package.json package-lock.json vitest.config.js ./
+COPY public/reglas.js ./public/reglas.js
+COPY test ./test
+RUN npm ci --no-audit --no-fund
+RUN npm test
+
 # ---------- etapa 1: preparar los assets ----------
 FROM node:22-alpine AS build
 WORKDIR /build
+COPY --from=test /app/public/reglas.js ./public/reglas.js
 COPY public ./public
 
 # Si falta el index, la imagen no se construye. Mejor romper acá que descubrirlo
 # con un 404 en la defensa.
 RUN test -f public/index.html && \
+    test -f public/reglas.js && \
     test -d public/vendor && \
     echo "assets OK: $(find public -type f | wc -l) archivos"
 

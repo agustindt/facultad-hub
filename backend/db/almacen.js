@@ -63,9 +63,15 @@ class AlmacenArchivos {
 }
 
 class AlmacenPostgres {
-  constructor(url) {
+  /**
+   * `pool` se inyecta desde los tests. En producción no se pasa y el
+   * constructor abre el Pool de `pg`. Sin ese parámetro, un test del
+   * almacén tendría que hablar con una base real.
+   */
+  constructor(url, pool) {
     this.modo = 'postgres';
-    this.pool = new pg.Pool({ connectionString: url, max: 4 });
+    if (!pool && !pg) throw new Error('DATABASE_URL está definida pero el paquete pg no está instalado');
+    this.pool = pool || new pg.Pool({ connectionString: url, max: 4 });
   }
   async iniciar() {
     // Una sola tabla clave-valor con JSONB. No hace falta más: son tres

@@ -8,6 +8,19 @@
 # el de `node:22-alpine` y vas a ver la diferencia — es la evidencia que pide
 # el TP2.
 
+# ---------- etapa 0: tests ----------
+# El build de la imagen no sigue si el umbral de cobertura no se cumple.
+# Quien mire sólo el Dockerfile tiene que poder ver que los tests entran acá,
+# no en un `npm test` suelto que el pipeline podría olvidarse de correr.
+FROM node:22-alpine AS test
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY dominio.js server.js ./
+COPY db ./db
+COPY test ./test
+RUN npm test
+
 # ---------- etapa 1: dependencias ----------
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -29,6 +42,8 @@ ENV HOST=0.0.0.0
 ENV PORT=4177
 
 COPY --from=deps /app/node_modules ./node_modules
+# Desde la etapa de tests, no del contexto: si esa etapa no corrió, no hay imagen.
+COPY --from=test /app/dominio.js ./dominio.js
 COPY server.js ./
 COPY db ./db
 
