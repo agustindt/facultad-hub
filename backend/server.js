@@ -14,6 +14,27 @@ const fs = require('fs');
 const fsp = fs.promises;
 const path = require('path');
 const url = require('url');
+const {
+  ESTADOS_CANON,
+  ESTADO_ALIAS,
+  parseFrontmatter,
+  serializeFrontmatter,
+  extractLinks,
+  normalizeEstado,
+  normalizar,
+  toISO,
+  classifyEvento,
+  ymd,
+  hoyISO,
+  sumarDias,
+  diasEntre,
+  secciones,
+  resumenNota,
+  raices,
+  programar,
+  parsearPrograma,
+  evaluarTema,
+} = require('./dominio');
 
 // ---------------------------------------------------------------------------
 // Configuración
@@ -60,19 +81,8 @@ const SKIP_DIRS = new Set([
   '99-Material-Catedra',
 ]);
 
-const ESTADOS_CANON = ['pendiente', 'borrador', 'estudiado', 'dominado'];
-// Sinónimos que ya existen en el vault, mapeados al valor canónico más cercano.
-const ESTADO_ALIAS = {
-  'sin-empezar': 'pendiente',
-  'sin empezar': 'pendiente',
-  'en-curso': 'borrador',
-  'en curso': 'borrador',
-  cursando: 'borrador',
-  activo: 'borrador',
-  resuelto: 'estudiado',
-  entregado: 'dominado',
-  cursada: 'dominado',
-};
+// ESTADOS_CANON y ESTADO_ALIAS viven en dominio.js: el servidor y los tests
+// tienen que ver la misma tabla, si no la salud del vault y el repaso divergen.
 
 // ---------------------------------------------------------------------------
 // Utilidades de archivos
@@ -108,118 +118,17 @@ async function walk(dir, out = []) {
   return out;
 }
 
-// ---------------------------------------------------------------------------
-// Frontmatter (subconjunto de YAML suficiente para el vault)
-// ---------------------------------------------------------------------------
-
-function parseScalar(raw) {
-  let v = raw.trim();
-  if (!v.length) return '';
-  if (v.startsWith('[') && v.endsWith(']')) {
-    return v
-      .slice(1, -1)
-      .split(',')
-      .map((s) => s.trim().replace(/^["']|["']$/g, ''))
-      .filter(Boolean);
-  }
-  const quoted = v.match(/^"(.*)"$/) || v.match(/^'(.*)'$/);
-  if (quoted) return quoted[1];
-  if (v === 'true') return true;
-  if (v === 'false') return false;
-  if (v === 'null' || v === '~') return null;
-  if (/^-?\d+$/.test(v)) return Number(v);
-  return v;
-}
-
-function parseFrontmatter(text) {
-  if (!text.startsWith('---')) return { data: {}, body: text, raw: null };
-  const end = text.indexOf('\n---', 3);
-  if (end === -1) return { data: {}, body: text, raw: null };
-  const raw = text.slice(text.indexOf('\n') + 1, end);
-  const body = text.slice(text.indexOf('\n', end + 1) + 1);
-  const data = {};
-  let listKey = null;
-  for (const line of raw.split('\n')) {
-    if (!line.trim() || line.trim().startsWith('#')) continue;
-    const listItem = line.match(/^\s*-\s+(.*)$/);
-    if (listItem && listKey) {
-      if (!Array.isArray(data[listKey])) data[listKey] = [];
-      data[listKey].push(parseScalar(listItem[1]));
-      continue;
-    }
-    const kv = line.match(/^([A-Za-z0-9_-]+)\s*:\s*(.*)$/);
-    if (!kv) continue;
-    const key = kv[1];
-    const val = kv[2];
-    if (!val.trim()) {
-      listKey = key;
-      data[key] = '';
-    } else {
-      listKey = null;
-      data[key] = parseScalar(val);
-    }
-  }
-  return { data, body, raw };
-}
-
-function serializeFrontmatter(data) {
-  const lines = ['---'];
-  for (const [k, v] of Object.entries(data)) {
-    if (v === undefined) continue;
-    if (Array.isArray(v)) lines.push(`${k}: [${v.join(', ')}]`);
-    else if (v === null) lines.push(`${k}: null`);
-    else if (typeof v === 'string' && (v.includes(': ') || v.includes('#') || v.includes('"')))
-      lines.push(`${k}: ${JSON.stringify(v)}`);
-    else lines.push(`${k}: ${v}`);
-  }
-  lines.push('---');
-  return lines.join('\n');
-}
+// Frontmatter, wikilinks, estados, fechas, repaso y cobertura: dominio.js
 
 // ---------------------------------------------------------------------------
 // Índice del vault
 // ---------------------------------------------------------------------------
-
-const WIKILINK_RE = /\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g;
-
-/** Quita bloques y spans de código para no contar wikilinks de ejemplo. */
-function stripCode(s) {
-  return s.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-}
-
-function extractLinks(body) {
-  const out = [];
-  const clean = stripCode(body);
-  let m;
-  WIKILINK_RE.lastIndex = 0;
-  while ((m = WIKILINK_RE.exec(clean)) !== null) {
-    const target = m[1].trim();
-    if (target) out.push(target);
-  }
-  return out;
-}
-
-function normalizeEstado(raw) {
-  if (!raw || typeof raw !== 'string') return null;
-  const v = raw.trim().toLowerCase();
-  if (ESTADOS_CANON.includes(v)) return v;
-  if (ESTADO_ALIAS[v]) return ESTADO_ALIAS[v];
-  return null;
-}
 
 /** Deriva la materia de la ruta cuando el frontmatter no la declara. */
 function materiaFromPath(rel) {
   const top = rel.split('/')[0];
   if (!top || top.endsWith('.md') || top.startsWith('00-Sistema')) return null;
   return top;
-}
-
-/** Minúsculas y sin tildes: para que "economia" encuentre "Economía". */
-function normalizar(s) {
-  return String(s || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
 }
 
 let CACHE = { at: 0, notes: [], byStem: new Map() };
@@ -656,21 +565,6 @@ async function borrarMateria(id) {
 // Eventos: los de las tablas "Fechas clave" + los que agrega el usuario
 // ---------------------------------------------------------------------------
 
-function toISO(d, m, y) {
-  const yy = y.length === 2 ? `20${y}` : y;
-  return `${yy}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-}
-
-function classifyEvento(texto) {
-  const t = texto.toLowerCase();
-  if (/recuperatorio/.test(t)) return 'recuperatorio';
-  if (/parcial|examen|final/.test(t)) return 'examen';
-  if (/defensa/.test(t)) return 'defensa';
-  if (/entrega|deadline|informe/.test(t)) return 'entrega';
-  if (/feriado/.test(t)) return 'feriado';
-  return 'hito';
-}
-
 /** Lee las tablas markdown de los archivos de 00-Seguimiento y saca fechas. */
 async function derivedEvents() {
   const { notes } = await buildIndex();
@@ -1035,105 +929,6 @@ ${contenido}`;
 // Utilidades compartidas: fechas, secciones y tokens
 // ---------------------------------------------------------------------------
 
-function ymd(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-function hoyISO() {
-  return ymd(new Date());
-}
-function sumarDias(iso, n) {
-  const [y, m, d] = iso.split('-').map(Number);
-  const dt = new Date(y, m - 1, d);
-  dt.setDate(dt.getDate() + n);
-  return ymd(dt);
-}
-function diasEntre(a, b) {
-  const [ya, ma, da] = a.split('-').map(Number);
-  const [yb, mb, db] = b.split('-').map(Number);
-  return Math.round((new Date(yb, mb - 1, db) - new Date(ya, ma - 1, da)) / 86400000);
-}
-
-/**
- * Parte el cuerpo de una nota en secciones de nivel ##.
- * Ignora los ## que caen dentro de un bloque de código.
- */
-function secciones(cuerpo) {
-  const out = {};
-  let actual = null;
-  let buf = [];
-  let fence = false;
-  for (const ln of String(cuerpo || '').split('\n')) {
-    if (/^\s*```/.test(ln)) fence = !fence;
-    const m = fence ? null : ln.match(/^##\s+(.+?)\s*$/);
-    if (m) {
-      if (actual) out[actual] = buf.join('\n').trim();
-      actual = m[1].replace(/[*_`]/g, '').trim();
-      buf = [];
-      continue;
-    }
-    if (actual) buf.push(ln);
-  }
-  if (actual) out[actual] = buf.join('\n').trim();
-  return out;
-}
-
-/** La cita de una frase que va debajo del H1, según la convención. */
-function resumenNota(cuerpo) {
-  const m = String(cuerpo || '').match(/^#\s+.+\n+((?:^>.*\n?)+)/m);
-  if (!m) return '';
-  return m[1]
-    .split('\n')
-    .map((l) => l.replace(/^>\s?/, ''))
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-const STOPWORDS = new Set([
-  'de','del','la','el','los','las','y','o','en','a','al','un','una','unos','unas','para','por','con',
-  'su','sus','se','que','como','sobre','entre','sin','ni','lo','es','son','ser','the','of','and','to',
-  'segun','ante','tras','mas','pero','cada','este','esta','estos','estas','ese','esa','esos','esas',
-]);
-
-/** Palabras significativas de un texto, normalizadas y sin tildes. */
-function tokens(s) {
-  return normalizar(s)
-    .replace(/[^a-z0-9ñ\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length >= 3 && !STOPWORDS.has(w));
-}
-
-/**
- * Singularizador mínimo de español. No es un stemmer serio: sólo hace que
- * "isocuantas" y "isocuanta", o "funciones" y "función", cuenten como la misma
- * palabra — que es donde el matching fallaba de verdad.
- */
-function raiz(w) {
-  if (w.length <= 4) return w;
-  if (/ciones$/.test(w)) return w.replace(/ciones$/, 'cion');
-  if (/[aeiou]s$/.test(w)) return w.slice(0, -1);
-  if (/(es)$/.test(w) && w.length > 5) return w.slice(0, -2);
-  if (/s$/.test(w)) return w.slice(0, -1);
-  return w;
-}
-function raices(s) {
-  return new Set(tokens(s).map(raiz));
-}
-
-// ---------------------------------------------------------------------------
-// Repaso espaciado
-//
-// Las tarjetas NO se guardan: se derivan de los bloques "## En el parcial" que
-// ya están escritos en las notas. Lo único que persiste es el calendario de
-// repaso, en datos/repaso.json, para no tocar el markdown.
-// ---------------------------------------------------------------------------
-
-const EASE_INI = 2.5;
-const EASE_MIN = 1.3;
-const EASE_MAX = 2.8;
-const NUEVAS_TOPE = 12;
-const NUEVAS_PISO = 3;
-
 const readRepaso = () => almacen.leer('repaso', {});
 const writeRepaso = (st) => almacen.escribir('repaso', st);
 
@@ -1172,47 +967,6 @@ async function tarjetas() {
     });
   }
   return out;
-}
-
-/**
- * SM-2 recortado. `tope` es el margen en días hasta el parcial: un intervalo
- * nunca puede saltar por encima de la fecha del examen, porque un repaso
- * programado para después del parcial no sirve para nada.
- */
-function programar(prev, nota, tope) {
-  const s = prev || { ease: EASE_INI, intervalo: 0, vistas: 0, fallos: 0 };
-  let ease = s.ease != null ? s.ease : EASE_INI;
-  let iv = s.intervalo || 0;
-  if (nota === 0) {
-    ease -= 0.2;
-    iv = 1;
-  } else if (nota === 1) {
-    ease -= 0.15;
-    iv = iv ? Math.max(1, Math.round(iv * 1.2)) : 1;
-  } else if (nota === 2) {
-    iv = iv ? Math.round(iv * ease) : 2;
-  } else {
-    ease += 0.15;
-    iv = iv ? Math.round(iv * ease * 1.3) : 4;
-  }
-  ease = Math.max(EASE_MIN, Math.min(EASE_MAX, ease));
-  iv = Math.max(1, iv);
-  let recortado = false;
-  if (tope != null && iv > Math.max(1, tope)) {
-    iv = Math.max(1, tope);
-    recortado = true;
-  }
-  const hoy = hoyISO();
-  return {
-    ease: Number(ease.toFixed(2)),
-    intervalo: iv,
-    vistas: (s.vistas || 0) + 1,
-    fallos: (s.fallos || 0) + (nota === 0 ? 1 : 0),
-    ultima: hoy,
-    ultimaNota: nota,
-    vence: sumarDias(hoy, iv),
-    recortado,
-  };
 }
 
 /** Próximo examen por materia, sacado del calendario que el hub ya deriva. */
@@ -1328,79 +1082,6 @@ async function repasoEstado() {
 // de Unidad | Tema. El hub no inventa el programa: si el archivo no está, lo
 // dice y no muestra nada.
 // ---------------------------------------------------------------------------
-
-function parsearPrograma(cuerpo) {
-  const temas = [];
-  let unidadActual = '';
-  let fence = false;
-  for (const ln of String(cuerpo || '').split('\n')) {
-    if (/^\s*```/.test(ln)) {
-      fence = !fence;
-      continue;
-    }
-    if (fence) continue;
-    if (!/^\s*\|/.test(ln)) continue;
-    const cel = ln.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map((c) => c.trim());
-    if (cel.length < 2) continue;
-    if (cel.every((c) => /^:?-{2,}:?$/.test(c))) continue;
-    if (/^unidad$/i.test(cel[0]) && /^tema/i.test(cel[1] || '')) continue;
-    const u = cel[0].replace(/\*+/g, '').trim();
-    if (u) unidadActual = u;
-    const tema = (cel[1] || '').replace(/\*+/g, '').trim();
-    if (!tema || /^tema$/i.test(tema)) continue;
-    const manual = (cel[2] || '').match(/\[\[([^\]|#]+)/);
-    temas.push({ unidad: unidadActual, tema, notaManual: manual ? manual[1].trim() : null });
-  }
-  return temas;
-}
-
-/**
- * Decide si un tema del programa está cubierto. Nunca afirma más de lo que
- * sabe: devuelve la evidencia (qué nota, qué proporción de palabras) para que
- * la decisión final la tome el que lee.
- */
-function evaluarTema(tema, notasMateria, notaManual, byStem) {
-  if (notaManual) {
-    const hit = (byStem.get(notaManual) || [])[0];
-    if (hit) return { estado: 'nota', rel: hit.rel, titulo: hit.title, score: 1, via: 'manual' };
-    return { estado: 'falta', via: 'manual-roto', manual: notaManual };
-  }
-  const t = [...raices(tema)];
-  if (!t.length) return { estado: 'indeterminado' };
-  const temaNorm = normalizar(tema);
-
-  // Contra el título se usa F1, no recall: si el título trae palabras que el
-  // tema no tiene, el match vale menos. Sin eso, "Costo total, medio y marginal"
-  // se casaba con "Producto Total, Medio y Marginal" con la misma confianza que
-  // con la nota correcta.
-  const cands = [];
-  let mejorCuerpo = null;
-  const peso = (n) => (n.tipo === 'concepto' ? 2 : n.tipo === 'unidad' ? 0 : 1);
-  for (const n of notasMateria) {
-    if (normalizar(n.title) === temaNorm || normalizar(n.stem) === temaNorm)
-      return { estado: 'nota', rel: n.rel, titulo: n.title, score: 1, via: 'titulo-exacto', candidatos: [] };
-    const comunes = t.filter((w) => n._rTitulo.has(w)).length;
-    if (comunes) {
-      const rec = comunes / t.length;
-      const pre = comunes / Math.max(1, n._rTitulo.size);
-      cands.push({ rel: n.rel, titulo: n.title, tipo: n.tipo, score: (2 * rec * pre) / (rec + pre), peso: peso(n) });
-    }
-    const enCuerpo = t.filter((w) => n._rCuerpo.has(w)).length / t.length;
-    const c = { rel: n.rel, titulo: n.title, tipo: n.tipo, peso: peso(n), score: enCuerpo };
-    if (!mejorCuerpo || c.score > mejorCuerpo.score || (c.score === mejorCuerpo.score && c.peso > mejorCuerpo.peso))
-      mejorCuerpo = c;
-  }
-  cands.sort((a, b) => b.score - a.score || b.peso - a.peso);
-  const top = cands.slice(0, 3).map((c) => ({ rel: c.rel, titulo: c.titulo, score: Number(c.score.toFixed(2)) }));
-
-  // Las alternativas nunca repiten la nota ya elegida.
-  const otras = (elegida) => top.filter((c) => c.rel !== elegida);
-  if (cands[0] && cands[0].score >= 0.6)
-    return { estado: 'nota', rel: cands[0].rel, titulo: cands[0].titulo, score: Number(cands[0].score.toFixed(2)), via: 'titulo', candidatos: otras(cands[0].rel) };
-  if (mejorCuerpo && mejorCuerpo.score >= 0.8)
-    return { estado: 'mencionado', rel: mejorCuerpo.rel, titulo: mejorCuerpo.titulo, score: Number(mejorCuerpo.score.toFixed(2)), via: 'cuerpo', candidatos: otras(mejorCuerpo.rel) };
-  return { estado: 'falta', candidatos: top };
-}
 
 async function cobertura(materiaId) {
   const { notes, byStem } = await buildIndex();
@@ -2202,35 +1883,64 @@ const almacen = crearAlmacen(HUB_DATA);
 const AGENTE_TOOLS = 'Read,Glob,Grep';
 // Modo directo: escribe solo. Se habilita únicamente con git de por medio, así
 // que cada turno tiene un punto de restauración y un botón de deshacer.
-const AGENTE_TOOLS_ESCRITURA = 'Read,Glob,Grep,Write,Edit,MultiEdit,NotebookEdit';
+const AGENTE_TOOLS_ESCRITURA = 'Read,Glob,Grep,Write,Edit,Shell';
 const AGENTE_TIMEOUT = 10 * 60 * 1000;
 
 let CLI_CACHE = null;
 
-/** ¿Está el CLI instalado? Se cachea: no tiene sentido preguntarlo por turno. */
-function cliDisponible(force = false) {
-  if (CLI_CACHE && !force) return Promise.resolve(CLI_CACHE);
+function candidatosAgente() {
+  const home = process.env.HOME || '';
+  return [
+    path.join(home, '.local/bin/agent'),
+    path.join(home, '.cursor/bin/agent'),
+    'agent',
+  ];
+}
+
+function spawnUnaVez(cmd, args, { timeout = 8000 } = {}) {
   return new Promise((resolve) => {
-    let salida = '';
+    let out = '';
+    let err = '';
     let listo = false;
-    // El timeout NO puede pisar el caché después de que el proceso ya respondió:
-    // si lo hace, ocho segundos más tarde el CLI "deja de existir" solo.
     const terminar = (r) => {
       if (listo) return;
       listo = true;
       clearTimeout(reloj);
-      CLI_CACHE = r;
       resolve(r);
     };
-    const p = spawn('claude', ['--version'], { env: entornoLimpio() });
-    p.stdout.on('data', (c) => (salida += c));
-    p.on('error', () => terminar({ ok: false, error: 'no encontré el comando `claude` en el PATH' }));
-    p.on('close', (code) => {
-      if (code !== 0) return terminar({ ok: false, error: `\`claude --version\` salió con código ${code}` });
-      terminar({ ok: true, version: salida.trim() });
-    });
-    const reloj = setTimeout(() => { p.kill(); terminar({ ok: false, error: 'el CLI no respondió' }); }, 8000);
+    const p = spawn(cmd, args, { env: entornoLimpio() });
+    p.stdout.on('data', (c) => { out += c; });
+    p.stderr.on('data', (c) => { err += c; });
+    p.on('error', (e) => terminar({ ok: false, error: e.message, out, err }));
+    p.on('close', (code) => terminar({ ok: code === 0, code, out: out.trim(), err: err.trim() }));
+    const reloj = setTimeout(() => { p.kill(); terminar({ ok: false, error: 'el CLI no respondió', out, err }); }, timeout);
   });
+}
+
+/** ¿Está el CLI de Cursor instalado y logueado? Se cachea. */
+async function cliDisponible(force = false) {
+  if (CLI_CACHE && !force) return CLI_CACHE;
+  for (const bin of candidatosAgente()) {
+    const v = await spawnUnaVez(bin, ['--version']);
+    if (!v.ok) continue;
+    const st = await spawnUnaVez(bin, ['status', '--format', 'json']);
+    let auth = null;
+    try { auth = JSON.parse(st.out || ''); } catch {}
+    if (auth && auth.isAuthenticated === false) {
+      CLI_CACHE = {
+        ok: false,
+        bin,
+        version: v.out,
+        motor: 'cursor',
+        error: 'El CLI de Cursor no está logueado. En una terminal: agent login',
+      };
+      return CLI_CACHE;
+    }
+    CLI_CACHE = { ok: true, bin, version: v.out, motor: 'cursor' };
+    return CLI_CACHE;
+  }
+  CLI_CACHE = { ok: false, error: 'no encontré el comando `agent` (CLI de Cursor). Instalálo con: curl https://cursor.com/install -fsS | bash' };
+  return CLI_CACHE;
 }
 
 /**
@@ -2243,6 +1953,14 @@ function entornoLimpio() {
   delete env.ANTHROPIC_API_KEY;
   delete env.ANTHROPIC_AUTH_TOKEN;
   delete env.ANTHROPIC_BASE_URL;
+  // Electron en macOS arranca con PATH=/usr/bin:/bin:/usr/sbin:/sbin y no ve
+  // Homebrew ni ~/.local/bin, donde vive el CLI de Cursor (`agent`).
+  const extras = ['/opt/homebrew/bin', '/usr/local/bin', path.join(env.HOME || '', '.local/bin')];
+  const partes = String(env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin').split(':').filter(Boolean);
+  for (const extra of extras) {
+    if (extra && !partes.includes(extra)) partes.unshift(extra);
+  }
+  env.PATH = partes.join(':');
   return env;
 }
 
@@ -2340,6 +2058,69 @@ Cómo trabajar bien acá:
 
 No uses los bloques \`hub:escribir\` en este modo: escribí directamente.`;
 
+function nombreToolCursor(clave) {
+  const mapa = {
+    readToolCall: 'Read',
+    writeToolCall: 'Write',
+    editToolCall: 'Edit',
+    grepToolCall: 'Grep',
+    globToolCall: 'Glob',
+    globFileSearchToolCall: 'Glob',
+    shellToolCall: 'Shell',
+    bashToolCall: 'Shell',
+  };
+  return mapa[clave] || String(clave || 'tool').replace(/ToolCall$/, '');
+}
+
+function inputToolCursor(args) {
+  const a = args || {};
+  return {
+    file_path: a.path || a.file_path || a.filePath,
+    path: a.path,
+    pattern: a.pattern || a.globPattern || a.query,
+    ...a,
+  };
+}
+
+/** Traduce el stream-json de `agent` al formato que ya pinta el panel. */
+function eventosHub(ev) {
+  if (!ev || typeof ev !== 'object') return [];
+  if (ev.type === 'system' && ev.subtype === 'init') {
+    return [{ type: 'system', subtype: 'init', model: ev.model, session_id: ev.session_id }];
+  }
+  if (ev.type === 'assistant' && ev.message?.content) {
+    const out = [];
+    const tools = [];
+    for (const b of ev.message.content) {
+      if (b.type === 'text' && b.text) {
+        out.push({ type: 'stream_event', event: { delta: { type: 'text_delta', text: b.text } } });
+      } else if (b.type === 'tool_use') {
+        tools.push(b);
+      }
+    }
+    if (tools.length) out.push({ type: 'assistant', message: { content: tools } });
+    return out;
+  }
+  if (ev.type === 'tool_call' && ev.subtype === 'started') {
+    const tc = ev.tool_call || {};
+    const clave = Object.keys(tc)[0];
+    const args = (clave && tc[clave] && tc[clave].args) || {};
+    return [{
+      type: 'assistant',
+      message: {
+        content: [{
+          type: 'tool_use',
+          id: ev.call_id,
+          name: nombreToolCursor(clave),
+          input: inputToolCursor(args),
+        }],
+      },
+    }];
+  }
+  if (ev.type === 'result' || ev.type === 'stream_event') return [ev];
+  return [];
+}
+
 async function agenteTurno({ prompt, sesion, contexto, modelo, modo }) {
   const disp = await cliDisponible();
   if (!disp.ok) throw new Error(`No puedo usar el asistente: ${disp.error}`);
@@ -2349,20 +2130,20 @@ async function agenteTurno({ prompt, sesion, contexto, modelo, modo }) {
     (contexto ? `\n\n## Dónde está parado Agustín\n\n${contexto}` : '');
 
   const args = [
-    '-p', prompt,
+    '-p', `${sistema}\n\n---\n\n${prompt}`,
     '--output-format', 'stream-json',
-    '--verbose',
-    '--include-partial-messages',
-    '--allowedTools', directo ? AGENTE_TOOLS_ESCRITURA : AGENTE_TOOLS,
-    '--append-system-prompt', sistema,
+    '--trust',
+    '--workspace', VAULT,
   ];
-  if (directo) args.push('--permission-mode', 'acceptEdits');
+  if (directo) args.push('--force');
+  else args.push('--mode', 'ask');
   if (modelo) args.push('--model', modelo);
-  if (sesion) args.push('--resume', sesion);
+  if (sesion) args.push('--resume', String(sesion));
 
-  // Sin --bare: hace falta para que use la suscripción y para que cargue los
-  // CLAUDE.md del vault, que es de donde sale la mitad del contexto útil.
-  return spawn('claude', args, { cwd: VAULT, env: entornoLimpio() });
+  const env = entornoLimpio();
+  const cfg = await readConfig();
+  if (cfg.cursorApiKey) env.CURSOR_API_KEY = String(cfg.cursorApiKey);
+  return spawn(disp.bin, args, { cwd: VAULT, env });
 }
 
 /** Saca los bloques ```hub:escribir del texto final. */
@@ -2628,7 +2409,7 @@ async function motorDisponible(preferido) {
   if (preferido === 'cli' && !cli.ok) throw new Error(`No puedo usar el CLI: ${cli.error}`);
   if (cli.ok) return { motor: 'cli', version: cli.version };
   if (hayClave) return { motor: 'api', aviso: 'El CLI no está instalado: se usa la clave de API, que SÍ se cobra por token.' };
-  throw new Error('No hay motor disponible: instalá el CLI de Claude Code, o cargá una clave de API en Ajustes.');
+  throw new Error('No hay motor disponible: instalá el CLI de Cursor (`curl https://cursor.com/install -fsS | bash`) y corré `agent login`, o cargá una clave de API en Ajustes.');
 }
 
 const SCHEMA_ORDENAR = {
@@ -3766,8 +3547,15 @@ const server = http.createServer(async (req, res) => {
           } catch {
             continue;
           }
-          if (ev.type === 'result' && typeof ev.result === 'string') textoFinal = ev.result;
-          enviar('evento', ev);
+          if (ev.type === 'assistant') {
+            for (const b of ev.message?.content || []) {
+              if (b.type === 'text' && b.text) {
+                textoFinal += (textoFinal && !textoFinal.endsWith('\n') ? '\n' : '') + b.text;
+              }
+            }
+          }
+          if (ev.type === 'result' && typeof ev.result === 'string' && !textoFinal) textoFinal = ev.result;
+          for (const n of eventosHub(ev)) enviar('evento', n);
         }
       });
 

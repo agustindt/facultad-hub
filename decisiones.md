@@ -268,3 +268,127 @@ en rojo por el 404, el PR #13 en `BLOCKED` y el merge después del fix.
 
 No delegué los nombres de los jobs (`build-backend` / `build-frontend`): son
 el id que exige el gate.
+
+---
+
+## TP5 — Testing en el pipeline
+
+### Qué lógica testié y por qué esa
+
+Cuatro reglas del backend, no ocho variantes de leer un JSON:
+
+1. **`programar`** — el intervalo del repaso. Un bug acá adelanta o atrasa el
+   calendario y no se nota hasta el parcial. El caso que más importa es el
+   recorte: si el intervalo calculado pasa el margen que queda, se baja a ese
+   margen (`recortado: true`). Invertir el `>` por `>=` deja un repaso
+   programado para después del examen, y el test del tope se pone en rojo.
+2. **`classifyEvento`** — el orden de las reglas. "Recuperatorio del parcial"
+   tiene que salir `recuperatorio`, no `examen`. Si el `parcial` se evalúa
+   antes, esa fecha se pinta como parcial.
+3. **`evaluarTema`** — el match del programa contra las notas usa F1, no
+   recall. El corte es 0.6 en el título y 0.8 en el cuerpo. Un test arma un
+   F1 de 0.67 (pasa) y otro de 0.5 (no casa por el título).
+4. **`nuevasPorDia`** — cuántas tarjetas nuevas por día hacen falta para
+   llegar al parcial. Cero tarjetas es 0; un resto se redondea para arriba;
+   un margen de cero días es un error, no un infinito.
+
+En el frontend, las reglas que el usuario ve al guardar y en el panel de
+GitHub: `avisosDeNota`, `fechaRel`, `diffLineas`, el color de la matriz
+(`nivelActividad`) y `cargarIndice`.
+
+### El mock, y el refactor para poder inyectarlo
+
+`AlmacenPostgres` abría `pg.Pool` adentro del constructor. No había forma de
+probar el SQL sin una base. El constructor ahora recibe el pool como segundo
+argumento; en producción no se pasa y sigue creando el Pool. El test le pasa
+un doble que registra el SQL y devuelve filas. El assert mira el `INSERT ...
+ON CONFLICT` y que una query que tira no se propaga: `salud()` devuelve
+`ok: false`.
+
+En el frontend, `cargarIndice(cliente)` no llama a `fetch`. El arranque le
+pasa `api`. El test le pasa un `vi.fn` y comprueba que la única ruta pedida
+es `/api/estado`, y que un índice sin `materias` se rechaza con `code: 'INDICE'`.
+
+### Umbral
+
+**96% de líneas y 80% de ramas**, sobre `dominio.js` y `db/almacen.js` en el
+backend, y sobre `public/reglas.js` en el frontend (90/75, que es el
+`coverage.thresholds` de vitest). El número sale de la medición, no de un
+ejemplo: la suite deja el backend en **99.58% de líneas y 85.38% de ramas**.
+96 está debajo de eso, así que el verde es holgado, y arriba de lo que queda
+si entra una función nueva sin tests: ~20 líneas sin cubrir bajan el total
+de 96. Subirlo diez puntos (a 96 de ramas, o a 100 de líneas) frenaría la
+suite de hoy por las dos líneas que dejé afuera a propósito.
+
+La métrica del umbral es **línea**. La de **rama** también está puesta (80)
+y el reporte la muestra siempre. Hoy da 85.38%.
+
+### Qué dejé afuera de la cuenta
+
+- **`server.js` entero.** Es HTTP, el vault y el proceso que escucha. Un test
+  que lo importe levanta el puerto. Las reglas que importan están en
+  `dominio.js`; el resto es cableado. Entrá con
+  `--test-coverage-include=dominio.js` y `--test-coverage-include=db/almacen.js`.
+- **`index.html` y `vendor/`.** DOM y librerías de terceros. Lo testeable
+  del cliente está en `public/reglas.js` (`include` de vitest).
+- **`crearAlmacen` cuando hay `DATABASE_URL` y no está `pg`**
+  (`db/almacen.js`, líneas 114-115). Es el aviso que deja seguir con archivos
+  si alguien define la variable y no instaló el paquete. Para cubrirla hay
+  que hacer fallar el `require('pg')` con el módulo ya cargado. No la agregué:
+  en esta máquina `pg` está instalado, y el camino que usa el compose es el
+  otro (hay `pg` y hay URL).
+- **`fechaRel` cuando pasaron 30 días o más** (`public/reglas.js`, líneas
+  92-93). La entrada que lo recorre es una fecha de más de un mes atrás, por
+  ejemplo `fechaRel('2026-08-01T15:00:00Z', fechaDel19DeOctubre)`. Cae en
+  `toLocaleDateString('es-AR')`. No lo agregué: el string depende del locale
+  del runner y el assert se pondría rojo en CI sin que la regla cambie. El
+  reporte de la corrida marca esas dos líneas.
+
+### Por qué un coverage alto no dice que el código funciona
+
+`dominio.js` está en 100% de líneas. Eso no prueba el repaso. Un test puede
+recorrer `programar` y assertar `typeof r.intervalo === 'number'`: suma línea
+y no verifica el recorte. El test que sí lo verifica es el del tope 2, que
+exige `intervalo === 2` y `recortado === true`. Si mañana el recorte se borra,
+la cobertura puede seguir alta y ese assert no.
+
+### Herramientas
+
+El stack no es el de la cátedra (.NET + vitest en el back). La tabla, fila JS:
+
+| Qué | Con qué |
+|---|---|
+| Dónde viven los tests | `backend/test/*.test.js` al lado del código, `frontend/test/` |
+| Parametrizado | tabla + `for` en `node:test` (back); `it.each` de vitest (front) |
+| Inyectar la dependencia | segundo argumento del constructor; parámetro `cliente` |
+| El doble | objeto con `query` (back); `vi.fn` (front) |
+| Medir | `node --test --experimental-test-coverage`; `vitest run --coverage` (v8) |
+| Umbral que rompe | `--test-coverage-lines=96 --test-coverage-branches=80`; `coverage.thresholds` |
+| Qué entra | `--test-coverage-include`; `coverage.include` |
+| Reporte | tabla en el log del job, `lcov.info` como artifact |
+
+Los jobs siguen llamándose `build-backend` y `build-frontend`: son el id que
+el gate de `main` ya exige desde el TP4. El umbral corre **adentro** de esos
+jobs, antes del `docker build`. La etapa `test` del Dockerfile también corre
+`npm test`, así que una imagen no se construye si el número no da.
+
+### Problemas que encontré y cómo los resolví
+
+- **`server.js` no se puede importar desde un test.** Al cargarlo hace
+  `listen`. Saqué las reglas a `dominio.js`.
+- **El aviso de "menos de 3 conexiones" no disparaba** cuando esa sección era
+  la última. El regex usaba `\Z`, que en JavaScript no es el final del texto.
+  Lo reemplacé por un corte hasta el próximo `##`.
+- **El `.dockerignore` del backend excluía `test/`.** Tenía sentido cuando la
+  imagen no corría tests. La etapa de test necesita esa carpeta en el
+  contexto; la imagen final no la copia.
+
+### Declaración de uso de IA
+
+Cursor escribió los tests, el módulo `dominio.js`, la extracción a
+`reglas.js` y esta sección. Verifiqué yo: `npm test` en los dos lados con el
+umbral prendido (53 tests de backend, 17 de frontend), que `node --check`
+pasa sobre `server.js`, y que el reporte marca las líneas 114-115 de
+`almacen.js` y las 92-93 de `reglas.js`, que son las que decidí no cubrir.
+
+No delegué el número del umbral ni qué reglas entraban en la suite.

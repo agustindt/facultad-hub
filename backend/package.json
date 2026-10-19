@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-lines=96 --test-coverage-branches=80 --test-coverage-include=dominio.js --test-coverage-include=db/almacen.js --test-reporter=spec --test-reporter=lcov --test-reporter-destination=stdout --test-reporter-destination=coverage/lcov.info test/*.test.js"
   },
   "engines": { "node": ">=22" },
   "dependencies": {
