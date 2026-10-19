@@ -161,8 +161,14 @@ jobs:
       - name: Bajar el código al runner
         uses: actions/checkout@v6
 
-      - name: Levantar QA
-        run: docker compose -f compose.qa.yml up -d --build --wait
+      - name: Levantar QA con la imagen de esta corrida
+        shell: bash
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          docker compose -f compose.qa.yml pull
+          docker compose -f compose.qa.yml up -d --wait
 
       - name: Smoke test
         shell: bash
@@ -183,9 +189,101 @@ jobs:
           echo "QA no respondió a tiempo"
           exit 1
 
+  integracion:
+    runs-on: self-hosted
+    needs: deploy-qa
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Bajar el código al runner
+        uses: actions/checkout@v6
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar, sin navegador
+        working-directory: frontend
+        run: npm ci
+
+      - name: Integración contra la api de QA
+        working-directory: frontend
+        env:
+          API_BASE_URL: http://localhost:8080
+        run: |
+          set +e
+          npx playwright test e2e/api.spec.js --reporter=list --reporter=html | tee /tmp/integracion.txt
+          status=${PIPESTATUS[0]}
+          {
+            echo "### Integración"
+            echo '```'
+            tail -n 30 /tmp/integracion.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Publicar el reporte de integración
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: integracion-report
+          path: frontend/playwright-report
+
+  e2e:
+    runs-on: self-hosted
+    needs: integracion
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Bajar el código al runner
+        uses: actions/checkout@v6
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install chromium
+
+      - name: e2e contra el front de QA
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: http://localhost:3000
+        run: |
+          set +e
+          npx playwright test e2e/calendario.spec.js --reporter=list --reporter=html | tee /tmp/e2e.txt
+          status=${PIPESTATUS[0]}
+          {
+            echo "### e2e"
+            echo '```'
+            tail -n 30 /tmp/e2e.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Publicar el reporte e2e
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: frontend/playwright-report
+
   deploy-prod:
     runs-on: self-hosted
-    needs: [build-backend, build-frontend, deploy-qa]
+    needs: e2e
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
@@ -198,8 +296,14 @@ jobs:
       - name: Bajar el código al runner
         uses: actions/checkout@v6
 
-      - name: Levantar PROD
-        run: docker compose -f compose.prod.yml up -d --build --wait
+      - name: Levantar PROD con la misma imagen
+        shell: bash
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          echo "IMAGE_TAG=$IMAGE_TAG"
+          docker compose -f compose.prod.yml pull
+          docker compose -f compose.prod.yml up -d --wait
 
       - name: Smoke test
         shell: bash

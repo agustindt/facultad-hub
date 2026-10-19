@@ -8,6 +8,8 @@ backend/datos/
 
 node_modules/
 coverage/
+playwright-report/
+test-results/
 .DS_Store
 *.log
 

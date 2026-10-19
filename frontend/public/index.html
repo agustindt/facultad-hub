@@ -1554,10 +1554,13 @@ function viewCalendario(){
     [['entrega','Entrega'],['examen','Parcial'],['hito','Hito'],['defensa','Defensa']]
       .forEach(([v,l])=>tp.append(new Option(l,v)));
     const ok=el('button','btn primary','Agregar');
-    r.append(f,ti,ma,tp,ok); box.append(r);
+    const aviso=el('div','tiny'); aviso.setAttribute('role','alert'); aviso.style.marginTop='8px';
+    r.append(f,ti,ma,tp,ok); box.append(r,aviso);
     m.insertBefore(box,grid);
     ok.onclick=async()=>{
-      if(!f.value||!ti.value.trim()) return;
+      if(!ti.value.trim()){ aviso.textContent='Falta el título.'; return; }
+      if(!f.value){ aviso.textContent='Falta la fecha.'; return; }
+      aviso.textContent='';
       await api('/api/eventos',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({fecha:f.value,titulo:ti.value.trim(),materia:ma.value||null,tipo:tp.value})});
       await load(true); calRef=new Date(f.value+'T12:00:00'); viewCalendario();

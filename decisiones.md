@@ -5,6 +5,32 @@
 
 ---
 
+## TP7 — La imagen que se probó es la que corre
+
+### Enlaces del TP7
+
+Se completan cuando cierren la corrida roja y la que llega a PROD.
+
+### Por qué QA y PROD dejan de construir
+
+En el TP6 el deploy hacía `docker compose up --build`. La imagen publicada y la que corría podían no ser la misma: otro `npm install` en el runner, otra resolución. Acá los dos compose usan `image:` con `${IMAGE_TAG:?falta IMAGE_TAG}`. Si el tag no está, Compose se niega. El job hace `pull` y después `up`, sin `--build`. El log tiene que mostrar el `pull` de `sha-<commit>` de esa corrida. El runner es arm64 y las imágenes salen de un runner amd64, así que cada servicio de la app lleva `platform: linux/amd64`. Postgres no: su imagen es multi-arch y conviene la nativa.
+
+La misma etiqueta va a QA y a PROD. No hay un tag distinto para cada entorno.
+
+### Por qué las pruebas le hablan a QA y no a una base armada en el job
+
+`integracion` y `e2e` corren en el runner de esta máquina, después de `deploy-qa`, contra `localhost:8080` y `localhost:3000`. Un Postgres levantado en el job sería otra base, no la de QA. Las de integración no abren navegador: alta de un evento, rechazo de título vacío, y alta de una nota con borrado. Las tres de navegador usan el calendario, que es lo que se carga a mano todos los días: crear, ver el error si falta el título, y comprobar que el evento sigue después de recargar. Cada una borra lo que creó.
+
+`e2e` necesita a `integracion`, y `deploy-prod` necesita a `e2e`. Si la e2e falla, PROD no arranca. No hay `continue-on-error` ni `if: always()` en ese job. El environment `production` sigue pidiendo reviewer.
+
+La integración le pega a Postgres (los eventos) y al vault de QA (las notas). Los dos son el almacenamiento de ese entorno, no un doble. El volumen del vault nace de root y el proceso es `node`: sin un `chown` al arrancar, crear una nota devolvía permiso denegado. El entrypoint de la imagen lo corrige y después baja a `node`.
+
+### Declaración de uso de IA
+
+Cursor escribió los specs, el `image:` de los compose y los jobs. El calendario es el flujo de todos los días que ya escribe en la base de QA. No delegué el gate: `deploy-prod` necesita a `e2e`, y si esa falla PROD no arranca.
+
+---
+
 ## TP1 — Git colaborativo
 
 ### Por qué Git no pudo resolver el conflicto solo

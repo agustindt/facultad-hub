@@ -3157,6 +3157,16 @@ const server = http.createServer(async (req, res) => {
       return json(res, { ok: true, rel: body.rel });
     }
 
+    if (pathname === '/api/nota' && req.method === 'DELETE') {
+      const body = await readBody(req);
+      const abs = safeVaultPath(String(body.rel || ''));
+      if (!abs.endsWith('.md')) return json(res, { error: 'solo .md' }, 400);
+      if (!fs.existsSync(abs)) return json(res, { error: 'no existe' }, 404);
+      await fsp.unlink(abs);
+      await buildIndex(true);
+      return json(res, { ok: true, rel: body.rel });
+    }
+
     if (pathname === '/api/plantilla') {
       const tipo = String(q.tipo || 'concepto');
       const materia = String(q.materia || '');
