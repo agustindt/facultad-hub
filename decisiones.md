@@ -409,7 +409,17 @@ No delegué el número del umbral ni qué reglas entraban en la suite.
 
 ### Enlaces de este TP
 
-Se completan cuando corre el primer push a `main`. Van acá, no en un archivo aparte.
+| Qué | Dónde |
+|---|---|
+| Workflow, compose de QA y de PROD, y la cadena | https://github.com/agustindt/facultad-hub/pull/20 |
+| En el PR, "Entrar al registry" salteado y `push: false` | https://github.com/agustindt/facultad-hub/actions/runs/39273154233 |
+| Primer push a main: ghcr rechaza el manifest | https://github.com/agustindt/facultad-hub/actions/runs/39272493130 |
+| Segundo push, sin atestación: el mismo `write_package` | https://github.com/agustindt/facultad-hub/actions/runs/39273355559 |
+| Publicó las dos imágenes, QA verde, PROD rechazado | https://github.com/agustindt/facultad-hub/actions/runs/39275588120 |
+| Backend `sha-2ca583e276508268a3612d7a55fd9751e0f1f587` | https://github.com/users/agustindt/packages/container/package/facultad-hub-backend |
+| Frontend con el mismo tag | https://github.com/users/agustindt/packages/container/package/facultad-hub-frontend |
+
+El rechazo está en esa corrida, environment `production`, comentario de agustindt: QA respondió `almacen.ok` y `modo postgres` en el `3000`, y no había evidencia de que `db_data_prod` fuera otra base. El commit que agrega esta tabla es el que tiene que poder promoverse: la corrida anterior ya mostró el freno.
 
 ### Por qué la imagen se publica sólo si la verificación pasó
 
