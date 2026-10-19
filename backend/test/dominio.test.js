@@ -16,6 +16,7 @@ const {
   evaluarTema,
   raices,
   nuevasPorDia,
+  alcanzaElRitmo,
   parseFrontmatter,
   serializeFrontmatter,
   normalizeEstado,
@@ -202,6 +203,33 @@ test('nuevasPorDia rechaza un margen de cero días', () => {
 
 test('nuevasPorDia rechaza una cantidad negativa', () => {
   assert.throws(() => nuevasPorDia(-1, 5), (err) => err.code === 'SIN_VER');
+});
+
+test('alcanzaElRitmo: 8 tarjetas en 4 días con tope 2 entran justo', () => {
+  const r = alcanzaElRitmo(8, 4, 2);
+  assert.strictEqual(r.alcanza, true);
+  assert.strictEqual(r.porDia, 2);
+  assert.strictEqual(r.faltan, 0);
+  assert.strictEqual(r.sobra, 0);
+});
+
+test('alcanzaElRitmo: con tope 1 faltan 4 y no sobra nada', () => {
+  const r = alcanzaElRitmo(8, 4, 1);
+  assert.strictEqual(r.alcanza, false);
+  assert.strictEqual(r.porDia, 2);
+  assert.strictEqual(r.faltan, 4);
+  assert.strictEqual(r.sobra, 0);
+});
+
+test('alcanzaElRitmo: cero tarjetas sobra el tope entero', () => {
+  const r = alcanzaElRitmo(0, 4, 3);
+  assert.strictEqual(r.alcanza, true);
+  assert.strictEqual(r.porDia, 0);
+  assert.strictEqual(r.sobra, 12);
+});
+
+test('alcanzaElRitmo rechaza un tope diario de cero', () => {
+  assert.throws(() => alcanzaElRitmo(3, 4, 0), (err) => err.code === 'TOPE');
 });
 
 // --- convención: frontmatter y estado --------------------------------------
