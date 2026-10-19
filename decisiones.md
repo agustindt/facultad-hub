@@ -457,7 +457,7 @@ Rollback de hoy: `docker compose -f compose.prod.yml up -d --build` sobre el che
 
 ### Problemas que encontré y cómo los resolví
 
-- **El primer push a main no publicó la imagen.** [Corrida 39272493130](https://github.com/agustindt/facultad-hub/actions/runs/39272493130). Los tests pasaron, el token decía `Packages: write` y "Entrar al registry" pasó. "Construir y publicar" falló igual en backend y frontend: `denied: permission_denied: write_package`. El comando que armó la acción lleva `--attest type=provenance,mode=max`. Las capas subieron; el manifest, que incluye esa atestación, no. Puse `provenance: false` y `sbom: false`. Se publica la imagen construida, sin el manifiesto de procedencia. El job sigue pidiendo sólo `packages: write` y `contents: read`.
+- **Actions no puede escribir los packages que publicó el PAT en el TP2.** [Corrida 39272493130](https://github.com/agustindt/facultad-hub/actions/runs/39272493130) y, después de apagar la atestación, [39273355559](https://github.com/agustindt/facultad-hub/actions/runs/39273355559). En las dos el token decía `Packages: write`, "Entrar al registry" pasó, y el push murió con `denied: permission_denied: write_package`. Subí el permiso por defecto del repo a write y volvió a fallar: no era el techo del token. Los packages `facultad-hub-backend` y `facultad-hub-frontend` existen desde agosto, creados con un PAT. ghcr no le da write al `GITHUB_TOKEN` sobre un package creado así hasta que el repo figura en *Manage Actions access* con rol Write. `provenance: false` quedó, porque la atestación no hace falta para el tag `sha-`, pero no era la causa.
 
 ### Declaración de uso de IA
 
