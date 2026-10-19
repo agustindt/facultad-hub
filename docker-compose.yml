@@ -57,6 +57,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      # La misma imagen, otro valor: nginx lo lee al arrancar.
+      BACKEND_URL: http://backend:4177
     ports:
       - "${PUERTO_WEB:-8080}:80"
     depends_on:

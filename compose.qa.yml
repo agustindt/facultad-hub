@@ -1,0 +1,65 @@
+# Entorno QA. Lo levanta el job deploy-qa, no una persona.
+#
+# `name: qa` es el aislamiento: sin esto Compose usa el directorio como
+# proyecto y el deploy de PROD recrea los contenedores de QA.
+# Los volúmenes llevan nombre propio por lo mismo: cada entorno, su base.
+
+name: qa
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hub
+      POSTGRES_USER: hub
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - datos-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hub -d hub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://hub:${DB_PASSWORD}@db:5432/hub
+      VAULT_DIR: /vault
+      DATA_DIR: /app/datos
+      HOST: 0.0.0.0
+      PORT: 4177
+    volumes:
+      - vault:/vault
+      - datos-hub:/app/datos
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:4177"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:4177
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  datos-db:
+    name: db_data_qa
+  datos-hub:
+    name: datos_hub_qa
+  vault:
+    name: vault_qa

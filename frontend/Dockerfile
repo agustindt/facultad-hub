@@ -35,7 +35,11 @@ FROM nginx:1.27-alpine AS runtime
 LABEL org.opencontainers.image.source=https://github.com/agustindt/facultad-hub
 
 COPY --from=build /build/public /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Plantilla, no config final: el entrypoint de nginx sustituye ${BACKEND_URL}
+# cuando el contenedor arranca. Sin esa variable el front no sabe a qué API ir,
+# y eso es a propósito: no queda escrita en la imagen.
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+ENV NGINX_ENVSUBST_FILTER=BACKEND_URL
 
 EXPOSE 80
 
