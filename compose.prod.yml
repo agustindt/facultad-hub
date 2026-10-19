@@ -22,9 +22,8 @@ services:
       start_period: 10s
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/agustindt/facultad-hub-backend:${IMAGE_TAG:?falta IMAGE_TAG}
+    platform: linux/amd64
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://hub:${DB_PASSWORD}@db:5432/hub
@@ -40,11 +39,16 @@ services:
         condition: service_healthy
     ports:
       - "8081:4177"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4177/api/vivo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/agustindt/facultad-hub-frontend:${IMAGE_TAG:?falta IMAGE_TAG}
+    platform: linux/amd64
     restart: unless-stopped
     environment:
       BACKEND_URL: http://backend:4177
@@ -53,6 +57,12 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
 volumes:
   datos-db:

@@ -46,9 +46,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=test /app/dominio.js ./dominio.js
 COPY server.js ./
 COPY db ./db
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-# Usuario sin privilegios: la imagen de node ya trae uno.
-USER node
+# El volumen del vault nace de root. El entrypoint lo deja escribible y baja a node.
+USER root
+RUN apk add --no-cache su-exec && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 4177
 
@@ -56,6 +58,7 @@ EXPOSE 4177
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
   CMD node -e "fetch('http://127.0.0.1:4177/api/vivo').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-# CMD y no ENTRYPOINT: así se puede sobreescribir el comando al arrancar
-# (por ejemplo `docker compose run backend node --test test/`) sin pelear.
+# El entrypoint hace el chown y ejecuta el CMD como node. Se puede reemplazar
+# el comando (`docker compose run backend node --test test/`) y sigue bajando a node.
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server.js"]
