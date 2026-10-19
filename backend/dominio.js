@@ -374,6 +374,42 @@ function prioridadDeRepaso(atraso, diasAlExamen) {
   return { nivel, porque, atraso, diasAlExamen };
 }
 
+/**
+ * ¿El ritmo diario alcanza para ver lo que falta antes del corte?
+ * `topeDiario` es el máximo que el estudiante dijo que puede hacer.
+ * No es lo mismo que `nuevasPorDia`: esa dice cuántas tocan por día,
+ * esta dice si ese número entra en el tope y cuántas quedan afuera.
+ */
+function alcanzaElRitmo(sinVer, dias, topeDiario) {
+  if (!Number.isInteger(dias) || dias < 1) {
+    const err = new Error('dias tiene que ser un entero mayor a cero');
+    err.code = 'DIAS';
+    throw err;
+  }
+  if (!Number.isInteger(sinVer) || sinVer < 0) {
+    const err = new Error('sinVer tiene que ser un entero mayor o igual a cero');
+    err.code = 'SIN_VER';
+    throw err;
+  }
+  if (!Number.isInteger(topeDiario) || topeDiario < 1) {
+    const err = new Error('topeDiario tiene que ser un entero mayor a cero');
+    err.code = 'TOPE';
+    throw err;
+  }
+  if (sinVer === 0) {
+    return { alcanza: true, porDia: 0, faltan: 0, sobra: topeDiario * dias };
+  }
+  const porDia = Math.ceil(sinVer / dias);
+  const capacidad = topeDiario * dias;
+  const alcanza = porDia <= topeDiario;
+  return {
+    alcanza,
+    porDia,
+    faltan: alcanza ? 0 : sinVer - capacidad,
+    sobra: alcanza ? capacidad - sinVer : 0,
+  };
+}
+
 module.exports = {
   ESTADOS_CANON,
   ESTADO_ALIAS,
@@ -396,4 +432,5 @@ module.exports = {
   evaluarTema,
   nuevasPorDia,
   prioridadDeRepaso,
+  alcanzaElRitmo,
 };
