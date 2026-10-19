@@ -402,3 +402,63 @@ pasa sobre `server.js`, y que el reporte marca las líneas 114-115 de
 `almacen.js` y las 92-93 de `reglas.js`, que son las que decidí no cubrir.
 
 No delegué el número del umbral ni qué reglas entraban en la suite.
+
+---
+
+## TP6 — CD: environments y aprobación
+
+### Enlaces de este TP
+
+Se completan cuando corre el primer push a `main`. Van acá, no en un archivo aparte.
+
+### Por qué la imagen se publica sólo si la verificación pasó
+
+El registry es la prueba de que lo publicado es lo que se verificó. Si se publicara igual con los tests en rojo, un `sha-…` dejaría de significar "este commit pasó". Hay tres eslabones, y los tres están en el workflow:
+
+1. Nada entra a `main` sin los checks en verde (el gate del TP4, ahora también por cobertura).
+2. Sólo un `push` a `main` publica: `push: github.event_name == 'push' && github.ref == 'refs/heads/main'`. En un PR, "Entrar al registry" sale salteado.
+3. "Construir y publicar la imagen" es el último paso del job, después de los tests. Si los tests fallan, ese paso no se ejecuta.
+
+Lo que esto no garantiza: un `docker push` a mano entra al registry igual. El tag no es un digest. Y los entornos de este TP **reconstruyen** con `docker compose up --build`: no corren la imagen que acaba de publicarse. Esa diferencia es el TP7. La imagen publicada queda etiquetada `sha-<commit>` para poder usarla ahí.
+
+### Continuous Delivery, no Deployment
+
+QA se despliega solo cuando el merge queda verde. PROD no. Falta un reviewer. Eso es Continuous Delivery: el artefacto está listo para producción, y una persona decide. Continuous Deployment sería que PROD subiera sin esa espera. No lo quiero en esta app: un hub con las notas de la cursada no se promueve solo. El gate compra una mirada antes de pisar el entorno que se defiende.
+
+### La cadena y el alcance de cada secret
+
+`deploy-qa` y `deploy-prod` tienen `needs: [build-backend, build-frontend]`. PROD además necesita a QA: si el smoke de QA falla, PROD no arranca. Los dos jobs declaran `environment`. `DB_PASSWORD` es un secret del environment, no del repo: el job de QA lee el de `qa`, el de PROD lee el de `production`. El `GITHUB_TOKEN` que publica en ghcr vive lo que dura el job y no está guardado en ningún secret.
+
+`permissions: packages: write` está dentro de cada job que publica, no en el workflow. Un job que no publica no recibe ese permiso. `contents: read` va junto porque, si listás permisos, lo que no listás se apaga y el checkout deja de poder leer.
+
+### Qué miro antes de aprobar
+
+1. Los dos builds en verde, cobertura incluida.
+2. El smoke de QA: `/api/vivo` con `almacen.modo == postgres` y `almacen.ok`, más el front en 3000.
+3. Que el deploy de PROD esté esperando review y no haya arrancado solo.
+
+### Plan C, y qué se pierde
+
+No usé Render ni Neon. Colima es el motor de esta máquina (Docker Desktop no está) y el plan C de la cátedra es entrega válida: un self-hosted runner y dos proyectos de Compose. Se pierde la URL pública, el cold start de un free tier y un entorno que no es mi notebook. En la defensa los dos tienen que estar levantados por una corrida, no por mí.
+
+QA escucha en `http://localhost:3000` (front) y `http://localhost:8080` (API). PROD en `3001` y `8081`. El `name:` del compose es `qa` o `prod`, y los volúmenes se llaman `db_data_qa` y `db_data_prod`. Sin eso, el segundo deploy mata al primero.
+
+`BACKEND_URL` entra al frontend al arrancar, por la plantilla de nginx. No está en la imagen. En los dos entornos vale `http://backend:4177`: cada proyecto tiene su propia red, así que ese nombre resuelve al backend de ese entorno.
+
+### Qué prueba el smoke, y qué no
+
+Prueba que la API responde, que Postgres aceptó la consulta (`almacen.salud`) y que el front sirve el index. No dice qué commit está corriendo: el compose reconstruye la punta del checkout, y el checkout es el SHA de la corrida, pero el smoke no lee esa etiqueta. La versión se mira en el job y en Deployments.
+
+### Patrón para una producción con usuarios, y el rollback de ahora
+
+Para esta app, con un solo usuario y sin tráfico que partir, usaría **rolling** de un solo réplica: reemplazar el contenedor y volver al anterior si el smoke falla. Blue-green duplica toda la pila (front, back y base) para un corte que hoy hago apagando un compose. Canary pide poder mandar un porcentaje del tráfico a la versión nueva y ver el error rate; no tengo ni balanceador ni métricas. Sin eso, canary es un deploy con un nombre lindo.
+
+Rollback de hoy: `docker compose -f compose.prod.yml up -d --build` sobre el checkout del commit anterior. El número lo mido en la corrida que lo hace, no de memoria. Lo que no deshace: los datos. `db_data_prod` sobrevive al cambio de código. Un rollback de imagen no vuelve atrás un evento escrito en la base. Para eso haría falta un backup previo o una migración reversible. Hoy no hay.
+
+### Problemas que encontré y cómo los resolví
+
+Van debajo cuando aparezcan, con la corrida al lado.
+
+### Declaración de uso de IA
+
+Cursor armó el workflow, los dos compose y esta sección. Verifiqué yo el orden de los pasos en la corrida, que el PR no publica, que QA sube solo y que PROD queda esperando. No delegué el patrón de deploy ni la decisión de usar el plan C.

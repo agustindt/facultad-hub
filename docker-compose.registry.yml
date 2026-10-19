@@ -44,6 +44,8 @@ services:
   frontend:
     image: ghcr.io/${GH_USER}/facultad-hub-frontend:${TAG:-v0.1.0}
     restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:4177
     ports:
       - "${PUERTO_WEB:-8080}:80"
     depends_on:

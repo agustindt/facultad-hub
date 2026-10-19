@@ -1,0 +1,63 @@
+# Entorno PROD. Mismos servicios que QA, otro proyecto de Compose.
+# Puertos del host distintos: 8081 la API, 3001 el front. El lado del
+# contenedor no cambia: adentro el backend sigue en 4177 y nginx en 80.
+
+name: prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hub
+      POSTGRES_USER: hub
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - datos-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hub -d hub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://hub:${DB_PASSWORD}@db:5432/hub
+      VAULT_DIR: /vault
+      DATA_DIR: /app/datos
+      HOST: 0.0.0.0
+      PORT: 4177
+    volumes:
+      - vault:/vault
+      - datos-hub:/app/datos
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:4177"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:4177
+    ports:
+      - "3001:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  datos-db:
+    name: db_data_prod
+  datos-hub:
+    name: datos_hub_prod
+  vault:
+    name: vault_prod
