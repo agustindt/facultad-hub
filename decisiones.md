@@ -273,6 +273,16 @@ el id que exige el gate.
 
 ## TP5 — Testing en el pipeline
 
+### Enlaces
+
+| Qué | Dónde |
+|---|---|
+| La suite en verde, con el reporte en el summary y el artifact | https://github.com/agustindt/facultad-hub/actions/runs/39268489239 |
+| La corrida **roja por umbral de líneas** (53 tests en verde, 93.42% < 96%) | https://github.com/agustindt/facultad-hub/actions/runs/39268908621 |
+| Esa misma rama, después de los tests, en verde | https://github.com/agustindt/facultad-hub/actions/runs/39269121134 |
+| La secuencia rojo → tests → verde → merge | https://github.com/agustindt/facultad-hub/pull/17 |
+| El freno vigente, abierto y en rojo | https://github.com/agustindt/facultad-hub/pull/18 |
+
 ### Qué lógica testié y por qué esa
 
 Cuatro reglas del backend, no ocho variantes de leer un JSON:
