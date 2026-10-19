@@ -69,6 +69,11 @@ jobs:
           context: ./backend
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ github.repository }}-backend:sha-${{ github.sha }}
+          # v7 adjunta una atestación por defecto. ghcr la rechazó con
+          # write_package aunque el token tenía Packages: write. Sin esto
+          # el manifest no entra y el tag no existe.
+          provenance: false
+          sbom: false
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
@@ -134,6 +139,8 @@ jobs:
           context: ./frontend
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ github.repository }}-frontend:sha-${{ github.sha }}
+          provenance: false
+          sbom: false
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 

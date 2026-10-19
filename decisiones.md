@@ -457,7 +457,7 @@ Rollback de hoy: `docker compose -f compose.prod.yml up -d --build` sobre el che
 
 ### Problemas que encontré y cómo los resolví
 
-Van debajo cuando aparezcan, con la corrida al lado.
+- **El primer push a main no publicó la imagen.** [Corrida 39272493130](https://github.com/agustindt/facultad-hub/actions/runs/39272493130). Los tests pasaron, el token decía `Packages: write` y "Entrar al registry" pasó. "Construir y publicar" falló igual en backend y frontend: `denied: permission_denied: write_package`. El comando que armó la acción lleva `--attest type=provenance,mode=max`. Las capas subieron; el manifest, que incluye esa atestación, no. Puse `provenance: false` y `sbom: false`. Se publica la imagen construida, sin el manifiesto de procedencia. El job sigue pidiendo sólo `packages: write` y `contents: read`.
 
 ### Declaración de uso de IA
 
