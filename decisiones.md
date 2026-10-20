@@ -15,6 +15,7 @@
 | Esa cadena en verde (QA, integración y e2e). PROD rechazado: todavía no había un freno rojo | https://github.com/agustindt/facultad-hub/actions/runs/39289130490 |
 | El botón del calendario deja de decir Agregar. El cambio está en la app | https://github.com/agustindt/facultad-hub/pull/25 |
 | QA hizo pull de `sha-6fc87b9e464565bc4940a37dc235b8ed565a13c1`, la integración quedó verde, la e2e no encontró el botón y `deploy-prod` salió skipped | https://github.com/agustindt/facultad-hub/actions/runs/39448719101 |
+| El botón vuelve a decir Agregar. Integración y e2e verdes, PROD aprobado de `5809fa9eed504bf377306dafef0aaab9184f858c` | https://github.com/agustindt/facultad-hub/actions/runs/39450167435 |
 | Backend y frontend de ese tag | https://github.com/users/agustindt/packages/container/package/facultad-hub-backend |
 
 El rechazo de `39289130490` está en el environment `production`. La e2e de `39448719101` esperó `getByRole('button', { name: 'Agregar' })` y los tres casos vencieron a los 30s; `deploy-prod` no arrancó. El commit que devuelve el texto Agregar es el que corresponde promover: la corrida anterior ya mostró el freno.
@@ -506,3 +507,26 @@ Rollback de hoy: `docker compose -f compose.prod.yml up -d --build` sobre el che
 ### Declaración de uso de IA
 
 Cursor armó el workflow, los dos compose y esta sección. Verifiqué yo el orden de los pasos en la corrida, que el PR no publica, que QA sube solo y que PROD queda esperando. No delegué el patrón de deploy ni la decisión de usar el plan C.
+
+---
+
+## TP8 — Preprod nace y muere con un comando
+
+Riel: **plan C**. Terraform 1.16.6 y el provider `kreuzwerker/docker` 4.6.0, fijado en `infra/.terraform.lock.hcl`. No hay Neon ni Render: QA y PROD siguen siendo los compose del TP7, y preprod es un tercer conjunto de contenedores que no comparte red, volumen ni puerto con ellos.
+
+La imagen es la del TP7, tag `sha-5809fa9eed504bf377306dafef0aaab9184f858c`, la misma en el backend y en el frontend (`platform = linux/amd64`). La cadena de la API sale del nombre del contenedor de la base: `postgres://hub:<clave>@${docker_container.db.name}:5432/hub`. `BACKEND_URL` del front sale del nombre del contenedor de la API. Ninguna de las dos está copiada de QA. La clave no está en el HCL: entra por `local.tfvars`, que el `.gitignore` cubre junto con `.terraform/` y el estado. El estado vive en `$HOME/tfstate/facultad-hub.tfstate`, fuera del repo, porque un checkout de Actions borra también lo ignorado.
+
+El endpoint de vida de esta app es `/api/vivo`, no `/health`. En el `8090` respondió `almacen.ok` y `modo postgres`. Un POST de evento quedó en esa base y no apareció en QA. El front, en el `3010`, proxya a su propia API. QA (`3000`) y PROD (`3001`) siguieron respondiendo durante el apply y durante el destroy.
+
+El segundo `plan` dijo «No changes». Borrar `facultad-hub-preprod-api` a mano hizo que el plan siguiente pidiera crearlo (`1 to add`), y el apply lo reconstruyó. Con `prevent_destroy` en el volumen de la base, `plan -destroy` se negó y nombró el recurso; saqué la línea porque preprod tiene que poder morir. `destroy` bajó los 10 recursos y QA/PROD siguieron vivos. Un `apply` los volvió a crear, `/api/vivo` respondió otra vez (la base vacía: el volumen se había ido), y volví a destruir. Para la defensa preprod tiene que nacer delante del docente, no estar ya prendido.
+
+`depends_on` espera a que el contenedor de Postgres exista, no a que acepte conexiones. Por eso la API tiene `restart = unless-stopped`.
+
+### Problemas
+
+- Homebrew no instala Terraform en esta máquina: las Command Line Tools no soportan macOS 27. Bajé el binario 1.16.6 de `releases.hashicorp.com` a `~/.local/bin`. No está en el repo.
+- El provider no usa el context de Colima. Sin `host` habla con `/var/run/docker.sock`, que acá no existe. El socket está en la variable `docker_host`.
+
+### Declaración de uso de IA
+
+Cursor escribió el HCL a partir del plan C de la guía, adaptado a los puertos y a `DATABASE_URL` de esta app. Verifiqué yo el apply, el «No changes», el drift, el rechazo de `prevent_destroy`, el destroy y el apply que lo rehace. No delegué dejar preprod destruido ni el path del estado.

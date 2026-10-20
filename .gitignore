@@ -17,3 +17,13 @@ test-results/
 img/*.txt
 img/*.json
 img/*.err
+
+# Terraform: el estado tiene la clave de la base, y .terraform es cache local.
+# El estado de este repo vive en $HOME/tfstate, fuera del workspace.
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfvars
+!infra/*.tfvars.example
+infra/crash.log
+infra/crash.*.log
