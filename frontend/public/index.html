@@ -1553,7 +1553,7 @@ function viewCalendario(){
     const tp=el('select','input'); tp.style.maxWidth='150px';
     [['entrega','Entrega'],['examen','Parcial'],['hito','Hito'],['defensa','Defensa']]
       .forEach(([v,l])=>tp.append(new Option(l,v)));
-    const ok=el('button','btn primary','Sumar');
+    const ok=el('button','btn primary','Agregar');
     const aviso=el('div','tiny'); aviso.setAttribute('role','alert'); aviso.style.marginTop='8px';
     r.append(f,ti,ma,tp,ok); box.append(r,aviso);
     m.insertBefore(box,grid);

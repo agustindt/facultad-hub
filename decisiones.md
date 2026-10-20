@@ -9,7 +9,15 @@
 
 ### Enlaces del TP7
 
-Se completan cuando cierren la corrida roja y la que llega a PROD.
+| Qué | Dónde |
+|---|---|
+| `image:` en los dos compose, la cadena deploy → integración → e2e → PROD, y el entrypoint del vault | https://github.com/agustindt/facultad-hub/pull/24 |
+| Esa cadena en verde (QA, integración y e2e). PROD rechazado: todavía no había un freno rojo | https://github.com/agustindt/facultad-hub/actions/runs/39289130490 |
+| El botón del calendario deja de decir Agregar. El cambio está en la app | https://github.com/agustindt/facultad-hub/pull/25 |
+| QA hizo pull de `sha-6fc87b9e464565bc4940a37dc235b8ed565a13c1`, la integración quedó verde, la e2e no encontró el botón y `deploy-prod` salió skipped | https://github.com/agustindt/facultad-hub/actions/runs/39448719101 |
+| Backend y frontend de ese tag | https://github.com/users/agustindt/packages/container/package/facultad-hub-backend |
+
+El rechazo de `39289130490` está en el environment `production`. La e2e de `39448719101` esperó `getByRole('button', { name: 'Agregar' })` y los tres casos vencieron a los 30s; `deploy-prod` no arrancó. El commit que devuelve el texto Agregar es el que corresponde promover: la corrida anterior ya mostró el freno.
 
 ### Por qué QA y PROD dejan de construir
 
