@@ -24,6 +24,5 @@ infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
 infra/*.tfvars
-!infra/*.tfvars.example
 infra/crash.log
 infra/crash.*.log
