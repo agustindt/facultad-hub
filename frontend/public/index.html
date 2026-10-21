@@ -3,6 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  window.sentryOnLoad = function () {
+    Sentry.init({
+      dsn: "https://17fd851ff5c3fe07944892732030a0c1@o4510969999982592.ingest.us.sentry.io/4512295895433216",
+      environment: location.port === "3001" ? "production" : location.port === "3000" ? "qa" : location.hostname,
+      tracesSampleRate: 1.0,
+    });
+  };
+</script>
+<script
+  src="https://js.sentry-cdn.com/17fd851ff5c3fe07944892732030a0c1.min.js"
+  crossorigin="anonymous"
+></script>
 <title>Hub Facultad</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 <style>
