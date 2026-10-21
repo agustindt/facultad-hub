@@ -292,6 +292,7 @@ jobs:
       contents: read
     env:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
     steps:
       - name: Bajar el código al runner
         uses: actions/checkout@v7

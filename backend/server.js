@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Hub Facultad — servidor local del vault.
- * Cero dependencias: solo Node stdlib. Se corre con `node server.js`.
+ * Se corre con `node server.js`. Sentry se inicializa en instrument.js.
  *
  * El vault de Obsidian sigue siendo la única fuente de verdad: este servidor
  * lee y escribe los mismos archivos .md, no una copia ni una base de datos.
@@ -9,6 +9,7 @@
 
 'use strict';
 
+const Sentry = require('./instrument');
 const http = require('http');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -3386,6 +3387,11 @@ const server = http.createServer(async (req, res) => {
       return json(res, { ok: true, almacen: await almacen.salud(), version: 3 });
     }
 
+    // Temporal del TP9: provoca un error para verlo en Sentry. Se saca al cerrar el práctico.
+    if (pathname === '/api/falla') {
+      throw new Error('Falla de prueba del TP9');
+    }
+
     if (pathname === '/api/git/estado') return json(res, await gitEstado());
 
     if (pathname === '/api/git/init' && req.method === 'POST') {
@@ -3741,6 +3747,8 @@ const server = http.createServer(async (req, res) => {
     // El resto son rutas del SPA.
     return serveStatic(res, 'index.html');
   } catch (err) {
+    Sentry.captureException(err);
+    await Sentry.flush(2000);
     return json(res, { error: err.message }, 500);
   }
 });
