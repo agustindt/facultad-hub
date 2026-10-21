@@ -16,7 +16,7 @@ FROM node:22-alpine AS test
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY dominio.js server.js ./
+COPY dominio.js server.js instrument.js ./
 COPY db ./db
 COPY test ./test
 RUN npm test
@@ -44,7 +44,7 @@ ENV PORT=4177
 COPY --from=deps /app/node_modules ./node_modules
 # Desde la etapa de tests, no del contexto: si esa etapa no corrió, no hay imagen.
 COPY --from=test /app/dominio.js ./dominio.js
-COPY server.js ./
+COPY server.js instrument.js ./
 COPY db ./db
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
