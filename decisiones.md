@@ -530,3 +530,36 @@ El segundo `plan` dijo «No changes». Borrar `facultad-hub-preprod-api` a mano 
 ### Declaración de uso de IA
 
 Cursor escribió el HCL a partir del plan C de la guía, adaptado a los puertos y a `DATABASE_URL` de esta app. Verifiqué yo el apply, el «No changes», el drift, el rechazo de `prevent_destroy`, el destroy y el apply que lo rehace. No delegué dejar preprod destruido ni el path del estado.
+
+---
+
+## TP9 — Lo que mira cada guardián, y lo que no
+
+El PR de Dependabot que mergeé es el [#34](https://github.com/agustindt/facultad-hub/pull/34): `actions/checkout` de la 6 a la 7. Es un **major**. El corte de la 7 es que, en `pull_request_target` y en `workflow_run`, checkout deja de bajar el código de un fork. Este workflow no usa esos eventos: baja la rama del push o del PR. El pipeline del PR estaba verde (tests, umbral, imágenes). Por eso lo mergeé. Los de vitest 5 los dejé abiertos: `build-frontend` fallaba.
+
+CodeQL está en default setup (JavaScript y Actions) y el primer análisis terminó. Secret scanning y push protection están activos. Dependabot corre cada semana sobre `/backend`, `/frontend` y las actions, con alertas y security updates prendidos. El config entró en el [#28](https://github.com/agustindt/facultad-hub/pull/28).
+
+Sentry está en los dos lados de PROD. El backend manda solo si existe `SENTRY_DSN` (secreto del entorno production; QA no lo tiene). El del browser va en el HTML: es una clave pública. Errores guardados: [FACULTAD-HUB-1](https://clubgest.sentry.io/issues/FACULTAD-HUB-1) (`GET /api/falla`, «Falla de prueba del TP9») y [FACULTAD-HUB-AF-1](https://clubgest.sentry.io/issues/FACULTAD-HUB-AF-1) (`ReferenceError: myUndefinedFunction is not defined` en `/`). El endpoint de prueba sigue en el código para poder repetirlo en la defensa; la tarjeta dice sacarlo después.
+
+En las últimas 24 h, spans `http.server` del proyecto `facultad-hub`:
+
+| Ruta | Pedidos | p95 |
+| --- | ---: | ---: |
+| `GET /status` | 5790 | 10 ms |
+| `GET /message` | 4233 | 8 ms |
+| `GET /api/vivo` | 1084 | 41 ms |
+| `GET /api/falla` | 2 | 506 ms |
+
+`/status` y `/message` no son rutas de la app: el pedido llega, no matchea, y Sentry igual lo cuenta. De las rutas que existen, la más usada es `GET /api/vivo` (el healthcheck y el smoke) y la más lenta es `GET /api/falla`, porque el catch espera `Sentry.flush` antes de responder 500. De ese dato salió la tarjeta [#39](https://github.com/agustindt/facultad-hub/issues/39) en el tablero del TP3, en Todo.
+
+El monitor externo todavía no tiene el par DOWN/UP. PROD es localhost y no hay cuenta de UptimeRobot: un servicio de afuera no llega al `8081` sin un túnel, y no lo dejé abierto. El endpoint que tiene que mirar es `/api/vivo` (un HEAD ya responde 200, que es lo que pregunta el plan gratis). El tiempo de detección se anota cuando se haga la caída, y el monitor se pausa al terminar.
+
+### Problemas
+
+- Un miembro de la organización no puede crear proyectos en Sentry (403). Los creé en la UI: `facultad-hub` (Node) y `facultad-hub-af` (browser). El nombre del segundo lo acortó Sentry.
+- El DSN que mostraba el asistente de instalación no era el de la clave viva del proyecto. El secreto de production usa la clave que `find_dsns` devuelve para `facultad-hub`.
+- La primera corrida del front en main murió en integración porque el runner aceptó el job y no lo ejecutó. Lo maté y la reejecución pasó. PROD de esa corrida es `f86f3fb`.
+
+### Declaración de uso de IA
+
+Cursor escribió `instrument.js`, el loader del browser, la tarjeta #39 y esta sección. Los números de la tabla los leí de las trazas de Sentry, y el #34 estaba verde antes de mergearlo. No delegué cuál PR mergear ni dejar el monitor sin el par DOWN/UP.
