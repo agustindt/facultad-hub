@@ -535,7 +535,7 @@ Cursor escribió el HCL a partir del plan C de la guía, adaptado a los puertos 
 
 ## TP9 — Lo que mira cada guardián, y lo que no
 
-El PR de Dependabot que mergeé es el [#34](https://github.com/agustindt/facultad-hub/pull/34): `actions/checkout` de la 6 a la 7. Es un **major**. El corte de la 7 es que, en `pull_request_target` y en `workflow_run`, checkout deja de bajar el código de un fork. Este workflow no usa esos eventos: baja la rama del push o del PR. El pipeline del PR estaba verde (tests, umbral, imágenes). Por eso lo mergeé. Los de vitest 5 los dejé abiertos: `build-frontend` fallaba.
+El PR de Dependabot que mergeé es el [#34](https://github.com/agustindt/facultad-hub/pull/34): `actions/checkout` de la 6 a la 7. Es un **major**. El corte de la 7 es que, en `pull_request_target` y en `workflow_run`, checkout deja de bajar el código de un fork. Este workflow no usa esos eventos: baja la rama del push o del PR. El pipeline del PR estaba verde (tests, umbral, imágenes). Por eso lo mergeé. Dependabot también alertó vitest y tinypool en el lock del frontend (dos críticas, dos medias). Los PRs que suben vitest a la 5 dejan rojo `build-frontend`, así que no los mergeé.
 
 CodeQL está en default setup (JavaScript y Actions) y el primer análisis terminó. Secret scanning y push protection están activos. Dependabot corre cada semana sobre `/backend`, `/frontend` y las actions, con alertas y security updates prendidos. El config entró en el [#28](https://github.com/agustindt/facultad-hub/pull/28).
 
