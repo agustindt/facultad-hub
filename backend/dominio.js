@@ -338,6 +338,43 @@ function nuevasPorDia(sinVer, dias) {
 }
 
 /**
+ * Con qué urgencia hay que repasar una tarjeta.
+ * `atraso` son los días que ya se pasó de la fecha en que vencía (0 si está
+ * al día). `diasAlExamen` es el margen hasta el parcial, o null si esa
+ * materia no tiene fecha. Un atraso pesa más cuando el examen está cerca:
+ * la misma tarjeta vencida hace 3 días no es igual a 2 días del parcial
+ * que a 40.
+ */
+function prioridadDeRepaso(atraso, diasAlExamen) {
+  if (!Number.isInteger(atraso) || atraso < 0) {
+    const err = new Error('atraso tiene que ser un entero mayor o igual a cero');
+    err.code = 'ATRASO';
+    throw err;
+  }
+  if (diasAlExamen != null && (!Number.isInteger(diasAlExamen) || diasAlExamen < 0)) {
+    const err = new Error('diasAlExamen tiene que ser un entero mayor o igual a cero, o null');
+    err.code = 'EXAMEN';
+    throw err;
+  }
+  let nivel = 'baja';
+  let porque = 'está al día y el parcial no está encima';
+  if (diasAlExamen != null && diasAlExamen <= 3) {
+    nivel = 'critica';
+    porque = `faltan ${diasAlExamen} días para el parcial`;
+  } else if (atraso >= 7) {
+    nivel = 'alta';
+    porque = `vencida hace ${atraso} días`;
+  } else if (atraso > 0) {
+    nivel = 'media';
+    porque = `vencida hace ${atraso} días, todavía hay margen`;
+  } else if (diasAlExamen != null && diasAlExamen <= 14) {
+    nivel = 'media';
+    porque = `el parcial es en ${diasAlExamen} días y esta tarjeta no se vio`;
+  }
+  return { nivel, porque, atraso, diasAlExamen };
+}
+
+/**
  * ¿El ritmo diario alcanza para ver lo que falta antes del corte?
  * `topeDiario` es el máximo que el estudiante dijo que puede hacer.
  * No es lo mismo que `nuevasPorDia`: esa dice cuántas tocan por día,
@@ -394,5 +431,6 @@ module.exports = {
   parsearPrograma,
   evaluarTema,
   nuevasPorDia,
+  prioridadDeRepaso,
   alcanzaElRitmo,
 };
