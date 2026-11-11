@@ -47,7 +47,7 @@ jobs:
 
       - name: Publicar el reporte de cobertura
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-backend
           path: backend/coverage/lcov.info
@@ -117,7 +117,7 @@ jobs:
 
       - name: Publicar el reporte de cobertura
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-frontend
           path: frontend/coverage
@@ -229,7 +229,7 @@ jobs:
 
       - name: Publicar el reporte de integración
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integracion-report
           path: frontend/playwright-report
@@ -276,7 +276,7 @@ jobs:
 
       - name: Publicar el reporte e2e
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-report
           path: frontend/playwright-report
