@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P1 · Dónde está · Di Tomaso</title>
+<style>
+  :root { --bg:#101114; --panel:#1a1c21; --line:#2c3038; --text:#ececec; --muted:#9aa0aa; --say:#e8c36a; --do:#7ec8e3; --ok:#7dbe8f; --bad:#e07a7a; --link:#8bb4ff; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family:ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  body { display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:14px; padding:8px 16px; border-bottom:1px solid var(--line); font-size:13px; color:var(--muted); }
+  header strong { color:var(--text); }
+  header .sp { flex:1; }
+  header a { color:var(--link); text-decoration:none; }
+  #prog { height:3px; background:var(--line); } #prog>i { display:block; height:100%; width:0; background:var(--do); }
+  main { flex:1; overflow:hidden; }
+  .slide { display:none; height:100%; padding:20px 26px 14px; grid-template-rows:auto auto 1fr auto; gap:10px; }
+  .slide.on { display:grid; }
+  .kicker { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  h1,h2 { margin:0; font-weight:650; letter-spacing:-.02em; }
+  h1 { font-size:30px; } h2 { font-size:24px; }
+  .grid2 { display:grid; grid-template-columns:1.05fr .95fr; gap:16px; min-height:0; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow:auto; }
+  .card h3 { margin:0 0 8px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .hace h3 { color:var(--do); } .deci h3 { color:var(--say); } .preg h3 { color:var(--ok); }
+  pre,code { font-family:ui-monospace,Menlo,monospace; }
+  pre { margin:0; font-size:13px; line-height:1.45; white-space:pre-wrap; color:#d7dde6; }
+  p { margin:0; font-size:16px; line-height:1.45; }
+  img.shot { width:100%; height:100%; object-fit:contain; background:#000; border-radius:8px; border:1px solid var(--line); }
+  .links { display:flex; flex-wrap:wrap; gap:8px; }
+  a.btn { display:inline-block; padding:8px 12px; border-radius:8px; background:#243044; color:var(--link); text-decoration:none; font-size:13px; font-weight:600; border:1px solid #33415c; }
+  a.btn.live { background:#1e3d32; border-color:#2e5c49; color:#b6e4c6; }
+  table.mini { width:100%; border-collapse:collapse; font-size:14px; }
+  table.mini th, table.mini td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.mini th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); }
+  footer.bar { display:flex; align-items:center; gap:10px; padding:8px 16px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); }
+  footer.bar .sp { flex:1; }
+  button.nav { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  ul.clean { margin:0; padding-left:18px; font-size:15px; line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <strong>Di Tomaso</strong>
+  <span>P1 · señalá con el dedo</span>
+  <span class="sp"></span>
+  <a href="#donde" id="jump-donde">D dónde está</a>
+  <a href="https://github.com/agustindt/facultad-hub" target="_blank">repo</a>
+  <a href="https://github.com/users/agustindt/projects/5" target="_blank">project</a>
+  <a href="https://github.com/agustindt/facultad-hub/pull/13" target="_blank">#13</a>
+  <a href="https://github.com/agustindt/facultad-hub/actions" target="_blank">Actions</a>
+  <span id="pos">1</span>
+</header>
+<div id="prog"><i></i></div>
+<main>
+
+<section class="slide on">
+  <div class="kicker">Cómo pregunta · no te pide teoría, te pide el archivo</div>
+  <h1>Respuesta en dos partes: dónde está, qué hace</h1>
+  <div class="grid2">
+    <div class="card">
+      <p>Si pregunta “¿dónde está la imagen?” no expliques Docker. Abrí ghcr o la columna IMAGE. Si pregunta “¿qué hace el pipeline?” abrí <code>ci.yml</code> y señalá los dos <code>docker/build-push-action</code>.</p>
+      <p style="margin-top:12px;color:var(--muted);font-size:14px">Tecla <b>D</b> salta a estas tres diapos. Después sigue el guion de la mesa (push, compose, Project, PR #13).</p>
+    </div>
+    <div class="card">
+      <h3>Regla</h3>
+      <ul class="clean">
+        <li>Dónde = ruta, URL o columna. El dedo en la pantalla.</li>
+        <li>Qué hace = una frase. Si te va la segunda, parás.</li>
+        <li>Si no arranca, la captura de evidencias es el plan B.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="donde">
+  <div class="kicker">TP2 · la pregunta más repetida</div>
+  <h2>¿Dónde está la imagen? ¿Qué es? ¿Dónde corre?</h2>
+  <table class="mini">
+    <tr><th>Pregunta</th><th>Señalá</th><th>Qué hace (una frase)</th></tr>
+    <tr>
+      <td>¿Dónde está la imagen?</td>
+      <td><a href="https://github.com/users/agustindt/packages/container/package/facultad-hub-backend" target="_blank">ghcr.io/agustindt/facultad-hub-backend:v0.1.0</a><br>y <a href="https://github.com/users/agustindt/packages/container/package/facultad-hub-frontend" target="_blank">…-frontend:v0.1.0</a><br>En la mesa: columna IMAGE de <code>compose -f docker-compose.registry.yml ps</code></td>
+      <td>Es la receta inmutable (el paquete). No es un proceso. Cualquiera hace pull anónimo porque es pública.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde se define?</td>
+      <td><a href="https://github.com/agustindt/facultad-hub/blob/main/backend/Dockerfile" target="_blank">backend/Dockerfile</a> · <a href="https://github.com/agustindt/facultad-hub/blob/main/frontend/Dockerfile" target="_blank">frontend/Dockerfile</a></td>
+      <td>Multi-stage: etapa 1 instala, etapa 2 copia runtime a alpine. La final no lleva npm. node:22 = 1.63 GB, backend final = 230 MB.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde corre?</td>
+      <td>El <b>contenedor</b> · <code>docker compose ps</code></td>
+      <td>Proceso de esa imagen. Borrar el contenedor no borra la imagen ni el volumen.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde están los datos?</td>
+      <td>Volumen <code>datos-db</code> → <code>/var/lib/postgresql/data</code></td>
+      <td><code>down</code> lo deja. <code>down -v</code> lo borra. No está dentro de la imagen.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde están las notas?</td>
+      <td>Bind mount <code>VAULT_PATH</code> → <code>/vault</code></td>
+      <td>En el disco, no en Postgres. Obsidian las abre.</td>
+    </tr>
+    <tr>
+      <td>¿Cómo se encuentran?</td>
+      <td><code>DATABASE_URL=…@db:5432/…</code> · nginx → <code>backend:4177</code></td>
+      <td><code>db</code> y <code>backend</code> son DNS de compose, no localhost. El browser llama a <code>/api</code> (mismo origen).</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el .env?</td>
+      <td><b>No</b> en el repo. <a href="https://github.com/agustindt/facultad-hub/blob/main/.gitignore" target="_blank">.gitignore</a> · sí: <a href="https://github.com/agustindt/facultad-hub/blob/main/.env.example" target="_blank">.env.example</a></td>
+      <td>Password y ruta del vault. En el pipeline van a secrets.</td>
+    </tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP4 · la otra que más sale</div>
+  <h2>¿Dónde está el pipeline? ¿Qué hace? ¿Dónde queda lo que produce?</h2>
+  <table class="mini">
+    <tr><th>Pregunta</th><th>Señalá</th><th>Qué hace (una frase)</th></tr>
+    <tr>
+      <td>¿Dónde está el pipeline?</td>
+      <td><a href="https://github.com/agustindt/facultad-hub/blob/main/.github/workflows/ci.yml" target="_blank">.github/workflows/ci.yml</a><br>Las corridas: pestaña <a href="https://github.com/agustindt/facultad-hub/actions" target="_blank">Actions</a></td>
+      <td>Pipeline as code: vive en el repo, entra por PR. Actions es el historial, no la definición.</td>
+    </tr>
+    <tr>
+      <td>¿Qué hace?</td>
+      <td>Dos jobs en paralelo: <code>build-backend</code> y <code>build-frontend</code></td>
+      <td>Buildea con <b>los Dockerfiles del TP2</b>. No corre tests (TP5). No pushea a ghcr: <code>push: false</code>.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde corre?</td>
+      <td><code>runs-on: ubuntu-latest</code> — una VM limpia por job</td>
+      <td>No comparten disco ni capas. Cada uno hace su checkout y su cache (<code>scope=backend</code> / <code>frontend</code>).</td>
+    </tr>
+    <tr>
+      <td>¿Qué produce? ¿Dónde queda?</td>
+      <td>Tags <code>backend:ci</code> / <code>frontend:ci</code> <b>en el runner</b></td>
+      <td>Se tiran al terminar el job. Verifica, no entrega. La imagen que se usa está en ghcr (TP2).</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el cache?</td>
+      <td><code>cache-from/to: type=gha</code> — cache de Actions, no un archivo del repo</td>
+      <td>Si desaparece, tarda más y sigue verde.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el gate?</td>
+      <td>Settings → Branches → main · se ve en el PR: merge BLOCKED</td>
+      <td>Exige los dos checks verdes. <code>strict: true</code>: la rama tiene que estar al día con main.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el badge?</td>
+      <td>Primera línea del <a href="https://github.com/agustindt/facultad-hub" target="_blank">README</a></td>
+      <td>Muestra la última corrida de <code>push</code> a main, no la del PR.</td>
+    </tr>
+  </table>
+  <div class="links">
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub/blob/main/.github/workflows/ci.yml" target="_blank">Abrir ci.yml</a>
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/13" target="_blank">PR #13 rojo→verde</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/actions/runs/33191765998" target="_blank">Corrida roja</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/actions/runs/33191905516" target="_blank">Corrida verde</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">TP1 y TP3 · las de “mostrame dónde”</div>
+  <h2>¿Dónde está la protección, el conflicto, el plan?</h2>
+  <table class="mini">
+    <tr><th>Pregunta</th><th>Señalá</th><th>Qué hace (una frase)</th></tr>
+    <tr>
+      <td>¿Dónde está la protección?</td>
+      <td>Repo → Settings → Branches → rule de <code>main</code></td>
+      <td>PR obligatorio, 0 approvals, <code>enforce_admins</code>. Lo demostrás: <code>git push origin main</code> → GH006.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el conflicto?</td>
+      <td><a href="https://github.com/agustindt/facultad-hub/pull/2" target="_blank">PR #2</a> · README misma línea</td>
+      <td>Dos ramas nacidas de main. Git no elige contenido. Quedó versión B.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está la versión?</td>
+      <td><a href="https://github.com/agustindt/facultad-hub/releases/tag/v1.0.0" target="_blank">Release v1.0.0</a> · también v2, v3, v4</td>
+      <td>El tag apunta a un commit. Congela ese TP.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el plan?</td>
+      <td><a href="https://github.com/users/agustindt/projects/5" target="_blank">github.com/users/agustindt/projects/5</a> — no la URL del repo</td>
+      <td>Épica #4 → historia #5 → tarea #6 cerrada por PR #10. Bug #8 al costado.</td>
+    </tr>
+    <tr>
+      <td>¿Dónde está el 502 / nginx?</td>
+      <td><a href="https://github.com/agustindt/facultad-hub/blob/main/frontend/nginx.conf" target="_blank">frontend/nginx.conf</a> · <code>resolver 127.0.0.11</code></td>
+      <td>Si el nombre va escrito en <code>proxy_pass</code>, nginx resuelve al arrancar y se queda con la IP vieja.</td>
+    </tr>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="kicker">Guion de la mesa · TP1 · ~50s</div>
+  <h2>Push a main — tiene que fallar</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace"><h3>Hacé</h3>
+<pre>echo "prueba-defensa" >> README.md
+git add README.md
+git commit -m "prueba"
+git push origin main
+# GH006
+git reset --hard HEAD~1</pre></div>
+      <div class="card deci" style="margin-top:10px"><h3>Decí</h3>
+        <p>Main protegida con enforce_admins: ni el dueño pushea. Todo entra por PR.</p></div>
+    </div>
+    <img class="shot" src="img/push-rechazado.png" alt="GH006">
+  </div>
+  <div class="links">
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/2" target="_blank">PR #2 conflicto</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/releases/tag/v1.0.0" target="_blank">v1.0.0</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Guion · TP2 · ~60s · IMAGE = ghcr.io</div>
+  <h2>El compose que baja, no el que buildea</h2>
+  <div class="grid2">
+    <div>
+      <div class="card hace"><h3>Hacé</h3>
+<pre>docker compose -f docker-compose.registry.yml ps
+git ls-files .env
+docker volume ls</pre></div>
+      <div class="card deci" style="margin-top:10px"><h3>Decí</h3>
+        <p>Las bajé de ghcr, no las construí acá. El secreto no viaja. datos-db sobrevive a down; down -v lo borra. Las notas son bind mount.</p></div>
+    </div>
+    <img class="shot" src="img/registry-compose.png" alt="registry compose">
+  </div>
+  <div class="links">
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/blob/main/.gitignore" target="_blank">.gitignore</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/blob/main/.env.example" target="_blank">.env.example</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Guion · TP3 · ~50s</div>
+  <h2>#6 Done → PR #10 → #5 → #4</h2>
+  <div class="card deci"><h3>Decí</h3>
+    <p>Closes #6 cerró la tarea al mergear. La historia sigue abierta: tests y artefacto son TP5. El bug #8 está al costado: defecto de algo ya entregado.</p>
+  </div>
+  <div class="links">
+    <a class="btn live" href="https://github.com/users/agustindt/projects/5" target="_blank">Project</a>
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub/issues/6" target="_blank">#6</a>
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/10" target="_blank">PR #10</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/issues/5" target="_blank">#5</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/issues/4" target="_blank">#4</a>
+    <a class="btn" href="https://github.com/agustindt/facultad-hub/issues/8" target="_blank">#8</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Guion · TP4 · ~80s · 45% de P1</div>
+  <h2>PR #13: rojo → BLOCKED → fix → verde</h2>
+  <div class="grid2">
+    <div class="card deci"><h3>Decí</h3>
+      <p>Dos jobs en paralelo, sin needs. Construyen los Dockerfiles del TP2, no un npm aparte. Rompí el build con un paquete que no existe porque este stack no compila: un import inventado no cae en docker build.</p>
+    </div>
+    <div class="card">
+      <h3>Corridas</h3>
+      <p><span class="bad">roja</span> <a href="https://github.com/agustindt/facultad-hub/actions/runs/33191765998" target="_blank">33191765998</a></p>
+      <p style="margin-top:8px"><span class="ok">verde</span> <a href="https://github.com/agustindt/facultad-hub/actions/runs/33191905516" target="_blank">33191905516</a></p>
+    </div>
+  </div>
+  <div class="links">
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub/pull/13" target="_blank">PR #13</a>
+    <a class="btn live" href="https://github.com/agustindt/facultad-hub" target="_blank">README + badge</a>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Casilla 5 · escuchás</div>
+  <h2>Tu caso</h2>
+  <table class="mini">
+    <tr><th>Si pregunta</th><th>Contestás</th></tr>
+    <tr><td>Cuatro TPs el 28/8</td><td>La app ya existía. Ese día armé el proceso. No fabriqué historial.</td></tr>
+    <tr><td>¿Por qué esta app?</td><td>Es más grande que el CRUD. La defensa es 50% y esta app la uso.</td></tr>
+    <tr><td>El 502</td><td>nginx cacheó la IP. resolver 127.0.0.11 + proxy_pass por variable. Bug #8.</td></tr>
+    <tr><td>¿IA?</td><td>Cursor armó YAML y Dockerfiles. Yo verifiqué GH006, persistencia, #13 BLOCKED. No delegué versión B, 0 approvals, notas fuera de PG, 7 días, WIP 2, nombres de los jobs.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer class="bar">
+  <button class="nav" id="prev" type="button">←</button>
+  <button class="nav" id="next" type="button">→</button>
+  <span>flechas · espacio · D = dónde está</span>
+  <span class="sp"></span>
+  <span>No leas: señalá y una frase.</span>
+</footer>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  let i = 0;
+  const pos = document.getElementById("pos");
+  const bar = document.querySelector("#prog > i");
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle("on", k === i));
+    pos.textContent = (i + 1) + " / " + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+  }
+  document.getElementById("prev").onclick = () => show(i - 1);
+  document.getElementById("next").onclick = () => show(i + 1);
+  const donde = () => show(slides.findIndex(s => s.id === "donde"));
+  document.getElementById("jump-donde").onclick = (e) => { e.preventDefault(); donde(); };
+  document.addEventListener("keydown", (e) => {
+    if (["ArrowRight"," ","PageDown"].includes(e.key)) { e.preventDefault(); show(i+1); }
+    if (["ArrowLeft","PageUp","Backspace"].includes(e.key)) { e.preventDefault(); show(i-1); }
+    if (e.key === "Home") show(0);
+    if (e.key === "d" || e.key === "D") { e.preventDefault(); donde(); }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Análisis Numérico · Final</title><link rel='stylesheet' href='estilo.css'></head><body>
+<header class='top'><strong>Numérico</strong><a href='index.html'>Plan</a><a href='#final'>Final 1/2/2024</a><a href='#raices'>Raíces</a><a href='#sist'>Sistemas</a><a href='#ajuste'>Ajuste</a><a href='#interp'>Interpolación</a><a href='#dif'>Derivación e integración</a><a href='#edo'>EDO</a></header>
+<main>
+<p class='k'>UCC · Ingeniería · fecha a confirmar (febrero)</p>
+<h1>Análisis Numérico. Tres métodos a mano y todo el cálculo escrito.</h1>
+<p>El final del 1 de febrero de 2024 tenía tres ejercicios: <b>secante</b> para un máximo, <b>diferencias divididas</b> con elección del grado, y <b>eliminación gaussiana</b> con análisis de la solución. “Debe transcribir todos los cálculos.” Se aprueba el práctico con dos bien resueltos. Los temas posibles son los de las siete guías: raíces, sistemas lineales, regresión, interpolación, diferenciación, integración y ecuaciones diferenciales.</p>
+<div class='box warn'><p class='ans'>Cómo se corrige.</p><p>Tabla de iteraciones completa, con el error en cada fila y el criterio de corte escrito. Trabajá con 4 o más decimales y no redondees a mitad de camino. Terminá con una frase: “La raíz es 1,0000 con error menor que 10⁻³.”</p></div>
+
+<h2 id='final'>El final del 1/2/2024, resuelto</h2>
+<h3>1. Máximo por la secante, error 10⁻³</h3>
+<p>La función de la consigna está en la imagen del enunciado y no se lee en la copia. El método es siempre el mismo: <b>un máximo es una raíz de f′</b>. Se aplica la secante a g(x) = f′(x), y después se verifica que f″ &lt; 0 (o que f crece antes y decrece después).</p>
+<p class='f'>x<sub>n+1</sub> = x<sub>n</sub> − g(x<sub>n</sub>) · (x<sub>n</sub> − x<sub>n−1</sub>) / (g(x<sub>n</sub>) − g(x<sub>n−1</sub>))</p>
+<div class='enun'>Ejemplo para practicar: máximo de f(x) = x e<sup>−x</sup>. g(x) = f′(x) = e<sup>−x</sup>(1 − x). x₀ = 0,5, x₁ = 1,5.</div>
+<details><summary>Resolución</summary>
+<table><tr><th>n</th><th>x<sub>n−1</sub></th><th>x<sub>n</sub></th><th>x<sub>n+1</sub></th><th>|x<sub>n+1</sub> − x<sub>n</sub>|</th></tr>
+<tr><td>1</td><td>0,5</td><td>1,5</td><td>1,231059</td><td>0,268941</td></tr>
+<tr><td>2</td><td>1,5</td><td>1,231059</td><td>0,819624</td><td>0,411435</td></tr>
+<tr><td>3</td><td>1,231059</td><td>0,819624</td><td>1,042153</td><td>0,222529</td></tr>
+<tr><td>4</td><td>0,819624</td><td>1,042153</td><td>1,007085</td><td>0,035068</td></tr>
+<tr><td>5</td><td>1,042153</td><td>1,007085</td><td>0,999694</td><td>0,007391</td></tr>
+<tr><td>6</td><td>1,007085</td><td>0,999694</td><td>1,000002</td><td>0,000308 &lt; 10⁻³</td></tr></table>
+<p>x* ≈ 1,0000. f″(1) = e<sup>−1</sup>(1 − 2) &lt; 0: <b>máximo en x = 1, f(1) = 0,3679</b>.</p></details>
+
+<h3>2. Diferencias divididas</h3>
+<div class='enun'>x: 0, 1, 2, 3. y: 8; 4; 1,65; 0,97. Prever el grado, interpolar y evaluar en la mitad del segundo subintervalo.</div>
+<details><summary>Resolución</summary>
+<table><tr><th>x</th><th>f[ ]</th><th>1.ª</th><th>2.ª</th><th>3.ª</th></tr>
+<tr><td>0</td><td>8</td><td>−4</td><td>0,825</td><td>0,003333</td></tr>
+<tr><td>1</td><td>4</td><td>−2,35</td><td>0,835</td><td></td></tr>
+<tr><td>2</td><td>1,65</td><td>−0,68</td><td></td><td></td></tr>
+<tr><td>3</td><td>0,97</td><td></td><td></td><td></td></tr></table>
+<p>f[x₀,x₁] = (4 − 8)/1 = −4. f[x₀,x₁,x₂] = (−2,35 + 4)/2 = 0,825. f[x₀,…,x₃] = (0,835 − 0,825)/3 = 0,003333.</p>
+<p><b>Grado:</b> las segundas diferencias son casi constantes (0,825 y 0,835) y la tercera es casi 0. Alcanza con <b>grado 2</b>.</p>
+<p>P₂(x) = 8 − 4x + 0,825·x(x − 1).</p>
+<p>Segundo subintervalo: [1, 2], su mitad es x = 1,5. P₂(1,5) = 8 − 6 + 0,825 · 1,5 · 0,5 = <b>2,61875</b>. Con grado 3 se suma 0,003333 · 1,5 · 0,5 · (−0,5) y da 2,6175: la diferencia es 0,0012, confirma que el grado 2 alcanza.</p></details>
+
+<h3>3. Eliminación gaussiana</h3>
+<div class='enun'>7x₁ − 3x₂ + 3x₃ = 8; 2x₁ − 3x₂ − 10x₃ = 6; 3x₁ − 8x₂ + 12x₃ = 8. Resolver y explicar qué pasa con la solución.</div>
+<details><summary>Resolución</summary>
+<p>Pivote 7. m₂₁ = 2/7 = 0,285714; m₃₁ = 3/7 = 0,428571.</p>
+<p>F₂ ← F₂ − m₂₁F₁: [0; −2,142857; −10,857143 | 3,714286]. F₃ ← F₃ − m₃₁F₁: [0; −6,714286; 10,714286 | 4,571429].</p>
+<p>Con pivoteo parcial convendría usar −6,714286 de pivote (es el mayor en módulo); sin pivoteo: m₃₂ = −6,714286/−2,142857 = 3,133333.</p>
+<p>F₃ ← F₃ − m₃₂F₂: [0; 0; 44,733333 | −7,066667].</p>
+<p>Sustitución hacia atrás: x₃ = −7,066667/44,733333 = <b>−0,1580</b>. x₂ = (3,714286 + 10,857143 · x₃)/(−2,142857) = <b>−0,9329</b>. x₁ = (8 + 3x₂ − 3x₃)/7 = <b>0,8107</b>.</p>
+<p>Exactos: x₁ = 544/671, x₂ = −626/671, x₃ = −106/671. El determinante es 7 · (−2,142857) · 44,733333 = −671 ≠ 0: <b>sistema compatible determinado, solución única</b>. Verificación en la ecuación 1: 7 · 0,8107 + 3 · 0,9329 − 3 · 0,1580 = 8,000.</p>
+<p class='small'>Qué decir en cada caso: si queda una fila 0 = 0, infinitas soluciones (compatible indeterminado); si queda 0 = c ≠ 0, no tiene solución (incompatible).</p></details>
+
+<h2 id='raices'>Raíces de ecuaciones</h2>
+<table><tr><th>Método</th><th>Fórmula</th><th>Necesita</th><th>Convergencia</th></tr>
+<tr><td>Bisección</td><td>c = (a + b)/2; me quedo con el subintervalo donde f cambia de signo</td><td>f(a)·f(b) &lt; 0</td><td>Siempre, lenta. Iteraciones para error ε: n ≥ log₂((b − a)/ε)</td></tr>
+<tr><td>Regula falsi</td><td>c = b − f(b)(b − a)/(f(b) − f(a))</td><td>cambio de signo</td><td>Siempre, más rápida</td></tr>
+<tr><td>Punto fijo</td><td>x<sub>n+1</sub> = g(x<sub>n</sub>), con f(x) = 0 reescrita como x = g(x)</td><td>|g′(x)| &lt; 1 cerca de la raíz</td><td>Lineal</td></tr>
+<tr><td>Newton-Raphson</td><td>x<sub>n+1</sub> = x<sub>n</sub> − f(x<sub>n</sub>)/f′(x<sub>n</sub>)</td><td>f′ y un buen x₀</td><td>Cuadrática; falla si f′ ≈ 0</td></tr>
+<tr><td>Secante</td><td>Newton con la derivada reemplazada por el cociente de los dos últimos puntos</td><td>dos valores iniciales</td><td>Superlineal (≈1,618)</td></tr></table>
+<p>Criterio de corte: |x<sub>n+1</sub> − x<sub>n</sub>| &lt; ε o |f(x<sub>n+1</sub>)| &lt; ε. Error relativo: |x<sub>n+1</sub> − x<sub>n</sub>|/|x<sub>n+1</sub>|.</p>
+
+<h2 id='sist'>Sistemas lineales</h2>
+<p><b>Directos:</b> Gauss (triangular superior y sustitución hacia atrás), Gauss-Jordan (hasta la identidad), con pivoteo parcial (en cada columna, pivote de mayor módulo, para reducir el error de redondeo).</p>
+<p><b>Iterativos:</b> Jacobi: x<sub>i</sub><sup>(k+1)</sup> = [b<sub>i</sub> − Σ<sub>j≠i</sub> a<sub>ij</sub> x<sub>j</sub><sup>(k)</sup>]/a<sub>ii</sub>. Gauss-Seidel: igual, pero usando los valores nuevos apenas se calculan (converge más rápido). Convergen si la matriz es <b>diagonalmente dominante</b>: |a<sub>ii</sub>| &gt; Σ<sub>j≠i</sub>|a<sub>ij</sub>|. Si no lo es, reordená las ecuaciones antes de empezar.</p>
+
+<h2 id='ajuste'>Ajuste de curvas (regresión)</h2>
+<p>Recta por mínimos cuadrados y = a₀ + a₁x: <span class='f'>a₁ = (nΣxy − ΣxΣy)/(nΣx² − (Σx)²)</span>, <span class='f'>a₀ = ȳ − a₁x̄</span>.</p>
+<p>Calidad: S<sub>r</sub> = Σ(y<sub>i</sub> − a₀ − a₁x<sub>i</sub>)², S<sub>t</sub> = Σ(y<sub>i</sub> − ȳ)², r² = (S<sub>t</sub> − S<sub>r</sub>)/S<sub>t</sub>. Error estándar s<sub>y/x</sub> = √(S<sub>r</sub>/(n − 2)).</p>
+<p>Linealizaciones: y = a e<sup>bx</sup> → ln y = ln a + bx. y = a x<sup>b</sup> → log y = log a + b log x. Polinomial: ecuaciones normales con Σxᵏ.</p>
+
+<h2 id='interp'>Interpolación</h2>
+<p><b>Newton con diferencias divididas:</b> P(x) = f[x₀] + f[x₀,x₁](x − x₀) + f[x₀,x₁,x₂](x − x₀)(x − x₁) + … Ventaja: agregar un punto suma un término sin rehacer todo. Grado: si las diferencias de orden k son constantes, alcanza grado k.</p>
+<p><b>Lagrange:</b> P(x) = Σ y<sub>i</sub> L<sub>i</sub>(x), L<sub>i</sub>(x) = Π<sub>j≠i</sub> (x − x<sub>j</sub>)/(x<sub>i</sub> − x<sub>j</sub>).</p>
+<p><b>Error:</b> f(x) − P<sub>n</sub>(x) ≈ f[x₀,…,x<sub>n</sub>, x] Π(x − x<sub>i</sub>); se estima con la diferencia del siguiente orden.</p>
+
+<h2 id='dif'>Derivación e integración numérica</h2>
+<table><tr><th>Fórmula</th><th>Expresión</th><th>Error</th></tr>
+<tr><td>Hacia adelante</td><td>f′(x) ≈ [f(x + h) − f(x)]/h</td><td>O(h)</td></tr>
+<tr><td>Hacia atrás</td><td>f′(x) ≈ [f(x) − f(x − h)]/h</td><td>O(h)</td></tr>
+<tr><td>Centrada</td><td>f′(x) ≈ [f(x + h) − f(x − h)]/2h</td><td>O(h²)</td></tr>
+<tr><td>Tres puntos adelante</td><td>f′(x) ≈ [−3f(x) + 4f(x + h) − f(x + 2h)]/2h</td><td>O(h²)</td></tr>
+<tr><td>Segunda derivada centrada</td><td>f″(x) ≈ [f(x + h) − 2f(x) + f(x − h)]/h²</td><td>O(h²)</td></tr></table>
+<table><tr><th>Regla</th><th>Compuesta, n subintervalos de ancho h</th><th>Error</th></tr>
+<tr><td>Trapecio</td><td>(h/2)[f₀ + 2(f₁ + … + f<sub>n−1</sub>) + f<sub>n</sub>]</td><td>−(b − a)h² f″/12</td></tr>
+<tr><td>Simpson 1/3 (n par)</td><td>(h/3)[f₀ + 4(impares) + 2(pares interiores) + f<sub>n</sub>]</td><td>−(b − a)h⁴ f⁽⁴⁾/180</td></tr>
+<tr><td>Simpson 3/8 (n múltiplo de 3)</td><td>(3h/8)[f₀ + 3f₁ + 3f₂ + 2f₃ + … + f<sub>n</sub>]</td><td>O(h⁴)</td></tr></table>
+
+<h2 id='edo'>Ecuaciones diferenciales ordinarias</h2>
+<p>y′ = f(x, y), y(x₀) = y₀, paso h.</p>
+<p><b>Euler:</b> y<sub>n+1</sub> = y<sub>n</sub> + h f(x<sub>n</sub>, y<sub>n</sub>). Error global O(h).</p>
+<p><b>Euler mejorado (Heun, RK2):</b> y* = y<sub>n</sub> + h f(x<sub>n</sub>, y<sub>n</sub>); y<sub>n+1</sub> = y<sub>n</sub> + (h/2)[f(x<sub>n</sub>, y<sub>n</sub>) + f(x<sub>n+1</sub>, y*)].</p>
+<p><b>Runge-Kutta 4:</b> k₁ = f(x<sub>n</sub>, y<sub>n</sub>); k₂ = f(x<sub>n</sub> + h/2, y<sub>n</sub> + hk₁/2); k₃ = f(x<sub>n</sub> + h/2, y<sub>n</sub> + hk₂/2); k₄ = f(x<sub>n</sub> + h, y<sub>n</sub> + hk₃); y<sub>n+1</sub> = y<sub>n</sub> + (h/6)(k₁ + 2k₂ + 2k₃ + k₄). Error global O(h⁴).</p>
+<div class='enun'>Para practicar: y′ = x + y, y(0) = 1, h = 0,1, un paso con Euler y con RK4. Exacta: y = 2e<sup>x</sup> − x − 1.</div>
+<details><summary>Resolución</summary>
+<p>Euler: y₁ = 1 + 0,1 · 1 = 1,1.</p>
+<p>RK4: k₁ = 1; k₂ = f(0,05; 1,05) = 1,1; k₃ = f(0,05; 1,055) = 1,105; k₄ = f(0,1; 1,1105) = 1,2105. y₁ = 1 + (0,1/6)(1 + 2,2 + 2,21 + 1,2105) = <b>1,110342</b>.</p>
+<p>Exacta: 2e<sup>0,1</sup> − 1,1 = 1,110342. Euler erra 0,0103; RK4 erra menos de 10⁻⁶.</p></details>
+
+<h2>Plan</h2>
+<p>Cinco días alcanzan. Día 1: las tres del final de 2024 sin mirar. Día 2: raíces (los cinco métodos con la misma f). Día 3: Gauss con pivoteo, Gauss-Seidel, regresión. Día 4: interpolación, derivación, trapecio y Simpson. Día 5: Euler y RK4, y un simulacro de 90 minutos con tres ejercicios mezclados.</p>
+<p class='small'>Material: zip “ANALISIS NUMERICO”: guías GTP 1 a 7, teóricos de Arnaudo, y las planillas de Excel (carpeta Caro y Agus Glaiel) que tienen los métodos armados para verificar resultados.</p>
+</main></body></html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>AM II · Teórico 2: diferenciabilidad, direccional, regla de la cadena</title>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap'>
+<link rel='stylesheet' href='marcado.css'></head><body>
+<nav><b>AM II · Teórico 2</b><a href='index.html'>Plan</a><a href='AM2-teorico.html'>Teórico completo</a><a href='#parc'>Parciales</a><a href='#dif'>Diferenciable</a><a href='#teos'>Tres teoremas</a><a href='#dir'>Direccional</a><a href='#cad'>Regla de la cadena</a><a href='#otros'>Euler y Schwarz</a><a href='#chk'>Para el examen</a></nav>
+<main>
+<h1>Teórico 2: Diferenciabilidad, derivada direccional y regla de la cadena</h1>
+<div class='ley'><b>Mismo código que el teórico 1:</b>
+<div><mark>Amarillo</mark>: textual en el examen. <span class='r'>Rojo</span>: no puede faltar. <span class='v'>Verde</span>: para entender. <span class='t'>Ondulado azul</span>: trampa. Recuadro: teorema con <b style='color:#6a1b9a'>H)</b> y <b style='color:#6a1b9a'>T)</b>. Línea violeta: demostración.</div>
+<div><b>Lunes 9:</b> secciones 1 a 4. <b>Miércoles 11:</b> secciones 5 y 6.</div></div>
+
+<h2 id='parc'>1. Derivada parcial y plano tangente</h2>
+<p><mark><b>Derivada parcial</b> de f respecto de xᵢ en x₀: ∂f/∂xᵢ (x₀) = lím<sub>h→0</sub> [f(x₀ + h·<span class='r'>eᵢ</span>) − f(x₀)] / h</mark>, donde eᵢ es el vector canónico (1 en el lugar i, 0 en el resto).</p>
+<p class='v'>Me muevo solo en la dirección del eje i. En ℝ²: f<sub>x</sub>(x₀, y₀) = lím [f(x₀ + h, y₀) − f(x₀, y₀)]/h. Es la derivada de una variable con la otra fija.</p>
+<p><mark><b>Interpretación geométrica:</b> f<sub>x</sub>(x₀, y₀) es la <span class='r'>pendiente de la recta tangente</span> a la curva que se obtiene cortando la superficie z = f(x, y) con el plano <span class='r'>y = y₀</span>.</mark> Con f<sub>y</sub>, el plano x = x₀.</p>
+<p><mark><b>Gradiente:</b> ∇f(x₀) = (∂f/∂x₁, …, ∂f/∂xₙ)(x₀).</mark></p>
+<p><mark><b>Plano tangente</b> a z = f(x, y) en (x₀, y₀), si f es <span class='r'>diferenciable</span>: z = f(x₀, y₀) + f<sub>x</sub>(x₀, y₀)(x − x₀) + f<sub>y</sub>(x₀, y₀)(y − y₀).</mark> Vector normal: (f<sub>x</sub>, f<sub>y</sub>, −1).</p>
+<p class='t'>Trampa: que existan las parciales NO implica que f sea continua. xy/(x² + y²) tiene f<sub>x</sub>(0, 0) = f<sub>y</sub>(0, 0) = 0 y no es continua en el origen.</p>
+
+<h2 id='dif'>2. Diferenciabilidad</h2>
+<p><mark><b>Definición.</b> f: U ⊂ ℝⁿ → ℝᵐ, U <span class='r'>abierto</span>, es <span class='r'>diferenciable en x₀</span> si <span class='r'>existe una matriz L</span> (m × n) tal que lím<sub>h→0</sub> ‖f(x₀ + h) − f(x₀) − L·h‖ / ‖h‖ = <span class='r'>0</span>.</mark></p>
+<p><mark>En ℝ² → ℝ: lím<sub>(h,k)→(0,0)</sub> [f(x₀ + h, y₀ + k) − f(x₀, y₀) − f<sub>x</sub>·h − f<sub>y</sub>·k] / √(h² + k²) = 0.</mark></p>
+<p class='v'>f(x₀) + L·h es la aproximación lineal (el plano tangente). La resta es el error. Diferenciable quiere decir que el error es tan chico que, dividido la distancia ‖h‖, igual tiende a 0. A L se la llama diferencial o derivada, Df(x₀).</p>
+
+<h2 id='teos'>3. Los tres teoremas de diferenciabilidad</h2>
+<div class='teo'><div class='tit'>Teorema 1: la diferencial es la jacobiana</div>
+<div class='ht'><b>H)</b><div><mark>f: U ⊂ ℝⁿ → ℝᵐ es diferenciable en x₀, con matriz L.</mark></div><b>T)</b><div><mark>Existen todas las derivadas parciales en x₀ y L es la matriz jacobiana: l<sub>ij</sub> = ∂fᵢ/∂xⱼ (x₀).</mark> En particular L es única.</div></div></div>
+<div class='dem'><p><span class='paso'>1.</span> <mark>La condición de diferenciabilidad vale <span class='r'>componente a componente</span></mark>: lím |fᵢ(x₀ + h) − fᵢ(x₀) − (L h)ᵢ| / ‖h‖ = 0, para cada i. <span class='v'>Si el vector tiende a 0, cada coordenada también.</span></p>
+<p><span class='paso'>2.</span> <mark>Elijo un camino particular: h = a·eⱼ</mark> (a en el lugar j, 0 en el resto). Entonces ‖h‖ = |a| y (L a eⱼ)ᵢ = a·l<sub>ij</sub>. <span class='v'>Si el límite existe, por este camino también da 0.</span></p>
+<p><span class='paso'>3.</span> Reemplazo: lím<sub>a→0</sub> |fᵢ(x₀ + a eⱼ) − fᵢ(x₀) − a l<sub>ij</sub>| / |a| = 0, o sea <mark>lím<sub>a→0</sub> | [fᵢ(x₀ + a eⱼ) − fᵢ(x₀)] / a − l<sub>ij</sub> | = 0.</mark></p>
+<p><span class='paso'>4.</span> <mark>Eso dice que el cociente incremental tiende a l<sub>ij</sub>: ∂fᵢ/∂xⱼ (x₀) existe y vale l<sub>ij</sub>.</mark> ∎</p></div>
+
+<div class='teo'><div class='tit'>Teorema 2: diferenciable implica continua</div>
+<div class='ht'><b>H)</b><div><mark>f es diferenciable en x₀.</mark></div><b>T)</b><div><mark>f es continua en x₀.</mark></div></div></div>
+<div class='dem'><p><span class='paso'>1.</span> <mark>Para una matriz A: ‖A h‖ ≤ M ‖h‖</mark>, con M = (Σ a<sub>ij</sub>²)<sup>1/2</sup> (por Cauchy-Schwarz). <span class='v'>Una matriz no puede agrandar un vector más que M veces.</span></p>
+<p><span class='paso'>2.</span> <mark>Uso la definición de diferenciable con ε = 1</mark>: existe δ₁ tal que 0 &lt; ‖h‖ &lt; δ₁ ⇒ ‖f(x₀ + h) − f(x₀) − Df(x₀) h‖ &lt; ‖h‖.</p>
+<p><span class='paso'>3.</span> <mark>Desigualdad triangular</mark> (sumo y resto Df·h): ‖f(x₀ + h) − f(x₀)‖ ≤ ‖f(x₀ + h) − f(x₀) − Df h‖ + ‖Df h‖ &lt; ‖h‖ + M‖h‖ = (1 + M)‖h‖.</p>
+<p><span class='paso'>4.</span> <mark>Dado ε′ &gt; 0, tomo δ = mín(δ₁, ε′/(1 + M))</mark>: si ‖h‖ &lt; δ, ‖f(x₀ + h) − f(x₀)‖ &lt; (1 + M) · ε′/(1 + M) = ε′. Es la definición de continuidad. ∎</p>
+<p class='t'>Al revés no vale: |x| es continua en 0 y no es diferenciable. Y se usa mucho en el práctico así: “no es continua ⇒ no es diferenciable”.</p></div>
+
+<div class='teo'><div class='tit'>Teorema 3: condición suficiente de diferenciabilidad</div>
+<div class='ht'><b>H)</b><div><mark>Las derivadas parciales de f <span class='r'>existen y son continuas en un entorno</span> de x₀.</mark></div><b>T)</b><div><mark>f es diferenciable en x₀.</mark></div></div></div>
+<div class='dem'><p class='v'>Se demuestra para f: ℝ² → ℝ; en ℝⁿ es igual con más términos.</p>
+<p><span class='paso'>1.</span> <mark>Suma telescópica</mark> (sumo y resto f(x, y + k)): f(x + h, y + k) − f(x, y) = [f(x + h, y + k) − f(x, y + k)] + [f(x, y + k) − f(x, y)]. <span class='v'>Así en cada corchete cambia una sola variable.</span></p>
+<p><span class='paso'>2.</span> <mark>Teorema del valor medio en una variable</mark> en cada corchete: el primero es f<sub>x</sub>(c₁, y + k)·h con c₁ entre x y x + h; el segundo es f<sub>y</sub>(x, c₂)·k con c₂ entre y e y + k.</p>
+<p><span class='paso'>3.</span> Resto el candidato a diferencial y acoto: |f(x + h, y + k) − f(x, y) − f<sub>x</sub>(x, y) h − f<sub>y</sub>(x, y) k| ≤ |f<sub>x</sub>(c₁, y + k) − f<sub>x</sub>(x, y)|·|h| + |f<sub>y</sub>(x, c₂) − f<sub>y</sub>(x, y)|·|k|.</p>
+<p><span class='paso'>4.</span> <mark>Divido por ‖(h, k)‖ y uso |h| ≤ ‖(h, k)‖, |k| ≤ ‖(h, k)‖</mark>: el cociente queda menor o igual que la suma de las dos diferencias.</p>
+<p><span class='paso'>5.</span> <mark>Por la <span class='r'>continuidad de las parciales</span></mark>, cuando (h, k) → 0 se tiene c₁ → x y c₂ → y, y las dos diferencias tienden a 0. El límite de la definición es 0: f es diferenciable. ∎</p></div>
+<div class='ojo'><p><b>El esquema de implicaciones (copialo con flechas):</b></p>
+<p><mark>parciales continuas ⇒ diferenciable ⇒ continua y con parciales</mark></p>
+<p class='t'>Ninguna flecha vale al revés. Existencia de parciales ⇏ continuidad.</p></div>
+
+<h2 id='dir'>4. Derivada direccional y gradiente ★★★★</h2>
+<p><mark><b>Definición.</b> Sea <span class='r'>u unitario</span> (‖u‖ = 1). D<sub>u</sub>f(x₀) = lím<sub>t→0</sub> [f(x₀ + t u) − f(x₀)] / t.</mark></p>
+<p class='v'>Es la razón de cambio de f si me muevo desde x₀ en la dirección u. Las parciales son las direccionales en las direcciones e₁, …, eₙ. Si u no es unitario, el resultado queda multiplicado por ‖u‖: por eso se exige ‖u‖ = 1.</p>
+<div class='teo'><div class='tit'>Teorema (cayó cuatro veces: 2022, 2023 y 2024)</div>
+<div class='ht'><b>H)</b><div><mark>f: U ⊂ ℝⁿ → ℝ <span class='r'>diferenciable</span> en x₀; u unitario.</mark></div><b>T)</b><div><mark>D<sub>u</sub>f(x₀) = ∇f(x₀) · u.</mark></div></div></div>
+<div class='dem'><p><b>Demostración con la definición de diferenciable</b> (la más directa):</p>
+<p><span class='paso'>1.</span> <mark>Por ser f diferenciable</mark>: f(x₀ + h) = f(x₀) + ∇f(x₀)·h + ε(h)·‖h‖, con <mark>ε(h) → 0 cuando h → 0</mark>. <span class='v'>Es la definición reescrita: el error dividido ‖h‖ es ε(h), que tiende a 0.</span></p>
+<p><span class='paso'>2.</span> <mark>Elijo h = t·u.</mark> Como ‖u‖ = 1, ‖h‖ = |t|. Queda f(x₀ + t u) − f(x₀) = t·∇f(x₀)·u + ε(t u)·|t|.</p>
+<p><span class='paso'>3.</span> <mark>Divido por t ≠ 0</mark>: [f(x₀ + t u) − f(x₀)] / t = ∇f(x₀)·u + ε(t u)·|t|/t.</p>
+<p><span class='paso'>4.</span> <mark>Hago t → 0</mark>: |t|/t vale ±1 (acotado) y ε(t u) → 0, así que el último término tiende a 0.</p>
+<p><span class='paso'>5.</span> <mark>El límite existe y vale ∇f(x₀)·u.</mark> ∎</p>
+<p><b>Otra demostración</b> (con regla de la cadena, más corta): <mark>defino g(t) = f(x₀ + t u)</mark>. Por la definición, D<sub>u</sub>f(x₀) = g′(0). <mark>Por la regla de la cadena</mark>, g′(t) = ∇f(x₀ + t u)·(x₀ + t u)′ = ∇f(x₀ + t u)·u. En t = 0: g′(0) = ∇f(x₀)·u. ∎</p></div>
+<p><b>Consecuencias</b> (se piden como segunda parte):</p>
+<p><mark>D<sub>u</sub>f = ‖∇f‖ · ‖u‖ · cos θ = ‖∇f‖ cos θ</mark>, θ = ángulo entre ∇f y u.</p>
+<table><tr><th>θ</th><th>cos θ</th><th>D<sub>u</sub>f</th><th>Significado</th></tr>
+<tr><td>0</td><td>1</td><td><mark>‖∇f‖ (máxima)</mark></td><td class='v'>En la dirección del gradiente f crece lo más rápido posible.</td></tr>
+<tr><td>π</td><td>−1</td><td><mark>−‖∇f‖ (mínima)</mark></td><td class='v'>En la dirección −∇f decrece lo más rápido.</td></tr>
+<tr><td>π/2</td><td>0</td><td><mark>0</mark></td><td class='v'>Perpendicular al gradiente f no cambia: es la dirección de la curva de nivel.</td></tr></table>
+<p><mark>∇f es <span class='r'>perpendicular a las curvas (superficies) de nivel</span>.</mark> <span class='v'>Prueba corta: si γ(t) está sobre f = c, f(γ(t)) = c; derivando con la regla de la cadena, ∇f·γ′ = 0.</span></p>
+
+<h2 id='cad'>5. Regla de la cadena ★ (miércoles 11)</h2>
+<div class='teo'><div class='tit'>Teorema (cayó el 07/12/2022)</div>
+<div class='ht'><b>H)</b><div><mark>G: ℝⁿ → ℝᵐ diferenciable en x₀; F: ℝᵐ → ℝᵖ diferenciable en <span class='r'>y₀ = G(x₀)</span>.</mark></div><b>T)</b><div><mark>F ∘ G es diferenciable en x₀ y D(F ∘ G)(x₀) = DF(<span class='r'>G(x₀)</span>) · DG(x₀).</mark></div></div></div>
+<p><mark>En coordenadas: ∂(F ∘ G)ᵢ/∂xⱼ = Σ<sub>k=1</sub><sup>m</sup> (∂Fᵢ/∂yₖ)·(∂Gₖ/∂xⱼ).</mark> <span class='v'>Cada variable final se deriva pasando por todas las intermedias y se suma.</span></p>
+<p><mark>Caso típico: z = f(x, y), x = x(s, t), y = y(s, t): ∂z/∂s = f<sub>x</sub>·x<sub>s</sub> + f<sub>y</sub>·y<sub>s</sub>; ∂z/∂t = f<sub>x</sub>·x<sub>t</sub> + f<sub>y</sub>·y<sub>t</sub>.</mark></p>
+<p>Tamaños: <mark>(p × m)·(m × n) = p × n</mark>. <span class='t'>Trampa: DF se evalúa en G(x₀), no en x₀. Y el orden del producto importa.</span></p>
+<div class='dem'><p><b>Esquema de la demostración</b> (con esto alcanza):</p>
+<p><span class='paso'>1.</span> <mark>G diferenciable:</mark> G(x₀ + h) − G(x₀) = DG·h + o(‖h‖). Llamo k a ese incremento; cumple ‖k‖ ≤ M₁‖h‖.</p>
+<p><span class='paso'>2.</span> <mark>F diferenciable:</mark> F(y₀ + k) − F(y₀) = DF·k + o(‖k‖).</p>
+<p><span class='paso'>3.</span> <mark>Reemplazo k:</mark> F(G(x₀ + h)) − F(G(x₀)) = DF·DG·h + DF·o(‖h‖) + o(‖k‖).</p>
+<p><span class='paso'>4.</span> <mark>Los dos restos son o(‖h‖)</mark> (el primero porque DF es una matriz fija; el segundo porque ‖k‖ ≤ M₁‖h‖). Entonces F ∘ G es diferenciable con derivada DF·DG. ∎</p></div>
+<div class='teo'><div class='tit'>Ejercicio teórico (examen viejo)</div>
+<p>u(x) = v(f(x), g(x), h(x)) con v: ℝ³ → ℝ. Probar que ∇u = a∇f + b∇g + c∇h y hallar a, b, c.</p></div>
+<div class='dem'><p><span class='paso'>1.</span> <mark>Regla de la cadena</mark> para cada variable xⱼ: ∂u/∂xⱼ = v₁·∂f/∂xⱼ + v₂·∂g/∂xⱼ + v₃·∂h/∂xⱼ, con vₖ = ∂v/∂yₖ en (f(x), g(x), h(x)).</p>
+<p><span class='paso'>2.</span> <mark>Junto todas las j en un vector:</mark> ∇u = v₁∇f + v₂∇g + v₃∇h. <mark>a = ∂v/∂y₁, b = ∂v/∂y₂, c = ∂v/∂y₃</mark>, evaluadas en (f, g, h). ∎</p></div>
+
+<h2 id='otros'>6. Euler y Schwarz</h2>
+<div class='teo'><div class='tit'>Teorema de Euler (funciones homogéneas)</div>
+<div class='ht'><b>H)</b><div><mark>f diferenciable y <span class='r'>homogénea de grado k</span>: f(t x) = tᵏ f(x) para todo t &gt; 0.</mark></div><b>T)</b><div><mark>Σᵢ xᵢ ∂f/∂xᵢ (x) = k·f(x).</mark></div></div></div>
+<div class='dem'><p><span class='paso'>1.</span> <mark>Fijo x y derivo los dos lados de f(t x) = tᵏ f(x) respecto de t.</mark></p>
+<p><span class='paso'>2.</span> Izquierda, <mark>por la regla de la cadena</mark>: Σᵢ ∂f/∂xᵢ (t x)·xᵢ. Derecha: k t<sup>k−1</sup> f(x).</p>
+<p><span class='paso'>3.</span> <mark>Evalúo en t = 1:</mark> Σᵢ xᵢ ∂f/∂xᵢ (x) = k f(x). ∎</p>
+<p class='v'>Ejemplo para control: f = x²y es homogénea de grado 3. x·f<sub>x</sub> + y·f<sub>y</sub> = x·2xy + y·x² = 3x²y = 3f ✓.</p></div>
+<div class='teo'><div class='tit'>Teorema de Schwarz (solo enunciado)</div>
+<div class='ht'><b>H)</b><div><mark>f<sub>xy</sub> y f<sub>yx</sub> existen y son <span class='r'>continuas en un entorno</span> de (x₀, y₀).</mark></div><b>T)</b><div><mark>f<sub>xy</sub>(x₀, y₀) = f<sub>yx</sub>(x₀, y₀).</mark></div></div>
+<p class='v'>Se usa en: la Hessiana es simétrica; ∇ × ∇f = 0; la condición de exactitud M<sub>y</sub> = N<sub>x</sub>.</p></div>
+
+<h2 id='chk'>Para el examen</h2>
+<div class='ojo'><p><b>Las preguntas que salieron de este tema:</b> “Demuestre que D<sub>u</sub>f = ∇f · u” (2022, 2023, 2024, dos veces); “Regla de la cadena en forma matricial” (2022).</p>
+<p><b>En la de la direccional no puede faltar:</b> la hipótesis <span class='r'>f diferenciable</span> y <span class='r'>u unitario</span>; la escritura f(x₀ + h) = f(x₀) + ∇f·h + ε(h)‖h‖; elegir h = t u; el argumento de que |t|/t está acotado; las consecuencias (máximo en la dirección del gradiente).</p>
+<p><b>Lo que más se confunde:</b> evaluar DF en x₀ en vez de en G(x₀); creer que si existen las parciales la función es diferenciable.</p></div>
+</main></body></html>

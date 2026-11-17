@@ -1,0 +1,28 @@
+
+body { margin:0; color:#1b1b1b; font:18px/1.6 'Iowan Old Style', Palatino, Georgia, serif; background-color:#fbfbf6; background-image:linear-gradient(#dde6ef 1px, transparent 1px), linear-gradient(90deg, #dde6ef 1px, transparent 1px); background-size:24px 24px; }
+nav { position:sticky; top:0; z-index:5; background:#1c1712; padding:8px 16px; display:flex; flex-wrap:wrap; gap:14px; font:14px system-ui, sans-serif; }
+nav a { color:#e4b397; text-decoration:none; } nav b { color:#f6f1e8; }
+main { max-width:900px; margin:0 auto; padding:24px 22px 100px; }
+h1 { font-family:'Kalam', cursive; text-align:center; font-size:32px; margin:8px 0; }
+h2 { font-family:'Kalam', cursive; font-size:26px; margin:40px 0 8px; border-bottom:2px solid #1b1b1b; display:inline-block; }
+h3 { font-family:'Kalam', cursive; font-size:21px; margin:24px 0 6px; text-decoration:underline; text-underline-offset:5px; }
+mark { background:linear-gradient(transparent 12%, #fff176 12%, #fff176 88%, transparent 88%); padding:0 2px; color:inherit; }
+.r { text-decoration:underline; text-decoration-color:#d32f2f; text-decoration-thickness:2.5px; text-underline-offset:3px; font-weight:600; }
+.v { font-family:'Kalam', cursive; color:#2e7d32; font-size:17.5px; }
+.t { text-decoration:underline wavy #1565c0; text-decoration-thickness:1.5px; text-underline-offset:4px; }
+.teo { border:2.5px solid #1b1b1b; border-radius:6px; background:#fff; padding:10px 16px; margin:14px 0; }
+.teo .tit { font-family:'Kalam', cursive; font-weight:700; font-size:19px; }
+.ht { display:grid; grid-template-columns:44px 1fr; gap:4px 8px; margin:6px 0; }
+.ht b { font-family:'Kalam', cursive; font-size:19px; color:#6a1b9a; }
+.dem { background:#fff; border-left:4px solid #6a1b9a; padding:8px 16px; margin:8px 0 16px; }
+.dem p { margin:.4em 0; }
+.paso { font-family:'Kalam', cursive; color:#6a1b9a; font-weight:700; margin-right:6px; }
+.ley { background:#fff; border:1px solid #bbb; border-radius:10px; padding:10px 16px; margin:12px 0 20px; }
+.ley div { margin:4px 0; }
+table { border-collapse:collapse; margin:8px 0 14px; display:block; overflow-x:auto; max-width:max-content; }
+th, td { border:1px solid #bbb; padding:6px 10px; text-align:left; background:#fff; }
+th { background:#f0f0ea; font:600 13px system-ui, sans-serif; }
+.fig { background:#fff; border:1px solid #bbb; max-width:100%; height:auto; }
+.flex { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+.ojo { background:#fdecea; border:2px solid #d32f2f; border-radius:10px; padding:8px 14px; margin:12px 0; }
+@media print { nav { display:none; } body { background:#fff; } }

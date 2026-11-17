@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Análisis Matemático III · Final</title><link rel='stylesheet' href='estilo.css'></head><body>
+<header class='top'><strong>AM III</strong><a href='index.html'>Plan</a><a href='#formato'>Formato</a><a href='#cpx'>Complejos</a><a href='#cr'>Cauchy-Riemann</a><a href='#sing'>Singularidades</a><a href='#res'>Residuos</a><a href='#fourier'>Fourier</a><a href='#lap'>Laplace</a><a href='#teo'>Demostraciones</a></header>
+<main>
+<p class='k'>UCC · Ingeniería · 14 de diciembre o 1 de febrero</p>
+<h1>Análisis Matemático III. Lo que toman, resuelto.</h1>
+
+<h2 id='formato'>Formato</h2>
+<p><b>Problemas</b> (2/12/2024 y 1/12/2025): cuatro o cinco ejercicios, 120 a 150 minutos, calculadora básica, sin fórmulas. Se repiten siempre cinco tipos: <b>serie de Fourier de una extensión par o impar</b>, <b>armónica conjugada</b>, <b>ecuación diferencial por Laplace con inversa por residuos</b>, <b>integral compleja o real por residuos</b>, y una <b>propiedad de la transformada de Fourier</b>.</p>
+<p><b>Teórico</b> (1/7/2024, 16/12/2024, y lo que contaron en diciembre de 2025): demostrar Cauchy-Riemann (también en polares), Cauchy-Goursat, la fórmula integral de Cauchy, el teorema de los residuos; clasificar singularidades con Laurent; Laplace de la derivada y de la convolución; coeficientes de Fourier; funciones armónicas. En 2025 hubo además un verdadero o falso sobre propiedades.</p>
+<p>Escala: 55% aprueba (4), 75% es un 7.</p>
+
+<h2 id='cpx'>1. Números complejos</h2>
+<p>z = x + iy = r e<sup>iθ</sup>, r = |z|, θ = arg z. e<sup>iθ</sup> = cos θ + i sen θ.</p>
+<p><b>Raíces:</b> z<sup>1/n</sup> = r<sup>1/n</sup> e<sup>i(θ + 2kπ)/n</sup>, k = 0, …, n − 1. <b>Logaritmo:</b> log z = ln|z| + i(arg z + 2kπ); el principal usa arg en (−π, π]. <b>Potencia:</b> z<sup>w</sup> = e<sup>w log z</sup>.</p>
+<p>e<sup>z</sup> = e<sup>x</sup>(cos y + i sen y). sen z = (e<sup>iz</sup> − e<sup>−iz</sup>)/2i, cos z = (e<sup>iz</sup> + e<sup>−iz</sup>)/2. cos(iy) = cosh y, sen(iy) = i senh y.</p>
+<div class='enun'>a) i<sup>−2i</sup>, todos los valores y el principal. b) z² − 4iz − 3 = 0. c) cosh 2z = 0. d) ¿Re e<sup>1/(1−i)</sup> comparado con Re e<sup>1/(1+i)</sup>?</div>
+<details><summary>Resolución</summary>
+<p>a) log i = i(π/2 + 2kπ). i<sup>−2i</sup> = e<sup>−2i · i(π/2 + 2kπ)</sup> = <b>e<sup>π + 4kπ</sup></b>, todos reales. Principal (k = 0): <b>e<sup>π</sup> ≈ 23,14</b>.</p>
+<p>b) z = [4i ± √(−16 + 12)]/2 = (4i ± 2i)/2: <b>z = 3i, z = i</b>.</p>
+<p>c) cosh w = cos(iw) = 0 ⇒ iw = π/2 + kπ ⇒ w = −i(π/2 + kπ). Con w = 2z: <b>z = (1/4 + k/2)πi</b> (el signo se absorbe en k).</p>
+<p>d) 1/(1 − i) = (1 + i)/2 y 1/(1 + i) = (1 − i)/2. Las dos dan e<sup>1/2</sup> cos(1/2): <b>son iguales</b>.</p></details>
+
+<h2 id='cr'>2. Analiticidad, Cauchy-Riemann y armónicas</h2>
+<p><b>Cartesianas:</b> u<sub>x</sub> = v<sub>y</sub>, u<sub>y</sub> = −v<sub>x</sub>. Si se cumplen y las parciales son continuas, f es derivable y f′ = u<sub>x</sub> + i v<sub>x</sub>.</p>
+<p><b>Polares:</b> u<sub>r</sub> = (1/r) v<sub>θ</sub>, v<sub>r</sub> = −(1/r) u<sub>θ</sub>. f′ = e<sup>−iθ</sup>(u<sub>r</sub> + i v<sub>r</sub>).</p>
+<p><b>Armónica:</b> u de clase C² con u<sub>xx</sub> + u<sub>yy</sub> = 0. Parte real e imaginaria de una analítica son armónicas.</p>
+<p><b>Conjugada, el método:</b> 1) verificar Δu = 0. 2) v<sub>y</sub> = u<sub>x</sub> ⇒ integrar en y: v = ∫ u<sub>x</sub> dy + g(x). 3) Derivar en x e igualar a −u<sub>y</sub> para despejar g′(x). 4) Para escribir en z: poner y = 0 y x = z (Milne-Thomson), o reconocer la forma.</p>
+<div class='enun'><b>1/12/2025.</b> u(x, y) = x e<sup>x</sup> cos y − y e<sup>x</sup> sen y. Armónica, conjugada, y u + iv en función de z.</div>
+<details><summary>Resolución</summary>
+<p>u<sub>x</sub> = e<sup>x</sup>(x cos y + cos y − y sen y); u<sub>xx</sub> = e<sup>x</sup>(x cos y + 2 cos y − y sen y).</p>
+<p>u<sub>y</sub> = e<sup>x</sup>(−x sen y − sen y − y cos y); u<sub>yy</sub> = e<sup>x</sup>(−x cos y − 2 cos y + y sen y). Suma 0: <b>armónica</b>.</p>
+<p>v = ∫ u<sub>x</sub> dy = e<sup>x</sup>(x sen y + sen y + y cos y − sen y) + g(x) = e<sup>x</sup>(x sen y + y cos y) + g(x). (∫ y sen y dy = −y cos y + sen y, con el signo menos queda + y cos y − sen y.)</p>
+<p>v<sub>x</sub> = e<sup>x</sup>(x sen y + sen y + y cos y) + g′ y −u<sub>y</sub> es lo mismo: g′ = 0.</p>
+<p><b>v = e<sup>x</sup>(x sen y + y cos y) + C. u + iv = z e<sup>z</sup></b> (con y = 0: x e<sup>x</sup>).</p></details>
+<div class='enun'><b>2/12/2024.</b> u(x, y) = 1 − 3x²y + y³.</div>
+<details><summary>Resolución</summary>
+<p>u<sub>xx</sub> = −6y, u<sub>yy</sub> = 6y: armónica.</p>
+<p>v<sub>y</sub> = u<sub>x</sub> = −6xy ⇒ v = −3xy² + g(x). v<sub>x</sub> = −3y² + g′ = −u<sub>y</sub> = 3x² − 3y² ⇒ g = x³.</p>
+<p><b>v = x³ − 3xy² + C. u + iv = 1 + i z³</b> (z³ = x³ − 3xy² + i(3x²y − y³), y por i se cruzan).</p></details>
+<div class='enun'>Cuestionarios viejos. a) Constantes reales A, B para que (3x − y + 5) + i(Ax + By − 3) sea entera. b) f(z) = Az + B con f(3 + i) = 8 + 3i y f(i) = −1. c) Parte imaginaria de z² e<sup>z</sup>.</div>
+<details><summary>Resolución</summary>
+<p>a) u<sub>x</sub> = 3 = v<sub>y</sub> = B; u<sub>y</sub> = −1 = −v<sub>x</sub> = −A. <b>A = 1, B = 3.</b></p>
+<p>b) Restando: 3A = 9 + 3i ⇒ <b>A = 3 + i</b>; B = −1 − Ai = −1 − 3i + 1 = <b>−3i</b>.</p>
+<p>c) <b>v = e<sup>x</sup>[(x² − y²) sen y + 2xy cos y]</b>.</p></details>
+
+<h2 id='int'>3. Integración compleja</h2>
+<p><b>Cauchy-Goursat:</b> f analítica en un dominio simplemente conexo y C cerrada simple dentro: ∮<sub>C</sub> f dz = 0.</p>
+<p><b>Fórmula integral:</b> f(z₀) = (1/2πi) ∮ f(z)/(z − z₀) dz, y f<sup>(n)</sup>(z₀) = (n!/2πi) ∮ f(z)/(z − z₀)<sup>n+1</sup> dz, con z₀ adentro de C.</p>
+<p><b>Deformación de contornos:</b> si f tiene singularidades z₁, …, z<sub>k</sub> adentro de C, ∮<sub>C</sub> = Σ ∮<sub>C<sub>j</sub></sub>, con C<sub>j</sub> circunferencias chicas alrededor de cada una. <b>Índice:</b> Ind<sub>γ</sub>(z) = (1/2πi)∮ dw/(w − z): cuenta cuántas vueltas da γ alrededor de z.</p>
+
+<h2 id='sing'>4. Laurent y singularidades</h2>
+<p>Alrededor de una singularidad aislada a: f(z) = Σ<sub>n=−∞</sub><sup>∞</sup> c<sub>n</sub>(z − a)<sup>n</sup> en 0 &lt; |z − a| &lt; R. La parte con potencias negativas es la parte principal.</p>
+<table><tr><th>Tipo</th><th>Laurent</th><th>Prueba rápida</th><th>Ejemplo</th></tr>
+<tr><td>Evitable</td><td>sin potencias negativas</td><td>lím f existe y es finito</td><td>sen z / z en 0</td></tr>
+<tr><td>Polo de orden m</td><td>la menor potencia es −m</td><td>lím (z − a)<sup>m</sup> f finito y ≠ 0; o f = g/h con h de cero de orden m y g(a) ≠ 0</td><td>1/(z − 1)² en 1</td></tr>
+<tr><td>Esencial</td><td>infinitas potencias negativas</td><td>no existe lím ni finito ni infinito</td><td>e<sup>1/z</sup> en 0</td></tr></table>
+<p>Ojo con los numeradores: (z − i)/(z² + 1) tiene en i una evitable (se simplifica) y en −i un polo simple. Un factor e<sup>1/(z − a)</sup> o sen(1/(z − a)) da esencial en a.</p>
+
+<h2 id='res'>5. Residuos</h2>
+<p>Res(f, a) = c<sub>−1</sub>. <b>Teorema:</b> ∮<sub>C</sub> f dz = 2πi Σ Res(f, z<sub>k</sub>) sobre las singularidades interiores.</p>
+<table><tr><th>Caso</th><th>Residuo</th></tr>
+<tr><td>Polo simple</td><td>lím (z − a) f(z); si f = g/h con h(a) = 0, h′(a) ≠ 0: g(a)/h′(a)</td></tr>
+<tr><td>Polo de orden m</td><td>[1/(m − 1)!] · lím d<sup>m−1</sup>/dz<sup>m−1</sup> [(z − a)<sup>m</sup> f(z)]</td></tr>
+<tr><td>Esencial</td><td>desarrollar Laurent y leer c<sub>−1</sub></td></tr></table>
+<p><b>Integrales reales:</b></p>
+<p>∫<sub>−∞</sub><sup>∞</sup> P/Q dx, con grado Q ≥ grado P + 2 y Q sin raíces reales: <span class='f'>2πi Σ Res en el semiplano superior</span>.</p>
+<p>∫<sub>0</sub><sup>2π</sup> R(cos θ, sen θ) dθ: z = e<sup>iθ</sup>, cos θ = (z + 1/z)/2, sen θ = (z − 1/z)/2i, dθ = dz/(iz). Queda una integral sobre |z| = 1: 2πi Σ Res dentro del círculo unidad.</p>
+<p>∫ R(x) e<sup>iax</sup> dx (a &gt; 0): 2πi Σ Res[R(z) e<sup>iaz</sup>] en el semiplano superior; parte real e imaginaria dan las de cos y sen.</p>
+<div class='enun'><b>1/12/2025.</b> f(z) = 1/(z⁴ + 3z² + 2). a) Singularidades. b) I = ∫<sub>−∞</sub><sup>∞</sup> dx/(x⁴ + 3x² + 2). (Así se lee la foto: verificá con el original.)</div>
+<details><summary>Resolución</summary>
+<p>z⁴ + 3z² + 2 = (z² + 1)(z² + 2). Polos simples en ±i y ±i√2.</p>
+<p>Superiores: i y i√2. Res(i) = 1/[2i · (i² + 2)] = 1/(2i). Res(i√2) = 1/[(−2 + 1) · 2i√2] = −1/(2i√2).</p>
+<p>I = 2πi · (1/2i)(1 − 1/√2) = <b>π(1 − √2/2) ≈ 0,920</b>.</p>
+<p class='small'>Control sin residuos: 1/((x²+1)(x²+2)) = 1/(x²+1) − 1/(x²+2), que integra π − π/√2.</p></details>
+<div class='enun'><b>2/12/2024.</b> I = ∮<sub>C</sub> sen z / (z² + π²)² dz, C: |z + iπ| = 6. Gráfico, polos, y I como Re + i Im. (Lectura de la foto: confirmalo.)</div>
+<details><summary>Resolución</summary>
+<p>C es la circunferencia de centro −iπ y radio 6. Polos dobles en ±iπ. La distancia de −iπ a iπ es 2π ≈ 6,28 &gt; 6: <b>solo −iπ queda adentro</b>.</p>
+<p>Res(−iπ) = d/dz [sen z/(z − iπ)²] en −iπ = [cos z (z − iπ) − 2 sen z]/(z − iπ)³.</p>
+<p>z − iπ = −2iπ, cos(−iπ) = cosh π, sen(−iπ) = −i senh π. Numerador: −2iπ cosh π + 2i senh π. Denominador: (−2iπ)³ = 8iπ³.</p>
+<p>Res = (senh π − π cosh π)/(4π³). I = 2πi · Res = <b>i (senh π − π cosh π)/(2π²)</b>. Re(I) = 0, Im(I) ≈ <b>−1,2599</b>.</p></details>
+<div class='enun'><b>07/02/2022.</b> ∮ e<sup>z</sup>/(z³ − 2z² + z) dz sobre |z| = 2.</div>
+<details><summary>Resolución</summary>
+<p>z³ − 2z² + z = z(z − 1)². Polo simple en 0, doble en 1, los dos adentro.</p>
+<p>Res(0) = e⁰/(0 − 1)² = 1. Res(1) = d/dz [e<sup>z</sup>/z] en 1 = (e·1 − e)/1 = 0.</p>
+<p><b>I = 2πi.</b></p></details>
+
+<h2 id='fourier'>6. Series y transformada de Fourier</h2>
+<p>Período 2L: f(t) = a₀/2 + Σ [a<sub>n</sub> cos(nπt/L) + b<sub>n</sub> sen(nπt/L)].</p>
+<p>a<sub>n</sub> = (1/L) ∫<sub>−L</sub><sup>L</sup> f cos(nπt/L) dt (n ≥ 0); b<sub>n</sub> = (1/L) ∫<sub>−L</sub><sup>L</sup> f sen(nπt/L) dt. Con período 2π, L = π.</p>
+<p><b>Par:</b> b<sub>n</sub> = 0 y a<sub>n</sub> = (2/L)∫<sub>0</sub><sup>L</sup> f cos. <b>Impar:</b> a<sub>n</sub> = 0 y b<sub>n</sub> = (2/L)∫<sub>0</sub><sup>L</sup> f sen. Una extensión par de f definida en [0, L] se arma reflejando en el eje vertical; la impar, reflejando respecto del origen. En un salto la serie converge al promedio de los límites laterales (Dirichlet).</p>
+<div class='enun'><b>1/12/2025.</b> u(t) = π − t en 0 ≤ t ≤ π. Extensión impar en [−π, π], serie, dos primeros términos.</div>
+<details><summary>Resolución</summary>
+<p>Impar: u(t) = −π − t en −π ≤ t &lt; 0 (salta de −π a π en el origen). a<sub>n</sub> = 0.</p>
+<p>b<sub>n</sub> = (2/π) ∫<sub>0</sub><sup>π</sup> (π − t) sen nt dt. Por partes: [−(π − t) cos nt / n]<sub>0</sub><sup>π</sup> − ∫<sub>0</sub><sup>π</sup> cos nt / n dt = π/n − 0.</p>
+<p>b<sub>n</sub> = 2/n. <b>u(t) = Σ (2/n) sen nt = 2 sen t + sen 2t + (2/3) sen 3t + …</b> En t = 0 la serie da 0, el promedio del salto.</p></details>
+<div class='enun'><b>Molde del 2/12/2024</b> (la figura no se lee: practicá con este). f(t) = t en [0, 2]. Extensión par de período 4.</div>
+<details><summary>Resolución</summary>
+<p>L = 2. a₀ = (2/2)∫<sub>0</sub><sup>2</sup> t dt = 2, así que a₀/2 = 1.</p>
+<p>a<sub>n</sub> = ∫<sub>0</sub><sup>2</sup> t cos(nπt/2) dt = [2t sen(nπt/2)/(nπ) + 4 cos(nπt/2)/(n²π²)]<sub>0</sub><sup>2</sup> = 4[(−1)<sup>n</sup> − 1]/(n²π²).</p>
+<p>Solo los impares: a<sub>n</sub> = −8/(n²π²). <b>f(t) = 1 − (8/π²)[cos(πt/2) + cos(3πt/2)/9 + …]</b>. Es la onda triangular.</p></details>
+<p><b>Transformada de Fourier:</b> F[f](ω) = ∫<sub>−∞</sub><sup>∞</sup> f(t) e<sup>−iωt</sup> dt. Propiedades: lineal; F[f(t − a)] = e<sup>−iaω</sup> F(ω); <b>F[f(t) e<sup>iω₀t</sup>] = F(ω − ω₀)</b>; F[f(at)] = (1/|a|) F(ω/a).</p>
+<div class='enun'><b>1/12/2025.</b> a) F[f(t) sen ω₀t] = (1/2i)[F(ω − ω₀) − F(ω + ω₀)]. b) Transformada de g(t) = e<sup>−|t|</sup> sen 3t (así se lee la foto).</div>
+<details><summary>Resolución</summary>
+<p>a) sen ω₀t = (e<sup>iω₀t</sup> − e<sup>−iω₀t</sup>)/2i. Por linealidad y el corrimiento en frecuencia: F[f e<sup>iω₀t</sup>] = ∫ f e<sup>−i(ω − ω₀)t</sup> dt = F(ω − ω₀), y lo mismo con −ω₀. Queda la fórmula.</p>
+<p>b) F[e<sup>−|t|</sup>] = ∫<sub>−∞</sub><sup>0</sup> e<sup>t(1 − iω)</sup> dt + ∫<sub>0</sub><sup>∞</sup> e<sup>−t(1 + iω)</sup> dt = 1/(1 − iω) + 1/(1 + iω) = 2/(1 + ω²).</p>
+<p><b>G(ω) = (1/i)[1/(1 + (ω − 3)²) − 1/(1 + (ω + 3)²)]</b>, o −i por el corchete.</p></details>
+
+<h2 id='lap'>7. Transformada de Laplace</h2>
+<p>L[f](s) = ∫<sub>0</sub><sup>∞</sup> f(t) e<sup>−st</sup> dt. Existe si f es continua por tramos y de <b>orden exponencial</b>: |f(t)| ≤ M e<sup>ct</sup> para t grande. Esas condiciones garantizan que la integral converja para s &gt; c.</p>
+<table><tr><th>f(t)</th><th>F(s)</th><th>f(t)</th><th>F(s)</th></tr>
+<tr><td>1</td><td>1/s</td><td>tⁿ</td><td>n!/s<sup>n+1</sup></td></tr>
+<tr><td>e<sup>at</sup></td><td>1/(s − a)</td><td>sen bt, cos bt</td><td>b/(s² + b²), s/(s² + b²)</td></tr>
+<tr><td>e<sup>at</sup> f(t)</td><td>F(s − a)</td><td>u(t − a) f(t − a)</td><td>e<sup>−as</sup> F(s)</td></tr>
+<tr><td>f′</td><td>sF − f(0)</td><td>f″</td><td>s²F − s f(0) − f′(0)</td></tr>
+<tr><td>∫<sub>0</sub><sup>t</sup> f</td><td>F/s</td><td>t f(t)</td><td>−F′(s)</td></tr>
+<tr><td>(f * g)(t) = ∫<sub>0</sub><sup>t</sup> f(τ) g(t − τ) dτ</td><td>F · G</td><td>f(at)</td><td>(1/a) F(s/a)</td></tr></table>
+<p><b>Inversa por residuos:</b> f(t) = Σ Res[F(s) e<sup>st</sup>] sobre todos los polos de F.</p>
+<div class='enun'><b>2/12/2024.</b> y″ − 2y′ + y = 3e<sup>t</sup>, y(0) = y′(0) = 0.</div>
+<details><summary>Resolución</summary>
+<p>(s² − 2s + 1) Y = 3/(s − 1) ⇒ <b>Y = 3/(s − 1)³</b>, polo triple en s = 1.</p>
+<p>Res = (1/2!) d²/ds² [3 e<sup>st</sup>] en 1 = (3/2) t² e<sup>t</sup>. <b>y = (3/2) t² e<sup>t</sup>.</b></p></details>
+<div class='enun'><b>1/12/2025.</b> y″ + y = e<sup>−2t</sup> sen t, y(0) = y′(0) = 0.</div>
+<details><summary>Resolución</summary>
+<p>(s² + 1) Y = 1/((s + 2)² + 1) ⇒ <b>Y = 1/[(s² + 1)((s + 2)² + 1)]</b>. Polos simples: ±i, −2 ± i.</p>
+<p>Res en i: e<sup>it</sup>/[2i((i + 2)² + 1)] = e<sup>it</sup>/[2i(4 + 4i)] = (−1 − i)e<sup>it</sup>/16. En −i, el conjugado. Los dos suman (1/8)(sen t − cos t).</p>
+<p>Res en −2 + i: e<sup>(−2+i)t</sup>/[((−2 + i)² + 1) · 2i] = (1 − i) e<sup>(−2+i)t</sup>/16. Con su conjugado: (e<sup>−2t</sup>/8)(cos t + sen t).</p>
+<p><b>y = (1/8)[sen t − cos t + e<sup>−2t</sup>(sen t + cos t)]</b>. Control: y(0) = (−1 + 1)/8 = 0.</p></details>
+<div class='enun'><b>29/11/2021.</b> y″ − 4y = t², y(0) = y′(0) = 0. Término de la solución que viene de s = 2.</div>
+<details><summary>Resolución</summary>
+<p>Y = 2/[s³(s² − 4)]. Res[Y e<sup>st</sup>, 2] = 2e<sup>2t</sup>/(8 · 4) = <b>e<sup>2t</sup>/16</b>. La solución completa es −t²/4 + cosh(2t)/8 − 1/8.</p></details>
+
+<h2 id='teo'>8. Las demostraciones que se repiten</h2>
+<h3>Cauchy-Riemann en cartesianas</h3>
+<p>Si f′(z₀) existe, el límite de [f(z₀ + h) − f(z₀)]/h es el mismo por cualquier camino. Con h real: f′ = u<sub>x</sub> + i v<sub>x</sub>. Con h = ik: f′ = [u(x, y + k) − u + i(v(x, y + k) − v)]/(ik) → (1/i)(u<sub>y</sub> + i v<sub>y</sub>) = v<sub>y</sub> − i u<sub>y</sub>. Igualando: u<sub>x</sub> = v<sub>y</sub> y v<sub>x</sub> = −u<sub>y</sub>.</p>
+<h3>Cauchy-Riemann en polares (16/12/2024)</h3>
+<p>z = r e<sup>iθ</sup>. Incremento radial, Δz = Δr e<sup>iθ</sup>: f′ = e<sup>−iθ</sup>(u<sub>r</sub> + i v<sub>r</sub>). Incremento angular, Δz ≈ i r e<sup>iθ</sup> Δθ: f′ = e<sup>−iθ</sup>(u<sub>θ</sub> + i v<sub>θ</sub>)/(ir) = e<sup>−iθ</sup>(v<sub>θ</sub> − i u<sub>θ</sub>)/r. Igualando real e imaginaria: <b>u<sub>r</sub> = v<sub>θ</sub>/r, v<sub>r</sub> = −u<sub>θ</sub>/r</b>.</p>
+<h3>Cauchy-Goursat con f′ continua (16/12/2024)</h3>
+<p>f dz = (u + iv)(dx + i dy). ∮ f dz = ∮(u dx − v dy) + i∮(v dx + u dy). Por Green (vale porque f′ es continua, así que u y v son C¹): = ∬(−v<sub>x</sub> − u<sub>y</sub>) dA + i∬(u<sub>x</sub> − v<sub>y</sub>) dA. Por Cauchy-Riemann los dos integrandos son 0. Goursat demostró que no hace falta pedir f′ continua (con triángulos que se subdividen); si piden esa versión, el esquema es: la integral sobre un triángulo se acota por 4ⁿ veces la de un subtriángulo, que tiende a 0 más rápido.</p>
+<h3>Fórmula integral de Cauchy</h3>
+<p>f(z)/(z − z₀) es analítica salvo en z₀. Por deformación, ∮<sub>C</sub> = ∮<sub>|z − z₀| = ρ</sub>. Escribo f(z) = f(z₀) + [f(z) − f(z₀)]. La primera parte da f(z₀) · 2πi. La segunda se acota por máx|f − f(z₀)| · 2πρ/ρ, que → 0 cuando ρ → 0 por continuidad. Queda f(z₀) = (1/2πi)∮ f/(z − z₀) dz.</p>
+<p><b>Consecuencia que piden:</b> el máximo de |f| sobre la región cerrada se alcanza en el borde (principio del módulo máximo). Si Re f ≤ M en todo C, e<sup>f</sup> es entera y |e<sup>f</sup>| = e<sup>Re f</sup> ≤ e<sup>M</sup>: por Liouville es constante, y entonces f también.</p>
+<h3>Teorema de los residuos</h3>
+<p>Deformo C en circunferencias chicas alrededor de cada singularidad interior. En cada una, f = Σ c<sub>n</sub>(z − a)<sup>n</sup> converge uniformemente: integro término a término. ∮ (z − a)<sup>n</sup> dz = 0 si n ≠ −1 y 2πi si n = −1. Queda 2πi c<sub>−1</sub> por singularidad.</p>
+<h3>Laplace de la derivada (1/7/2024)</h3>
+<p>Por partes: ∫<sub>0</sub><sup>∞</sup> f′ e<sup>−st</sup> dt = [f e<sup>−st</sup>]<sub>0</sub><sup>∞</sup> + s∫<sub>0</sub><sup>∞</sup> f e<sup>−st</sup> dt. Como f es de orden exponencial, f e<sup>−st</sup> → 0 para s &gt; c. Queda <b>sF(s) − f(0⁺)</b>.</p>
+<h3>Convolución (1/7/2024, 30/11/2020)</h3>
+<p>Conmutativa: en ∫<sub>0</sub><sup>t</sup> f(τ)g(t − τ)dτ, el cambio σ = t − τ da ∫<sub>0</sub><sup>t</sup> g(σ)f(t − σ)dσ.</p>
+<p>Transformada: L[f * g] = ∫<sub>0</sub><sup>∞</sup> e<sup>−st</sup> ∫<sub>0</sub><sup>t</sup> f(τ)g(t − τ) dτ dt. Cambio el orden (Fubini, la región es 0 ≤ τ ≤ t): = ∫<sub>0</sub><sup>∞</sup> f(τ) ∫<sub>τ</sub><sup>∞</sup> e<sup>−st</sup> g(t − τ) dt dτ. Con u = t − τ el de adentro es e<sup>−sτ</sup> G(s). Queda F(s)G(s).</p>
+<h3>Traslación en t</h3>
+<p>L[u(t − a) f(t − a)] = ∫<sub>a</sub><sup>∞</sup> f(t − a) e<sup>−st</sup> dt; con σ = t − a: e<sup>−as</sup> ∫<sub>0</sub><sup>∞</sup> f(σ) e<sup>−sσ</sup> dσ = e<sup>−as</sup> F(s). Y L[e<sup>at</sup>] = ∫ e<sup>−(s − a)t</sup> dt = 1/(s − a) si s &gt; a.</p>
+<h3>Coeficientes de Fourier (16/12/2024)</h3>
+<p>Ortogonalidad en [−π, π]: ∫ cos mt cos nt = π si m = n ≠ 0 y 0 si no; lo mismo con sen; ∫ sen mt cos nt = 0 siempre. Multiplico la serie f = a₀/2 + Σ(a<sub>n</sub> cos nt + b<sub>n</sub> sen nt) por cos mt e integro: sobrevive solo π a<sub>m</sub>. Así a<sub>m</sub> = (1/π)∫ f cos mt. Con sen mt sale b<sub>m</sub>. Si f es par, f sen es impar e integra 0: b<sub>n</sub> = 0. Si f es impar, a<sub>n</sub> = 0.</p>
+
+<h2>Plan de estudio</h2>
+<table><tr><th>Si vas el 14 de diciembre (3 días)</th><th>Si vas el 1 de febrero (desde el 2 de enero)</th></tr>
+<tr><td>11 dic: secciones 1, 2 y 5, con los ejercicios. 12 dic: Laplace y Fourier. 13 dic: los dos finales completos y las demostraciones de Cauchy-Riemann, Goursat y Laplace.</td><td>Semana 1: complejos, Cauchy-Riemann, armónicas. Semana 2: integración, Laurent, residuos, integrales reales. Semana 3: Fourier y Laplace. Semana 4: los dos finales cronometrados y todas las demostraciones escritas.</td></tr></table>
+<p class='small'>Material original: zip “ANALISIS 3”, carpetas Finales, 2025 final, Notas Soldato y Teorico_Joaquin.pdf.</p>
+</main></body></html>

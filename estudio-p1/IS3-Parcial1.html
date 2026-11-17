@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IS3 · Parcial 1 · Estudio U1–U3</title>
+<style>
+  :root {
+    --bg: #f3eee6;
+    --paper: #fffdf9;
+    --ink: #1c1712;
+    --muted: #5e564c;
+    --line: #e3d8c8;
+    --accent: #8d3b18;
+    --accent-soft: #f6e6dc;
+    --green: #1c5c3a;
+    --green-soft: #e5f2ea;
+    --red: #8d2b2b;
+    --red-soft: #f8e6e6;
+    --gold: #8a5a10;
+    --gold-soft: #f8f0dc;
+    --nav: 248px;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: "Avenir Next", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.55;
+  }
+  button, input, select, textarea { font: inherit; }
+  .chrome {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 16px;
+    height: 58px; padding: 0 18px;
+    background: #1c1712; color: #f6f1e8;
+    font-family: var(--sans);
+  }
+  .chrome .brand { font-weight: 650; letter-spacing: .01em; }
+  .chrome .brand span { color: #e4b397; font-weight: 500; }
+  .chrome .grow { flex: 1; }
+  .bar {
+    width: 140px; height: 8px; border-radius: 99px;
+    background: #3a332c; overflow: hidden;
+  }
+  .bar > i { display: block; height: 100%; width: 0; background: #e4b397; }
+  .chrome .meta { font-size: 13px; color: #cbbba8; }
+  .layout { display: grid; grid-template-columns: var(--nav) 1fr; min-height: calc(100vh - 58px); }
+  nav {
+    position: sticky; top: 58px; align-self: start;
+    height: calc(100vh - 58px); overflow: auto;
+    padding: 14px 10px 28px;
+    background: #ebe4d8;
+    border-right: 1px solid var(--line);
+    font-family: var(--sans);
+  }
+  nav h2 {
+    margin: 16px 10px 6px; font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted); font-weight: 650;
+  }
+  nav button {
+    display: flex; width: 100%; text-align: left; gap: 8px;
+    border: 0; background: transparent; color: var(--ink);
+    border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 14px;
+  }
+  nav button small { margin-left: auto; color: var(--muted); }
+  nav button.on { background: var(--paper); color: var(--accent); font-weight: 650; }
+  nav button:hover { background: rgba(255,255,255,.55); }
+  main { padding: 28px 34px 80px; max-width: 920px; }
+  .sheet { display: none; }
+  .sheet.active { display: block; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 0 0 8px; font-weight: 650; }
+  h2 { font-size: 26px; margin: 1.6em 0 .4em; line-height: 1.2; }
+  h3 { font-size: 20px; margin: 1.3em 0 .35em; }
+  p { margin: .55em 0; }
+  .lead { font-size: 20px; color: #3a332c; }
+  .kicker { font-family: var(--sans); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  ul, ol { margin: .4em 0 .8em; padding-left: 1.2em; }
+  li { margin: .25em 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 15.5px; background: var(--paper); }
+  th, td { border: 1px solid var(--line); padding: 7px 9px; vertical-align: top; text-align: left; }
+  th { background: #f6efe4; font-family: var(--sans); font-size: 13px; }
+  .example, .rule, .trap, .note {
+    margin: 12px 0; padding: 10px 14px; border-radius: 10px; background: var(--paper);
+  }
+  .example { border-left: 4px solid var(--accent); }
+  .rule { border-left: 4px solid var(--green); background: var(--green-soft); }
+  .trap { border-left: 4px solid var(--red); background: var(--red-soft); }
+  .note { border-left: 4px solid var(--gold); background: var(--gold-soft); }
+  .example strong.label, .rule strong.label, .trap strong.label, .note strong.label {
+    font-family: var(--sans); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 4px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+  .btn, button.btn {
+    font-family: var(--sans); font-size: 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+    padding: 8px 14px; cursor: pointer;
+  }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn.good { background: var(--green); color: white; border-color: var(--green); }
+  .btn.bad { background: var(--red); color: white; border-color: var(--red); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 8px; }
+  .mini {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    font-family: var(--sans); font-size: 14px;
+  }
+  .mini b { display: block; font-size: 15px; margin-bottom: 4px; }
+  .q { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+  .q .ans { display: none; margin-top: 8px; color: var(--green); }
+  .q.open .ans { display: block; }
+  .opt { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-family: var(--sans); font-size: 15px; }
+  .opt.correct { background: var(--green-soft); border-color: var(--green); }
+  .opt.wrong { background: var(--red-soft); border-color: var(--red); }
+  .stage { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 18px; min-height: 220px; }
+  .flip {
+    min-height: 180px; border-radius: 14px; padding: 22px; background: #1c1712; color: #f6f1e8;
+    display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer;
+    font-size: 22px; line-height: 1.35;
+  }
+  .flip.back { background: #f6efe4; color: var(--ink); font-size: 18px; }
+  .stat { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+  textarea { width: 100%; min-height: 88px; border-radius: 10px; border: 1px solid var(--line); padding: 10px; background: #fff; }
+  .check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; font-size: 16px; }
+  .pill { font-family: var(--sans); font-size: 12px; border-radius: 99px; padding: 2px 8px; background: var(--accent-soft); color: var(--accent); }
+  .search { width: 100%; border: 0; background: #fff; border-radius: 8px; padding: 8px 10px; margin: 4px 0 8px; font-family: var(--sans); font-size: 14px; }
+  #hits { font-family: var(--sans); font-size: 13px; }
+  #hits button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 4px 6px; cursor: pointer; color: var(--ink); }
+  .timer { font-variant-numeric: tabular-nums; font-family: var(--sans); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .86em; background: #f6efe4; padding: 0 .25em; border-radius: 4px; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { position: relative; top: 0; height: auto; max-height: 240px; }
+    main { padding: 18px 16px 64px; }
+    .cards3 { grid-template-columns: 1fr; }
+    h1 { font-size: 28px; }
+  }
+  @page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+    @top-left { content: "IS3 · Parcial 1 · U1–U3"; font-family: sans-serif; font-size: 9pt; color: #666; }
+    @top-right { content: "UCC 2026 · sin Kubernetes"; font-family: sans-serif; font-size: 9pt; color: #666; }
+    @bottom-right { content: counter(page); font-family: sans-serif; font-size: 9pt; color: #666; }
+  }
+  @media print {
+    .chrome, nav, .noprint, .row, button, .search, #hits { display: none !important; }
+    body { background: white; font-size: 11pt; }
+    .layout { display: block; }
+    main { max-width: none; padding: 0; }
+    .sheet { display: block !important; page-break-before: always; }
+    .sheet.noprint { display: none !important; }
+    #home { page-break-before: auto; }
+    .q .ans { display: block !important; }
+    h1, h2, h3 { page-break-after: avoid; }
+    table, .example, .rule, .trap, .note, .q { page-break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<header class="chrome">
+  <div class="brand">IS3 · Parcial 1 <span>U1–U3</span></div>
+  <div class="grow"></div>
+  <div class="meta"><span id="doneLabel">0/8 bloques</span></div>
+  <div class="bar" aria-hidden="true"><i id="doneBar"></i></div>
+  <div class="meta timer" id="clock">60:00</div>
+</header>
+<div class="layout">
+<nav>
+  <input class="search" id="search" placeholder="Buscar en el temario" aria-label="Buscar">
+  <div id="hits"></div>
+  <h2>Estudiar</h2>
+  <button data-go="home" class="on">Inicio</button>
+  <button data-go="como">Cómo se corrige</button>
+  <button data-go="u1">U1 · Configuración <small data-mark="u1"></small></button>
+  <button data-go="u2">U2 · Distribuidos <small data-mark="u2"></small></button>
+  <button data-go="u3">U3 · CI/CD <small data-mark="u3"></small></button>
+  <button data-go="guiones">Desarrollos de 20 pts</button>
+  <h2>Practicar</h2>
+  <button data-go="mazo">Tarjetas</button>
+  <button data-go="quiz">Preguntas mixtas</button>
+  <button data-go="sim">Simulacro cronometrado</button>
+  <button data-go="oral">Desarrollo oral</button>
+  <button data-go="fallos">Repasar fallos</button>
+  <h2>Clave</h2>
+  <button data-go="clave">Simulacro resuelto</button>
+</nav>
+<main id="main">
+
+<article class="sheet active" id="home">
+  <p class="kicker">Ingeniería de Software III · UCC · 23/09/2026</p>
+  <h1>Estudiar el parcial 1 sin perder el hilo</h1>
+  <p class="lead">Gestión de configuración, sistemas distribuidos y CI/CD. Kubernetes no entra. Aprobás con 55/100. Los dos desarrollos valen 40 puntos: si los escribís completos, con el resto del examen solo necesitás 15 puntos más.</p>
+  <div class="cards3">
+    <div class="mini"><b>30 pts</b> 10 múltiple opción. Una sola correcta. 3 puntos. Sin justificar.</div>
+    <div class="mini"><b>30 pts</b> 10 verdadero/falso. Si marcás falso, justificá en una oración. Si es verdadero, no escribas nada.</div>
+    <div class="mini"><b>40 pts</b> Dos desarrollos. Siempre uno de U3. El otro es de U1 o de U2. 20 puntos cada uno.</div>
+  </div>
+  <div class="rule"><strong class="label">El hilo</strong>
+  Sin gestión de configuración no sabés qué versión estás entregando. Sin un sistema distribuido pensado para fallar en partes, esa versión se cae. Sin CI/CD, el camino del commit al usuario es manual, lento y traumático. Git registra el cambio. El pipeline lo convierte en un solo artefacto. Los patrones de resiliencia y las estrategias de release evitan que ese cambio tumbe a los usuarios. DORA mide si el equipo es rápido y estable a la vez.</div>
+  <h2>Plan para hoy</h2>
+  <p>El parcial es mañana y no se pueden llevar apuntes. Este orden prioriza los 40 puntos y después las trampas de verdadero/falso.</p>
+  <ol>
+    <li><b>40 min · U3.</b> Leé el bloque y después hacé el desarrollo oral de “CI vs Delivery vs Deployment” y el de “estrategias + DORA”.</li>
+    <li><b>35 min · U1.</b> Los cuatro branching models en voz alta, con la tabla. Después merge vs rebase y los tres modelos de conflicto.</li>
+    <li><b>40 min · U2.</b> Ocho falacias, CAP con un ejemplo de banco y uno de likes, estados del circuit breaker, saga de la compra.</li>
+    <li><b>25 min · Simulacro cronometrado</b> de la sección A y B. Después, solo la cola de fallos.</li>
+  </ol>
+  <div class="row noprint">
+    <button class="btn primary" data-go="u3">Empezar por U3</button>
+    <button class="btn" data-go="mazo">Ronda de tarjetas</button>
+    <button class="btn" data-go="sim">Simulacro</button>
+    <button class="btn" id="resetBtn" type="button">Borrar mi avance</button>
+  </div>
+  <p class="stat">El avance, las tarjetas que fallaste y el mejor simulacro quedan guardados en este navegador.</p>
+</article>
+
+<article class="sheet" id="como">
+  <p class="kicker">Formato</p>
+  <h1>Cómo se corrige, y cómo escribir</h1>
+  <p>Duración estimada: 60 minutos. Sin calculadora ni apuntes. Letra ilegible no se corrige.</p>
+  <table>
+    <tr><th>Puntaje</th><th>Nota</th><th></th></tr>
+    <tr><td>0–54</td><td>1 a 3</td><td>Reprobado</td></tr>
+    <tr><td>55–66</td><td>4 a 5</td><td>Regular</td></tr>
+    <tr><td>67–81</td><td>6 a 7</td><td>Bueno</td></tr>
+    <tr><td>82–100</td><td>8 a 10</td><td>Muy bueno</td></tr>
+  </table>
+  <div class="rule"><strong class="label">Orden en el aula</strong>
+  Leé las dos consignas de desarrollo apenas te dan la hoja. Contestá A y B en unos 25 minutos. Dejá 30 o 35 minutos para los desarrollos. En un falso, una oración precisa alcanza: “es falso porque…”. Una V sin justificación está bien. Una F sin justificación pierde el punto.</div>
+  <h2>Qué espera un desarrollo de 20 puntos</h2>
+  <ul>
+    <li>Definición con la terminología de la cátedra, no un sinónimo vago.</li>
+    <li>El contraste que la gente confunde (Delivery con Deployment, merge con rebase, promedio con p99, retry con circuit breaker).</li>
+    <li>Un ejemplo concreto. El e-commerce de la cátedra alcanza para casi todo.</li>
+    <li>Si piden comparar, una tabla. Aunque sea dibujada a mano.</li>
+    <li>Una regla operativa al final: un artefacto, la config afuera, el rollback es un botón, si duele se hace más seguido.</li>
+  </ul>
+  <div class="note"><strong class="label">Los “7” principios</strong>
+  La diapositiva se titula “los 7 principios de Humble y Farley” y en el resumen numera ocho. Memorizá los ocho. Si la consigna dice siete, escribí los ocho y aclará que el octavo es mejora continua, que la cátedra incluye en el mismo bloque.</div>
+  <div class="trap"><strong class="label">Fuera de este parcial</strong>
+  El simulacro oficial es U1, U2 y U3. No estudies pods, Deployments, HPA ni servicios gestionados de Kubernetes. Sí estudiá contenedor contra máquina virtual: es una pregunta de verdadero/falso y es el artefacto del pipeline.</div>
+</article>
+<article class="sheet" id="u1">
+  <p class="kicker">Unidad 1 · Sommerville + Git</p>
+  <h1>Gestión de la configuración</h1>
+  <p class="lead">La CM es el conjunto de políticas, herramientas y procesos para administrar los cambios del software. Permite saber, para cada versión del sistema, qué versión de cada componente la forma. Es un proceso del ciclo de vida (ISO/IEC/IEEE 12207). El VCS es la base: sin él no hay historia confiable, trabajo en paralelo, build automatizado, CI/CD ni rollback.</p>
+  <div class="example"><strong class="label">Ejemplo</strong>El banco pide que el PDF del resumen lleve el CBU. Eso no es un commit improvisado: es un change request. Se estima que toca el generador y la plantilla, se aprueba, se versiona, y el release 2.4.1 documenta que el cliente lo recibió el 22/09.</div>
+
+  <h2>Las cuatro actividades</h2>
+  <p><b>Control de versiones.</b> Seguimiento de cada componente y aislamiento del trabajo paralelo.</p>
+  <p><b>Build.</b> Ensamblar código, datos y librerías en un ejecutable, con un comando repetible. El script de build es parte del producto.</p>
+  <p><b>Release management.</b> Qué versión se entrega, a qué cliente, en qué fecha y con qué documentación. Sirve para reconstruir lo que ese cliente tiene.</p>
+  <p><b>Administración del cambio.</b> Todo cambio nace como propuesta. Se evalúan impacto, esfuerzo, riesgo y valor. Un Change Control Board, o el equivalente ágil, aprueba o rechaza. Después se implementa, se prueba y se libera. En ágil se automatiza la mecánica; la decisión de impacto no desaparece.</p>
+  <div class="trap"><strong class="label">Trampa</strong>Optimizar un algoritmo interno no es CM. Tampoco diseñar la base ni escribir un test. El simulacro pregunta exactamente eso: la opción que no es CM es la optimización de algoritmos.</div>
+
+  <h2>Codeline, snapshot, version, baseline, tag</h2>
+  <p>Una <b>codeline</b> es la secuencia de revisiones de un conjunto de archivos por un camino de desarrollo. <code>main</code> es una. <code>release/2.3</code> es otra, con historial propio.</p>
+  <p>Un <b>snapshot</b> es una captura informal: un hash o un timestamp. Sirve para probar o para backup. No se distribuye.</p>
+  <p>Una <b>version</b> es un snapshot aprobado, estable, con número (<code>1.2.3</code>) y destinado a usuarios. Toda version fue snapshot. No todo snapshot llega a version.</p>
+  <p>Una <b>baseline</b> es la versión aprobada del conjunto completo: código, librerías, configuración del entorno y documentación. No se modifica. Es el punto desde el cual nace la versión siguiente, y es lo que necesitás para recrear el bug del cliente que tiene la 1.2.3.</p>
+  <p>Un <b>tag</b> es una etiqueta inmutable que apunta a un commit. <code>v1.2.3</code> no se mueve. Marca el release, el punto de un hotfix y el rollback: “volvamos a v2.3.0”.</p>
+  <p>El <b>repositorio</b> guarda todas las versiones. El <b>workspace</b> es el directorio donde editás. El VCS sincroniza ambos.</p>
+  <table>
+    <tr><th></th><th>Version</th><th>Snapshot</th></tr>
+    <tr><td>Formalidad</td><td>Aprobada</td><td>Informal</td></tr>
+    <tr><td>Identificación</td><td>1.2.3</td><td>Hash o timestamp</td></tr>
+    <tr><td>Se distribuye</td><td>Sí</td><td>No</td></tr>
+    <tr><td>Vida</td><td>Se preserva</td><td>Se descarta o se promueve</td></tr>
+  </table>
+
+  <h2>Centralizado contra distribuido</h2>
+  <table>
+    <tr><th></th><th>Centralizado (SVN, CVS, Perforce)</th><th>Distribuido (Git, Mercurial)</th></tr>
+    <tr><td>Historia</td><td>En un servidor</td><td>En cada clon</td></tr>
+    <tr><td>Commit, log, diff</td><td>Necesitan red</td><td>Locales</td></tr>
+    <tr><td>Si cae el servidor</td><td>No se puede versionar</td><td>Seguís trabajando</td></tr>
+    <tr><td>Ramas</td><td>Caras, poco usadas</td><td>Un puntero, uso diario</td></tr>
+    <tr><td>Backup</td><td>Depende de la infra</td><td>Cada clon es un backup</td></tr>
+    <tr><td>Curva</td><td>Suave</td><td>Más alta; repos grandes pesan</td></tr>
+  </table>
+  <div class="example"><strong class="label">Ejemplo</strong>Si el servidor SVN cae un viernes, nadie commitea. Si GitHub cae, cada dev sigue con su <code>.git</code>. El servidor central es un punto único de fallo del versionado, no de la aplicación.</div>
+
+  <h2>Tres formas de resolver un conflicto</h2>
+  <p><b>Locking, pesimista.</b> El archivo nace read-only. Para editar pedís un lock exclusivo y el otro espera. Bloquea el trabajo paralelo. Sirvió en SCCS y RCS. Para código está obsoleto. Sigue teniendo sentido en binarios que no se pueden mergear, como un PSD.</p>
+  <p><b>Merge-before-commit.</b> Cualquiera edita. Al commitear, el servidor mira si alguien subió antes. Si sí, rechaza el commit hasta que integres. Es el modelo de SVN. Los conflictos son raros si se integra seguido.</p>
+  <p><b>Commit-before-merge.</b> El de Git. El commit local nunca se bloquea. Si al hacer push el remoto avanzó, tu historia divergió y mergeás o rebaseás cuando decidís. Eso habilita forks y pull requests.</p>
+  <div class="example"><strong class="label">Ana y Bruno</strong>Los dos editan <code>Precio.cs</code>. Ana pushea primero. En SVN, el commit de Bruno rebota hasta que actualice. En Git, el commit de Bruno ya existe en su máquina; lo que falla es el push.</div>
+
+  <h2>Atomicidad y tres generaciones</h2>
+  <p>SCCS y RCS versionaban <b>por archivo</b>. Un cambio de tres archivos eran tres historias. SVN y Git versionan <b>por conjunto</b>: un commit agrupa una intención, con un mensaje, y se puede revertir o hacer cherry-pick. Regla: un commit, una intención. “Arreglo el descuento y de paso renombro diez clases” mezcla dos cambios y ensucia el revert.</p>
+  <ol>
+    <li><b>SCCS (1972) y RCS (1982).</b> Locking, por archivo, sin red. RCS guarda deltas invertidos: la última versión se lee rápido.</li>
+    <li><b>CVS (1990) y SVN (2000).</b> Cliente-servidor. CVS ya usa merge-before-commit pero sigue por archivo. SVN agrega commits atómicos y sigue centralizado.</li>
+    <li><b>Git y Mercurial (2005).</b> Distribuido, commit-before-merge, atómico. Linus lo escribió en dos semanas porque BitKeeper dejó de ser gratis. El kernel necesitaba velocidad, historia distribuida, ramas no lineales e integridad.</li>
+  </ol>
+
+  <h2>Modelo de objetos y las tres áreas</h2>
+  <p>Todo objeto se identifica con un SHA-1. El contenido manda: el mismo contenido, el mismo hash.</p>
+  <ul>
+    <li><b>Blob:</b> el contenido de un archivo, sin nombre.</li>
+    <li><b>Tree:</b> un directorio. Apunta a blobs y a otros trees, y ahí está el nombre.</li>
+    <li><b>Commit:</b> apunta a un tree raíz, guarda autor, mensaje y uno o más padres.</li>
+    <li><b>Tag:</b> apunta a un commit con un nombre inmutable. El anotado además tiene mensaje y autor.</li>
+  </ul>
+  <p>Es un árbol de Merkle. El hash del commit incluye el hash del tree y el de sus padres. Cambiar un archivo del pasado cambia el blob, el tree y todos los commits posteriores.</p>
+  <p>Una <b>rama es un puntero</b> a un commit. Crearla es escribir 41 bytes. <code>HEAD</code> apunta a la rama activa. Cada commit nuevo mueve ese puntero. En SVN una rama era una copia cara, y por eso se usaban poco.</p>
+  <p>Las tres áreas: <b>working directory</b> (lo que editás), <b>staging / index</b> (lo que va a entrar en el próximo commit; <code>git add</code>), <b>repository</b> (<code>.git</code>; <code>git commit</code>). <code>git fetch</code> trae sin integrar. <code>git pull</code> es fetch más merge, o rebase. <code>git push</code> publica.</p>
+
+  <h2>Merge contra rebase</h2>
+  <p><code>main</code> está en M3. Tu rama tiene A y B, salidos de M2.</p>
+  <p><b>Merge</b> crea M4 con dos padres: M3 y B. La historia queda como ocurrió. No reescribe nada. El grafo se llena de commits de merge. Es lo correcto para integrar hacia <code>main</code>, porque el resto del equipo ya tiene esos commits.</p>
+  <p><b>Rebase</b> reaplica A y B encima de M3. Nacen A' y B', con hashes nuevos. La historia queda lineal y <code>git bisect</code> se lee mejor. Si alguien había pulleado A, su historia ya no coincide.</p>
+  <div class="rule"><strong class="label">Regla</strong>Rebase para mantener tu feature al día. Merge para integrar a main. Nunca rebase de una rama que otros usan.</div>
+
+  <h2>Los cuatro branching models</h2>
+  <p>Un branching model es la convención de cómo se organizan las ramas para desarrollar en paralelo, integrar, mantener versiones estables y desplegar. No hay uno mejor: depende de la madurez del equipo, la frecuencia de release, el tipo de producto y la regulación. Cambiarlo después sale caro.</p>
+
+  <h3>GitFlow (Vincent Driessen, 2010)</h3>
+  <p>Para releases planificados. Permanentes: <code>main</code> (lo que está en producción; cada commit es un release) y <code>develop</code> (integración del próximo release). Temporales: <code>feature/*</code> nace y vuelve a develop; <code>release/x.y.z</code> nace de develop cuando se congela el release, solo acepta bugfixes, y se mergea a main (con tag) y a develop; <code>hotfix/*</code> nace de main y vuelve a main (con tag) y a develop.</p>
+  <p>Sí: producto estable, varias versiones vivas, muchos juniors, QA formal de staging. No: startup que despliega varias veces por día, equipo senior con CI/CD estricto.</p>
+  <div class="trap"><strong class="label">Trampa</strong><code>develop</code> no se crea al empezar el release ni se borra al final. Eso es <code>release/x.y.z</code>.</div>
+
+  <h3>GitHub Flow</h3>
+  <p><code>main</code> siempre desplegable. Solo dos tipos de rama: main y features cortas. Flujo: branch, commits, pull request, review más CI, merge, deploy automático. No hay develop, ni release, ni hotfix formal. El hotfix es otra feature corta. Exige tests sólidos, code review, pipeline y rollback rápido. Sí para SaaS. No para varias versiones instaladas en clientes distintos, ni para un equipo sin tests.</p>
+
+  <h3>Trunk-Based Development</h3>
+  <p>Todos integran a una sola rama, en horas o como máximo un par de días. El trunk está siempre desplegable. Es lo que correlaciona con los equipos elite de DORA. El código incompleto entra detrás de un <b>feature flag</b>: apagado por defecto, se enciende para el equipo, después para un 1 %, después para todos. Si falla, se apaga el flag sin revertir el commit. El costo es deuda: los flags viejos hay que borrarlos.</p>
+  <p>Sí: equipo senior, CI maduro, monitoreo, SaaS de iteración rápida. No: equipo sin experiencia, software embebido o un videojuego que se publica como un disco, regulación que exige aprobación formal de cada release.</p>
+
+  <h3>GitLab Flow</h3>
+  <p>El intermedio. Por entorno: <code>main</code> → <code>staging</code> → <code>production</code>; cada merge despliega a ese ambiente y producción puede exigir aprobación. Por versión: <code>release/2.0</code> y <code>release/3.0</code> viven en paralelo; lo general entra a main y se cherry-pickea. Sirve en enterprise. Se vuelve un lío si nadie escribe las reglas.</p>
+
+  <table>
+    <tr><th></th><th>GitFlow</th><th>GitHub Flow</th><th>Trunk-Based</th><th>GitLab Flow</th></tr>
+    <tr><td>Complejidad</td><td>Alta</td><td>Baja</td><td>Media, alta en cultura</td><td>Media</td></tr>
+    <tr><td>Ramas</td><td>5 tipos, 2 eternas</td><td>2</td><td>1 + ramas de horas</td><td>3 o 4</td></tr>
+    <tr><td>Frecuencia</td><td>Baja</td><td>Alta</td><td>Muy alta</td><td>Media-alta</td></tr>
+    <tr><td>Feature flags</td><td>No hacen falta</td><td>Recomendados</td><td>Necesarios</td><td>Recomendados</td></tr>
+    <tr><td>Varias versiones</td><td>Sí</td><td>No</td><td>Con flags</td><td>Sí</td></tr>
+    <tr><td>Ideal</td><td>Producto estable</td><td>SaaS ágil</td><td>Equipo senior</td><td>Enterprise</td></tr>
+  </table>
+  <div class="rule"><strong class="label">Cierre</strong>Cuanto más maduro el equipo y más frecuente el deploy, más simple el flujo de ramas. El modelo es una decisión de equipo, producto y regulación, no una preferencia de herramienta.</div>
+  <h3>Checkpoint</h3>
+  <div class="q"><p>¿Por qué el rebase de una rama compartida es peligroso?</p><button class="btn reveal noprint" type="button">Ver respuesta</button><p class="ans">Porque reescribe los hashes. Quien ya tenía esos commits queda con una historia que no coincide. Rebase es para la feature local; hacia main se mergea.</p></div>
+  <div class="q"><p>Una feature de pagos va a tardar dos semanas y el equipo despliega todos los días. ¿Qué modelo y qué mecanismo?</p><button class="btn reveal noprint" type="button">Ver respuesta</button><p class="ans">Trunk-based o GitHub Flow, no GitFlow. El código incompleto entra detrás de un feature flag, apagado en producción.</p></div>
+  <div class="row noprint"><button class="btn good markBtn" type="button">Marcar U1 como estudiada</button><button class="btn" data-go="u2">Seguir a U2</button></div>
+</article>
+
+<article class="sheet" id="u2">
+  <p class="kicker">Unidad 2 · sin orquestación</p>
+  <h1>Sistemas distribuidos</h1>
+  <p class="lead">Tanenbaum: un conjunto de computadoras independientes que aparecen ante el usuario como una sola. Operativamente: varios procesos, en nodos distintos, que solo se comunican por mensajes, comparten un objetivo y ofrecen una vista unificada. Si comparten memoria, no es distribuido. Si no colaboran, es una colección de servidores.</p>
+  <p>Se distribuye por tres motivos: <b>escalar</b> más allá de una máquina, <b>seguir disponible</b> si un nodo cae, y <b>acercar</b> el dato al usuario. Un servidor en Buenos Aires le cobra unos 200 ms de ida y vuelta a alguien en España antes de procesar nada.</p>
+  <p>Transparencias que el usuario no debería notar: de acceso, de ubicación, de replicación, de concurrencia y de fallo. Características deseables: escalabilidad, alta disponibilidad, tolerancia a fallos, elasticidad, consistencia, baja latencia, mantenibilidad y observabilidad.</p>
+
+  <h2>Centralizado y SPOF</h2>
+  <p>Un solo servidor con la base al lado es el MVP correcto: modelo simple, sin coordinación, latencia interna mínima. Alcanza para un prototipo o una herramienta interna. El techo llega por cuatro lados. La máquina más grande existe y es carísima. La latencia geográfica no se arregla con más RAM. Cada upgrade es downtime. Y hay un <b>SPOF</b>: si ese proceso muere, el negocio muere.</p>
+  <p>Mitigación, todas implican distribuir: replicar el servicio, balancear carga, poner nodos cerca del usuario o un CDN para lo estático, y actualizar de a poco en lugar de bajar todo.</p>
+
+  <h2>Métricas</h2>
+  <p>La <b>latencia</b> es cuánto tarda una operación. Se mira en percentiles. p50: la mitad de los requests son más rápidos. p95: solo el 5 % es más lento. p99: la cola. Netflix y Amazon optimizan esto, no el promedio.</p>
+  <div class="example"><strong class="label">Ejemplo</strong>Promedio 100 ms, p99 de 5 s. El informe dice “estamos bien”. Uno de cada cien clicks espera 5 segundos, y en un checkout eso es un carrito abandonado. La latencia que el usuario recuerda es la peor de su sesión.</div>
+  <p>El <b>throughput</b> es trabajo por unidad de tiempo: requests por segundo, transacciones, MB/s. Depende del hardware, del código, de la concurrencia y del cuello de botella. Un sistema puede ir bien con poca carga y colapsar cuando sube.</p>
+  <p>El <b>tiempo de respuesta percibido</b> va del click a la pantalla lista: red, servidor, render y terceros. Menos de 100 ms se siente instantáneo. Menos de 1 s mantiene la atención. Más de 10 s, el usuario se va.</p>
+  <p><b>Ley de Little:</b> L = λ × W. Si entran 10 requests por segundo y cada uno tarda 0,2 s, en el sistema hay en promedio 2 requests. Si la carga sube y la capacidad no, el tiempo crece. Cerca del límite, la latencia no sube lineal: explota. Un sistema rápido con 5 % de error es peor que uno más lento y confiable.</p>
+
+  <h2>Escalar</h2>
+  <table>
+    <tr><th></th><th>Vertical (scale-up)</th><th>Horizontal (scale-out)</th></tr>
+    <tr><td>Cómo</td><td>Más CPU y RAM en la misma máquina</td><td>Más máquinas</td></tr>
+    <tr><td>Techo</td><td>Físico y económico</td><td>Prácticamente ninguno</td></tr>
+    <tr><td>Costo</td><td>Exponencial en el tope</td><td>Más lineal</td></tr>
+    <tr><td>SPOF</td><td>Sigue</td><td>Se elimina</td></tr>
+    <tr><td>Al escalar</td><td>Downtime de hardware</td><td>Se agregan nodos en caliente</td></tr>
+    <tr><td>Latencia geográfica</td><td>No mejora</td><td>Mejora si hay nodos cerca</td></tr>
+    <tr><td>Complejidad</td><td>Baja</td><td>Alta: hay que coordinar</td></tr>
+  </table>
+  <p>En la práctica se sube vertical hasta que duele y después se sale horizontal. Scale-out no es “más simple” ni “sin cambios de arquitectura”. Exige pensar la aplicación como distribuida.</p>
+  <p><b>Stateless:</b> el request trae todo. Cualquier nodo lo atiende. Sumar nodos suma capacidad. <b>Stateful:</b> el nodo recuerda algo entre requests. Hay que clavar al usuario en el mismo nodo (sticky, IP-hash) o replicar el estado. La regla es dejar stateless todo lo posible y aislar el estado en Redis o en la base.</p>
+  <div class="example"><strong class="label">Ejemplo</strong>Duplicar el catálogo es sumar instancias detrás del balanceador. Duplicar “la sesión que vive en la memoria del server 2” no: ese usuario queda pegado a una máquina que puede morir.</div>
+  <p><b>Balanceo.</b> Capa 4 mira TCP y es rápida. Capa 7 mira HTTP y puede rutear por URL, header o cookie. Estrategias: round-robin, least-connections, weighted, IP-hash. Sin health checks, el balanceador sigue mandando tráfico a un nodo muerto. NGINX, HAProxy, un balanceador de nube.</p>
+
+  <h2>Modelos, y cuándo</h2>
+  <p><b>Cliente-servidor.</b> El cliente pide, el servidor responde. Simple, datos centralizados, SPOF. MVP y apps internas.</p>
+  <p><b>N capas.</b> Presentación, negocio, acceso a datos, persistencia. Cada capa habla con la vecina. Testeable. Puede convertirse en un monolito que solo escala vertical.</p>
+  <p><b>P2P.</b> No hay servidor. Cada nodo ofrece y consume. Sin SPOF, y gobernarlo es difícil. BitTorrent, blockchain.</p>
+  <p><b>SOA.</b> Servicios reutilizables, en general SOAP sobre un ESB. El bus se vuelve el nuevo SPOF. Es el antecedente pesado de los microservicios.</p>
+  <p><b>Microservicios.</b> Un servicio, un bounded context, su propia base, su deploy, su equipo. Hablan REST, gRPC o eventos. Beneficio: escalar solo pagos el Cyber Monday, y que un fallo de recomendaciones no tumbe el catálogo. Costo: latencia de varios saltos, consistencia entre bases, debugging distribuido, y CI/CD maduro como condición.</p>
+  <div class="rule"><strong class="label">Fowler</strong>No arranques en microservicios. Llegá cuando el monolito duela. No distribuyas hasta que duela.</div>
+  <p><b>Event-driven.</b> Alguien publica “OrdenCreada”. Quien quiera, se suscribe. Acoplamiento muy bajo y buen throughput. Nadie es dueño del flujo completo: debuggear duele. Hace falta un broker de verdad.</p>
+  <p><b>Serverless.</b> Una función, un trigger, el proveedor escala de cero a miles y se cobra por uso. Cold start, vendor lock-in, ejecución acotada, debugging más opaco. Sirve para carga irregular, no para un proceso largo con estado.</p>
+  <table>
+    <tr><th>Modelo</th><th>Acoplamiento</th><th>Escala</th><th>Cuándo</th></tr>
+    <tr><td>Cliente-servidor</td><td>Alto</td><td>Vertical</td><td>MVP</td></tr>
+    <tr><td>N capas</td><td>Medio</td><td>Mixta</td><td>App tradicional</td></tr>
+    <tr><td>P2P</td><td>Bajo</td><td>Horizontal</td><td>Sin autoridad central</td></tr>
+    <tr><td>SOA</td><td>Medio</td><td>Horizontal</td><td>Enterprise legado</td></tr>
+    <tr><td>Microservicios</td><td>Bajo</td><td>Fina</td><td>Equipos autónomos y CI/CD maduro</td></tr>
+    <tr><td>Event-driven</td><td>Muy bajo</td><td>Horizontal</td><td>Reacciones e integración</td></tr>
+    <tr><td>Serverless</td><td>Bajo</td><td>Automática</td><td>Carga variable</td></tr>
+  </table>
+
+  <h2>Cómo se hablan</h2>
+  <p><b>Síncrono:</b> el emisor espera. Fácil de leer. Si pagos está caído, el checkout se bloquea. Usalo cuando el usuario está mirando la pantalla. <b>Asíncrono:</b> deja el mensaje y sigue. Mejor throughput y resiliencia. Usalo para el mail y las recomendaciones.</p>
+  <p><b>RPC</b> hace parecer local una llamada remota. El peligro es olvidar que la red existe. gRPC es la forma moderna: contrato <code>.proto</code> y protobuf binario, muy eficiente entre servicios. <b>REST</b> (Fielding): recursos con URI, verbos HTTP, JSON, servidor sin sesión. Universal en el browser. El contrato es informal salvo OpenAPI. El payload es más gordo.</p>
+  <p><b>Cola:</b> un mensaje, un consumidor. Reparte trabajo. <b>Pub/sub:</b> un evento, muchos suscriptores. RabbitMQ enruta colas de trabajo. Kafka es un log persistente de altísimo throughput: el evento queda. Garantía habitual: <b>at-least-once</b>. Puede llegar dos veces. La idempotencia es de la aplicación.</p>
+  <p>El <b>API gateway</b> es la única puerta: enruta, autentica, limita, termina TLS. Si le metés reglas de negocio, se vuelve un monolito. El <b>BFF</b> es un gateway por tipo de cliente: el móvil pide un payload chico, la web pide la ficha completa. <b>Service discovery:</b> las direcciones cambian. Hardcodear una IP es creer que la topología no cambia.</p>
+  <p>GoF en este contexto. <b>Proxy:</b> el gateway y el stub de gRPC. <b>Adapter:</b> envolver una API vieja. <b>Observer:</b> la base de publicar y suscribir. <b>Strategy:</b> cambiar backoff o el algoritmo de balanceo. <b>Facade:</b> el BFF. <b>Decorator:</b> auth, logging y tracing alrededor del handler.</p>
+
+  <h2>Las 8 falacias de Deutsch</h2>
+  <p>Creer cualquiera de estas produce software que anda en la notebook y se cae en producción.</p>
+  <ol>
+    <li><b>La red es confiable.</b> Se corta. Sin timeout ni retry, el cliente se cuelga.</li>
+    <li><b>La latencia es cero.</b> Quince llamadas sync entre servicios suman quince idas y vueltas.</li>
+    <li><b>El ancho de banda es infinito.</b> Un catálogo de 20 MB de JSON no escala.</li>
+    <li><b>La red es segura.</b> Sin TLS y sin auth, cualquiera en el medio lee el token.</li>
+    <li><b>La topología no cambia.</b> Una IP fija se rompe cuando el proceso se mueve.</li>
+    <li><b>Hay un solo administrador.</b> El DNS lo toca otro equipo. El certificado lo rota otro.</li>
+    <li><b>El costo de transporte es cero.</b> Sacar datos de una región, y un log gigante, se pagan.</li>
+    <li><b>La red es homogénea.</b> No todos hablan el mismo protocolo ni tienen el mismo MTU.</li>
+  </ol>
+  <div class="trap"><strong class="label">Trampa</strong>“Los servidores tienen memoria infinita” no es una falacia de Deutsch.</div>
+
+  <h2>Fallos, CAP y orden</h2>
+  <p><b>Crash:</b> el nodo se detiene. <b>Omission:</b> pierde mensajes. <b>Timing:</b> responde tarde. <b>Byzantine:</b> miente o manda datos corruptos. Diseñá para fallos parciales frecuentes, no para un apagón total raro.</p>
+  <p><b>CAP.</b> Ante una partición no podés tener a la vez consistencia fuerte (todos leen el último write) y disponibilidad (todo request recibe respuesta). La partición no se elige: la red se parte. Durante la partición elegís C o A.</p>
+  <div class="example"><strong class="label">CP</strong>Un banco: si la réplica de Córdoba no ve la de Buenos Aires, el débito responde error, no un saldo viejo que deja extraer dos veces.</div>
+  <div class="example"><strong class="label">AP</strong>Un like, el DNS, Cassandra, DynamoDB: se responde con un dato que puede estar atrasado y se converge cuando la partición sana. Un like tarde es aceptable. Un asiento de avión vendido dos veces, no.</div>
+  <p><b>Consistencia eventual:</b> si dejan de llegar escrituras, todos los nodos llegan al mismo valor. Diseñar distribuido es decidir qué inconsistencia tolerás.</p>
+  <p>No hay un “ahora” común. Los relojes físicos, aun con NTP, derivan. <b>Happened-before</b> (Lamport, 1978): A → B si ocurren en el mismo proceso y A fue antes; si A es el envío y B la recepción; o por transitividad. Si no hay esa cadena, son concurrentes. El <b>reloj lógico</b> incrementa un contador; al recibir, hace max(local, recibido) + 1. Si A causó B, el reloj de A es menor. La vuelta no vale: un número menor no prueba la causa. El <b>reloj vectorial</b> detecta concurrencia cuando los vectores no son comparables. El vector crece con la cantidad de nodos.</p>
+
+  <h2>ACID no cruza servicios</h2>
+  <p>Atomicidad, consistencia, aislamiento y durabilidad alcanzan dentro de una base. Con una base por servicio no hay transacción global. <b>BASE:</b> basically available, soft state, eventual consistency.</p>
+  <p><b>2PC.</b> El coordinador pregunta “¿pueden commitear?”. Si todos dicen sí, commitea. Si uno dice no, rollback. Los participantes quedan lockeados. Si el coordinador cae entre las dos fases, quedan bloqueados. Por eso a escala se abandonó.</p>
+  <p><b>Saga.</b> Una secuencia de transacciones locales. Cada paso tiene una compensación. Si el paso 3 falla, se deshacen 2 y 1. No es atómico: durante un rato el mundo está a medias.</p>
+  <div class="example"><strong class="label">Compra, orquestada por Órdenes</strong>1. Reservar stock. Si falla, se cancela. 2. Cobrar. Si falla, se libera el stock. 3. Confirmar. Si falla, reembolso y se libera el stock. 4. Notificar, best-effort: un mail perdido no deshace la compra. En coreografía no hay director: cada servicio escucha y publica. Sirve para pocos pasos. La orquestación se debuggea y puede volverse cuello de botella.</div>
+  <p><b>CQRS.</b> El modelo de escritura no es el de lectura. El comando valida y no devuelve la pantalla. La query lee un modelo desnormalizado, a veces otra base. Las lecturas escalan aparte. Durante un momento, la búsqueda no muestra lo que acabás de guardar. Usalo cuando las lecturas superan por mucho a las escrituras.</p>
+  <p><b>Event sourcing.</b> No guardás <code>{A, B}</code>. Guardás AgregadoA, AgregadoB, RemovidoA. El estado es reproducir los eventos. Hay auditoría y viaje al pasado. Migrar el formato de un evento duele. Los snapshots evitan reejecutar miles de hechos.</p>
+  <p><b>Idempotencia.</b> Hacerlo N veces equivale a hacerlo una. Sin una idempotency-key, el retry de pagos cobra dos veces. Se guarda el id ya procesado. <code>PUT</code> y <code>SET</code> pisan. <code>POST</code> e <code>INCREMENT</code> no.</p>
+
+  <h2>Resiliencia</h2>
+  <p>Un fallo local no tiene que ser una caída general. El orden mental es timeout, retry con criterio, circuit breaker, bulkhead, fallback.</p>
+  <p><b>Timeout.</b> Toda llamada remota tiene techo. Elegilo cerca del p99 real, no el default del framework, que a veces es infinito. La capa de afuera espera más que la de adentro. Sin timeout, un servicio lento se come todos los hilos del cliente.</p>
+  <p><b>Retry.</b> Solo errores transitorios (timeout, 5xx), nunca un 400. Backoff exponencial (1 s, 2 s, 4 s), jitter para que todos no reintenten juntos, tope de 3 a 5. Retry inmediato sobre un servicio caído es una tormenta.</p>
+  <p><b>Circuit breaker.</b> <b>Closed:</b> las llamadas pasan y se cuentan los fallos. <b>Open:</b> se superó el umbral (por ejemplo más del 50 % en 30 s); las llamadas ni salen. <b>Half-open:</b> pasado un tiempo se dejan pasar unas pruebas. Si responden, vuelve a closed. Si fallan, vuelve a open. El retry insiste. El breaker deja de insistir.</p>
+  <p><b>Bulkhead.</b> Compartimentos del barco. Un pool de hilos para pagos y otro para el catálogo. Si pagos se cuelga, el home sigue.</p>
+  <p><b>Rate limiting.</b> Token bucket deja ráfagas. Leaky bucket aplana. Al pasar el límite: HTTP 429 y <code>Retry-After</code>.</p>
+  <p><b>Fallback.</b> Degradar, no romper. Recomendaciones caídas → “los más vendidos” cacheados. Reviews lentas → se oculta la sección. Siempre se loguea.</p>
+  <p><b>Health checks.</b> Liveness: ¿el proceso está vivo? Readiness: ¿puede recibir tráfico? Startup: ¿terminó de arrancar? Un check que valida demasiadas dependencias puede tumbar al servicio que quiere cuidar.</p>
+  <div class="example"><strong class="label">Pagos externo</strong>Timeout 3 s, 3 retries con backoff y jitter, breaker si falla más del 50 % en 30 s, fallback que encola el cobro y le dice al usuario “estamos procesando el pago”. Recomendaciones: si pasan de 500 ms, se oculta el bloque. Bulkhead para que los hilos de pagos no se coman los del catálogo.</div>
+
+  <h2>Contenedor contra VM</h2>
+  <p>Una <b>VM</b> virtualiza hardware. Trae sistema operativo completo. Aislamiento fuerte, gigabytes, minutos en arrancar. Un <b>contenedor</b> comparte el kernel del host y se aísla con namespaces y cgroups. Megabytes, segundos. La imagen es inmutable: app + dependencias + runtime. El Dockerfile es la receta. El registry la distribuye. Docker (2013) no inventó los contenedores: los hizo usables. En el pipeline esa imagen se construye una vez, se tagea con el hash del commit (nunca <code>latest</code> en producción) y se promueve. Un multi-stage build deja el SDK afuera: la imagen final solo lleva el binario.</p>
+  <div class="trap"><strong class="label">Trampa</strong>Un contenedor no incluye un sistema operativo completo. Eso es la VM.</div>
+
+  <h2>UML y C4, lo justo</h2>
+  <p>CASE: herramientas de análisis, diseño y documentación. En distribuido alcanzan pocos diagramas. <b>Componentes:</b> quién depende de quién. <b>Despliegue:</b> en qué nodo corre cada cosa. <b>Secuencia:</b> qué pasa en el tiempo cuando el usuario compra; ahí se ve dónde hace falta un timeout o una saga.</p>
+  <p><b>C4.</b> Contexto: el sistema como caja, para cualquiera. Contenedores: apps, bases y colas desplegables. “Container” en C4 no significa Docker: significa unidad desplegable. Componentes: módulos dentro de una app. Código: casi siempre de más. PlantUML y Mermaid viven en el repo. Un dibujo suelto se pudre.</p>
+  <h3>Checkpoint</h3>
+  <div class="q"><p>El p99 de pagos se disparó y los hilos del checkout están bloqueados. ¿Qué tres patrones aplicás, y en qué orden de diseño?</p><button class="btn reveal noprint" type="button">Ver respuesta</button><p class="ans">Timeout para no esperar para siempre, circuit breaker para dejar de llamar cuando está degradado, fallback para encolar el cobro y responder. El retry solo con backoff, y un bulkhead para que el catálogo siga teniendo hilos.</p></div>
+  <div class="q"><p>¿Por qué una saga no es 2PC con otro nombre?</p><button class="btn reveal noprint" type="button">Ver respuesta</button><p class="ans">2PC busca atomicidad y lockea a todos hasta el final. La saga hace transacciones locales y compensaciones. Durante un rato el stock está reservado y el pago no: hay que tolerar ese intermedio.</p></div>
+  <div class="row noprint"><button class="btn good markBtn" type="button">Marcar U2 como estudiada</button><button class="btn" data-go="u3">Seguir a U3</button></div>
+</article>
+
+<article class="sheet" id="u3">
+  <p class="kicker">Unidad 3 · Humble, Farley, DORA</p>
+  <h1>Integración y entrega continua</h1>
+  <p class="lead">El cycle time es el tiempo entre que se decide un cambio y ese cambio está en manos del usuario, de forma repetible. La pregunta de Humble: ¿cuánto tarda tu organización en poner en producción una línea, y puede hacerlo otra vez igual? Tradicional: semanas. Moderna: horas. Elite: minutos, cientos de deploys por día.</p>
+  <p>Importa porque una feature que no está en producción no genera valor, el feedback de usuarios reales llega antes, un release chico falla menos y se revierte fácil, y el equipo deja de pasar el sábado a las 3 a.m. Un release grande concentra el riesgo de todo lo que se acumuló por miedo a desplegar.</p>
+  <div class="example"><strong class="label">Las dos situaciones de la clase</strong>La demo de mañana: el código compila, pero armar el entorno lleva dos días. El hotfix de una línea: el último release tomó un fin de semana y quien lo hizo renunció. Las dos son el mismo problema: la entrega no está bajo control.</div>
+
+  <h2>Cuatro antipatrones</h2>
+  <p><b>1. El día de release es un evento.</b> Se prepara el entorno a mano, se copian artefactos, se prende pieza por pieza. El equipo le teme, releasea menos, cada release es más grande, duele más.</p>
+  <p><b>2. Despliegue manual.</b> Un documento de 15 páginas, se llama al desarrollador a mitad del deploy, “en staging andaba”, resultado impredecible. El mito “lo manual es más auditable” es falso: un script versionado deja un log de cada paso. La alternativa son dos gestos: elegir la versión y apretar desplegar.</p>
+  <p><b>3. No probar en un entorno parecido a producción.</b> QA vio la app en la notebook. Operaciones la ve el día del release. Cuanto más distintos son dev y prod, más sorpresas. El deploy también se prueba, todo el tiempo. La misma imagen ayuda.</p>
+  <p><b>4. Configuración a mano en producción.</b> SSH, un cambio “chiquito”, y el nodo 2 ya no es igual al nodo 1: drift. No hay rollback de esa config. La alternativa es Infrastructure as Code: Terraform, CloudFormation, Bicep, Ansible, Pulumi. Volver atrás es aplicar el commit anterior.</p>
+
+  <h2>Principios de Humble y Farley</h2>
+  <p>La diapositiva dice 7 y lista 8. Escribilos con un ejemplo al lado.</p>
+  <ol>
+    <li><b>Proceso repetible y confiable.</b> Releasar es apretar un botón porque ya se hizo cientos de veces. Si hace falta “el que sabe las mañas”, no es repetible.</li>
+    <li><b>Automatizar casi todo.</b> Provisioning, instalación, configuración, validaciones. No se automatizan la exploración manual ni una aprobación de compliance. Si lo hiciste tres veces a mano, es candidata.</li>
+    <li><b>Todo bajo control de configuración.</b> Código, scripts, IaC, config, migraciones, documentación. Prueba de fuego: un dev nuevo clona, un comando compila, un comando despliega. El build se identifica por hash, versión y configuración.</li>
+    <li><b>Si duele, hacerlo más seguido.</b> Integrar duele → integrar en cada commit. Releasear duele → releasear a un entorno como prod todos los días, en chico.</li>
+    <li><b>Build quality in.</b> Encontrar el bug en QA es tarde: el defecto ya está en el producto. TDD, pair, review, análisis estático, unitarios en CI. Testing no es una fase final.</li>
+    <li><b>DONE significa RELEASED.</b> Nivel 1, débil: compila y los tests pasan. Nivel 2: corre en un entorno como prod. Nivel 3: está en producción. Nivel 4: un usuario real obtiene valor.</li>
+    <li><b>Todos son responsables del release.</b> Dev, QA y ops ven el mismo pipeline. “Yo programo, ellos despliegan” reparte la culpa y nadie es dueño.</li>
+    <li><b>Mejora continua.</b> PDCA: planear, hacer, medir, estandarizar o ajustar. Retrospectiva del proceso de entrega. Se miden cycle time, defectos que se escapan y MTTR.</li>
+  </ol>
+  <div class="trap"><strong class="label">No es un principio</strong>“Deployar menos para reducir el riesgo”. El riesgo baja con releases chicos y frecuentes.</div>
+
+  <h2>Feedback e integración continua</h2>
+  <p>Tres condiciones, las tres. Todo cambio dispara feedback: código, configuración, sistema operativo, un sistema externo. Llega rápido: un reporte de tres días no corrige el commit de hoy. El equipo actúa: un build rojo ignorado entrena al equipo a ignorar el siguiente.</p>
+  <p>Costo empírico de la cátedra: al escribir el código, 1×. En el commit, 2–5×. En QA, 10×. En staging, 30×. En producción, 100×. Se pierde el contexto, hay que coordinar equipos, y el usuario ya lo sufrió.</p>
+  <p>CI la definió Kent Beck dentro de XP (1999) y la popularizó Fowler (2006). Cada desarrollador integra a la rama principal <b>al menos una vez al día</b>. Cada integración se buildéa y se testea sola. El build roto se arregla ya. Sin CI, el software está roto hasta que alguien demuestra lo contrario, y la fase de integración del final es una caja negra.</p>
+  <p>Tres prerrequisitos. Si falta uno, la herramienta no lo tapa: VCS con código, config, scripts, tests e IaC; build automatizado de un solo comando; compromiso del equipo. Comprar un servidor no es adoptar CI.</p>
+  <ul>
+    <li><b>Check-in frecuente</b> al trunk, dos veces al día o más. “Termino la feature de tres semanas y después mergeo” es el antipatrón.</li>
+    <li><b>Arreglar el build ya.</b> Time-box de 10–15 minutos y, si no entra, revert. No se comentan tests para que pase. No se va a casa con el build rojo.</li>
+    <li><b>Tests locales antes del push.</b> Pull, build, tests, commit, push, mirar el servidor, arreglar o revertir.</li>
+    <li><b>TDD:</b> red, green, refactor. Los tests escritos después suelen probar la implementación, no el comportamiento.</li>
+  </ul>
+  <p>El servidor (Jenkins, GitHub Actions, GitLab CI, Azure Pipelines) dispara el workflow. El YAML vive en el repo. CI es el piso, no el techo.</p>
+
+  <h2>Release candidate y el binario único</h2>
+  <p>Un RC es un build que podría ir a producción. El modelo viejo lo fabrica al final, con code freeze y semanas de QA. Cada RC concentra riesgo. El modelo de la materia: <b>cada commit que pasa el pipeline es un RC.</b> Hace falta una suite automatizada, un pipeline determinístico y ambientes parecidos a prod.</p>
+  <p>El artefacto dice de qué commit salió, con qué dependencias y qué corrida del pipeline. <b>Se construye una sola vez.</b> El binario de prod es el mismo que pasó los tests. Recompilar en cada ambiente mete entropía: una dependencia que se movió, un <code>latest</code> que cambió. Antipatrón de DZone: el software se reconstruye en cada etapa.</p>
+  <p>Promoción: commit → artefacto <code>v1.2.3-abc123</code> en un registry → dev → QA → staging → prod. Cambia la configuración, no el binario. En Continuous Delivery, lo único extra es la aprobación.</p>
+
+  <h2>CI, Delivery, Deployment</h2>
+  <table>
+    <tr><th></th><th>Qué automatiza</th><th>Qué sigue siendo humano</th></tr>
+    <tr><td>Continuous Integration</td><td>Compilar y testear cada commit. El artefacto queda construido.</td><td>Decidir el release y desplegar.</td></tr>
+    <tr><td>Continuous Delivery</td><td>El pipeline hasta un artefacto probado, desplegable con el mismo mecanismo.</td><td>El push a producción: un botón de aprobación.</td></tr>
+    <tr><td>Continuous Deployment</td><td>También el deploy a producción, si los gates pasan.</td><td>Nada en el camino del commit al usuario.</td></tr>
+  </table>
+  <div class="rule"><strong class="label">La frase</strong>La diferencia entre Delivery y Deployment no es “usa contenedores” ni “es solo para SaaS”. Es si un humano autoriza producción. Un banco puede vivir en Delivery por compliance y ser excelente. Decir que Delivery “despliega solo” es falso.</div>
+
+  <h2>El deployment pipeline</h2>
+  <p>Humble y Farley: la manifestación automatizada del proceso que lleva el código desde el VCS hasta el usuario. Cada cambio lo dispara. Es visible para dev, QA, ops y negocio. Es un <b>pull system</b>: el tester se despliega a su ambiente, ops promueve a prod, nadie espera un ticket al “equipo de build”.</p>
+  <ol>
+    <li><b>Commit stage.</b> ¿Funciona a nivel técnico? Compila, unitarios, linter, empaqueta y publica. Menos de 10 minutos, idealmente 5. Si falla, no hay integración.</li>
+    <li><b>Aceptación automatizada.</b> Integración, end-to-end, contratos, escenarios de negocio, en un ambiente parecido a prod. Tarda minutos.</li>
+    <li><b>No funcionales.</b> Capacidad, stress, soak, seguridad (SAST/DAST), performance. k6, JMeter, Gatling, OWASP ZAP. Van tarde para no frenar el feedback.</li>
+    <li><b>Manual / UAT / exploratorio.</b> Usabilidad y casos que un assert no ve. En Delivery puede ser antes de prod. En Deployment ocurre después, acotado por feature flags.</li>
+    <li><b>Release.</b> El mismo script que en los otros ambientes. Cambia la config de prod. El rollback es un botón: el artefacto anterior. Si el rollback es un proyecto, el release va a dar miedo.</li>
+  </ol>
+  <p>Prácticas: construir una sola vez; el mismo deploy en todos los ambientes; smoke test después de cada deploy (health 200, login, en menos de un minuto; si falla, rollback); desplegar sobre una copia de producción; si algo falla, el pipeline se detiene y avisa.</p>
+
+  <h2>Estrategias de release</h2>
+  <p>El objetivo es achicar el blast radius: cuánta gente sufre si este cambio está mal.</p>
+  <p><b>Recreate.</b> Se baja todo lo viejo y sube lo nuevo. Hay downtime. Sirve en dev. No sirve en un checkout.</p>
+  <p><b>Rolling.</b> Instancia por instancia. Siempre hay algo atendiendo. Dos versiones conviven, así que el esquema de datos tiene que ser compatible hacia atrás y hacia adelante. Si el bug aparece en la instancia 4, ya hay usuarios en la versión nueva.</p>
+  <p><b>Blue-green.</b> Dos entornos. Blue atiende. Green recibe la versión nueva, se calienta, smoke tests. El balanceador cambia de golpe. Rollback: volver a apuntar a blue. Cuesta el doble de infra durante la ventana. Una migración irreversible lo complica.</p>
+  <p><b>Canary.</b> 1 %, después 5, 25, 50, 100, mirando errores, latencia y una métrica de negocio. Si el p99 se dispara, el porcentaje vuelve a 0.</p>
+  <p><b>Feature flags.</b> Separamos deploy de release. El código ya está en prod y apagado. Fowler: release toggles (feature incompleta), experiment toggles (A/B), ops toggles (kill switch), permission toggles (un segmento). Apagar el flag es más rápido que un redeploy. Habilitan trunk-based. La deuda es el flag que nadie borra.</p>
+  <p><b>Progressive delivery</b> las combina: deploy con el flag apagado, encendido para el equipo, después 1 % de usuarios, después todos, y en el release siguiente se borra el flag.</p>
+  <div class="example"><strong class="label">El descuento</strong>Entra por rolling con el flag apagado. Se enciende para empleados. Después canary al 5 %. La conversión cae: se apaga el flag en segundos, sin revertir la imagen. El binario que corre es el mismo que pasó staging.</div>
+  <p>Rollback: rápido, automático y ensayado. Redeploy de la versión anterior, switch del balanceador, canary a 0, o flag apagado. El esquema de la base se diseña compatible con la versión previa.</p>
+
+  <h2>Ambientes, 12-Factor, secretos, IaC</h2>
+  <p>Ambientes: local, dev, QA, staging, producción. Cada uno se parece al siguiente. El artefacto es el mismo. Solo cambia la config.</p>
+  <p><b>Twelve-Factor</b> (Heroku, 2011). El parcial cita el principio 3 y a veces el conjunto. 1) una codebase, muchos deploys. 2) dependencias explícitas. 3) <b>config en el entorno</b>, no en el código. 4) bases y colas como recursos adjuntos. 5) separar build, release y run. 6) procesos stateless. 7) exponer por un puerto. 8) escalar con más procesos. 9) arranque rápido y apagado limpio. 10) paridad dev/prod. 11) logs como stream. 12) tareas de admin de una sola corrida.</p>
+  <div class="trap"><strong class="label">Trampa</strong>Guardar la connection string en el repo es el antipatrón. 12-Factor dice lo contrario.</div>
+  <p><b>Secretos.</b> Nunca en el repo. Vault, Secrets Manager, Key Vault. Rotación, mínimo privilegio, auditoría, y un scan por si alguien los commiteó. Base64 no es cifrado.</p>
+  <p><b>SemVer.</b> MAJOR rompe compatibilidad. MINOR agrega sin romper. PATCH corrige. Conventional commits: <code>feat</code> sube minor, <code>fix</code> sube patch, <code>BREAKING CHANGE</code> sube major.</p>
+  <p><b>IaC.</b> La infraestructura es código revisable, reproducible y reversible. El código es la documentación. El antipatrón 4 (config a mano) se cierra acá.</p>
+
+  <h2>Gates, observabilidad, DORA</h2>
+  <p>Un gate que no bloquea es un comentario: compila, unitarios, cobertura del código nuevo, análisis estático, scan de dependencias y de la imagen, e2e, performance dentro del umbral. En Delivery, la aprobación humana tiene sentido por regulación o por un lanzamiento. Tiene que ser un botón con contexto y registro de quién aprobó.</p>
+  <p>Después del deploy se mira. <b>RED</b> para el servicio: rate, errors, duration en percentiles. <b>USE</b> para el recurso: utilization, saturation, errors. OpenTelemetry correlaciona métricas, logs y trazas. Si el error sube 2 puntos contra el baseline, o el p99 sube 50 %, rollback. El equipo que desplegó mira esa ventana.</p>
+  <p>Post-mortem blameless: línea de tiempo, impacto, cinco porqués, acciones. El incidente tiene que dejar el sistema mejor.</p>
+  <p><b>DORA</b> (Forsgren, Humble, Kim, <i>Accelerate</i>, 2018). Cuatro métricas. No son un examen para sacar 10: diagnostican.</p>
+  <table>
+    <tr><th></th><th>Elite</th><th>High</th><th>Medium</th><th>Low</th></tr>
+    <tr><td>Deployment frequency</td><td>Varias al día</td><td>Diaria a semanal</td><td>Semanal a mensual</td><td>Menos de una cada 6 meses</td></tr>
+    <tr><td>Lead time for changes</td><td>&lt; 1 día</td><td>1 día a 1 semana</td><td>1 semana a 1 mes</td><td>&gt; 6 meses</td></tr>
+    <tr><td>Change failure rate</td><td>0–15 %</td><td>16–30 %</td><td>16–30 %</td><td>16–30 %</td></tr>
+    <tr><td>MTTR</td><td>&lt; 1 hora</td><td>&lt; 1 día</td><td>1 día a 1 semana</td><td>&gt; 6 meses</td></tr>
+  </table>
+  <p>Frecuencia y lead time miden velocidad. Change failure rate y MTTR miden estabilidad. Lead time for changes va del commit al código en producción. MTTR va del inicio del incidente a la restauración, no hasta el post-mortem. La creencia que el libro desmiente: ir más rápido no obliga a ser más frágil. Los elite son frecuentes y se recuperan en menos de una hora. Los low performers son lentos y frágiles a la vez.</p>
+  <div class="trap"><strong class="label">Trampa</strong>Uptime, latencia, throughput y error rate son métricas del servicio (parecidas a RED), no DORA. Velocity y burndown tampoco.</div>
+  <p><b>SPACE</b> complementa: Satisfaction, Performance, Activity, Communication, Efficiency. Nunca una sola métrica de productividad. Commits o líneas como objetivo disparan la ley de Goodhart.</p>
+  <p>CI/CD como capacidad son tres patas: tecnología (VCS, CI, registry, observabilidad), procesos (done, gates, rollback) y cultura (el que lo construye lo opera, post-mortem sin culpa, confianza en el verde). Sin cultura, las herramientas no se usan. Sin herramientas, la cultura se agota.</p>
+  <h3>Checkpoint</h3>
+  <div class="q"><p>El equipo dice “hacemos continuous delivery” porque Jenkins despliega a producción en cada verde. ¿Qué están haciendo en realidad?</p><button class="btn reveal noprint" type="button">Ver respuesta</button><p class="ans">Continuous Deployment. Delivery automatiza hasta dejar el artefacto listo y deja la autorización de producción en una persona.</p></div>
+  <div class="q"><p>¿Por qué recompilar la imagen en staging “para estar seguros” empeora el release?</p><button class="btn reveal noprint" type="button">Ver respuesta</button><p class="ans">El binario de producción deja de ser el que pasó los tests. Una dependencia puede haber cambiado. Se promueve el mismo artefacto y solo cambia la configuración.</p></div>
+  <div class="row noprint"><button class="btn good markBtn" type="button">Marcar U3 como estudiada</button><button class="btn" data-go="guiones">Ir a los desarrollos</button></div>
+</article>
+
+<article class="sheet" id="guiones">
+  <p class="kicker">Sección C · 20 + 20</p>
+  <h1>Guiones de desarrollo</h1>
+  <p>En el parcial no viene la ayuda. Cada guion es el esqueleto. El relleno son los ejemplos de U1, U2 y U3. Orden: definición, contraste, ejemplo, cierre. Practica cada uno en voz alta en “Desarrollo oral”.</p>
+  <h2>U3, las cinco consignas posibles</h2>
+  <h3>1. Cycle time, antipatrones y principios</h3>
+  <p>Definí cycle time con la pregunta de la línea de código. Contá el círculo vicioso. Los cuatro antipatrones, cada uno con el síntoma y la alternativa. Los ocho principios, una oración cada uno. Cierre: el riesgo baja achicando el cambio, no espaciándolo.</p>
+  <h3>2. CI vs Delivery vs Deployment + pipeline</h3>
+  <p>La tabla de qué se automatiza y qué sigue siendo humano. La frase de la aprobación. Las cinco etapas. Dos prácticas: binario único y mismo script de deploy. El e-commerce recorriendo ambientes.</p>
+  <h3>3. Estrategias de release + DORA</h3>
+  <p>Recreate, rolling, blue-green, canary, flags, y que progressive delivery las combina. Un ejemplo donde el flag apagado evita el rollback de imagen. Las cuatro métricas, cuáles son velocidad y cuáles estabilidad. No confundas DORA con RED.</p>
+  <h3>4. CI, release candidate, binario único</h3>
+  <p>Tres prerrequisitos. Check-in diario, arreglar el build, tests locales, TDD. RC contra code freeze. Costo 1×–100×. Promoción del mismo artefacto. Antipatrón: recompilar en cada stage.</p>
+  <h3>5. Ambientes, 12-Factor, secretos, IaC</h3>
+  <p>La escalera local → prod y el mismo artefacto. Principio 3 con la connection string. Nombrá stateless, paridad dev/prod y build-release-run. Secretos fuera del repo. IaC: rollback = commit anterior. El antipatrón de la config a mano cierra.</p>
+  <h2>U1 o U2, las siete consignas posibles</h2>
+  <h3>1. Los cuatro branching models</h3>
+  <p>Un párrafo por modelo: filosofía, ramas, cuándo sí, cuándo no. La tabla. Cierre con feature flags y la regla “más madurez, flujo más simple”.</p>
+  <h3>2. Objetos, tres áreas, merge vs rebase</h3>
+  <p>Blob, tree, commit, tag, y por qué el Merkle tree impide reescribir en silencio. Working, index, <code>.git</code>. Una rama es un puntero. Merge preserva, rebase linealiza. Regla de oro. Un dibujo de tres commits alcanza.</p>
+  <h3>3. Centralizado vs distribuido + conflictos</h3>
+  <p>Tabla SVN vs Git. Locking, merge-before-commit y commit-before-merge, con Ana y Bruno. Atomicidad por archivo vs por commit.</p>
+  <h3>4. Definición, falacias, CAP</h3>
+  <p>Tanenbaum. Escalar, disponibilidad, cercanía. Las ocho falacias con la consecuencia de creerlas. CAP: banco vs likes. Consistencia eventual y un caso donde no se tolera.</p>
+  <h3>5. Resiliencia y consistencia</h3>
+  <p>Timeout, retry, los tres estados del breaker, bulkhead, fallback, con pagos. 2PC y por qué se abandona. Saga de la compra. CQRS. Idempotency-key.</p>
+  <h3>6. Escalabilidad</h3>
+  <p>Tabla vertical vs horizontal. Stateless suma nodos. Stateful exige afinidad. El balanceador, L4 vs L7, y el health check.</p>
+  <h3>7. Modelos arquitectónicos</h3>
+  <p>Cliente-servidor, N capas, microservicios, event-driven, serverless. De cada uno: ventaja, costo, cuándo. La tabla. Cierre de Fowler.</p>
+  <div class="note"><strong class="label">Banco corto de falsos</strong>
+  Rebase en main compartido es buena práctica. Develop se borra al cerrar el release. Merge reescribe la historia. Git bloquea el commit si el remoto avanzó: bloquea el push. El promedio representa a los usuarios. Scale-out no exige cambios de arquitectura. Durante una partición se mantienen C y A. El contenedor trae su SO. Delivery despliega solo. 12-Factor guarda la config en el código. Hay que recompilar por ambiente. Lo manual es más auditable. Retry inmediato es resiliencia. Circuit breaker y retry son lo mismo. 2PC es la forma moderna entre microservicios. El broker te regala exactly-once. Microservicios son el punto de partida. DORA es uptime y latencia. Ir más rápido empeora la estabilidad. DONE es “pasan los unitarios”. Hacer el release menos seguido reduce el riesgo. Las ramas de Git son copias caras. En Git no se ve el historial sin red.</div>
+  <div class="row noprint"><button class="btn good markBtn" type="button">Marcar guiones como vistos</button><button class="btn primary" data-go="oral">Practicarlos en voz alta</button></div>
+</article>
+
+<article class="sheet" id="clave">
+  <p class="kicker">Simulacro oficial · clave</p>
+  <h1>Respuestas del simulacro</h1>
+  <p>Usala después de intentar el simulacro en la sección Practicar. En el PDF queda impresa para repasar en papel.</p>
+  <h2>Múltiple opción</h2>
+  <div class="q open"><p><b>1. d.</b> Optimizar algoritmos no es CM. CM es versionado, build, release y administración del cambio.</p></div>
+  <div class="q open"><p><b>2. c.</b> Git nunca bloquea el commit local. El merge o el rebase ocurren al integrar.</p></div>
+  <div class="q open"><p><b>3. c.</b> Merge preserva la historia. Rebase la reescribe para dejarla lineal.</p></div>
+  <div class="q open"><p><b>4. c.</b> El promedio esconde la cola larga. p95 y p99 muestran a quién le fue mal.</p></div>
+  <div class="q open"><p><b>5. c.</b> Scale-out saca el SPOF y no tiene el techo de “la máquina más grande”. No es más simple.</p></div>
+  <div class="q open"><p><b>6. d.</b> “Memoria infinita” no es una falacia de Deutsch. Las ocho hablan de la red.</p></div>
+  <div class="q open"><p><b>7. c.</b> Circuit breaker corta llamadas a un servicio degradado. Bulkhead aísla. Retry reintenta. Fallback ofrece un plan B.</p></div>
+  <div class="q open"><p><b>8. d.</b> Bajar la frecuencia de deploys es el círculo vicioso, no un principio.</p></div>
+  <div class="q open"><p><b>9. c.</b> Delivery deja el artefacto listo y un humano aprueba producción. Deployment lo manda solo si pasa los gates.</p></div>
+  <div class="q open"><p><b>10. c.</b> Deployment Frequency, Lead Time for Changes, Change Failure Rate, MTTR.</p></div>
+  <h2>Verdadero / Falso</h2>
+  <div class="q open"><p><b>1. V.</b> En Git, commit, log, branch y diff son locales. Solo push y pull necesitan red.</p></div>
+  <div class="q open"><p><b>2. F.</b> Rebase reescribe hashes. En una rama que otros ya tienen, las historias dejan de coincidir. Rebase es para tu feature local, no para una rama compartida.</p></div>
+  <div class="q open"><p><b>3. F.</b> En GitFlow, <code>develop</code> es permanente. La rama temporal del release es <code>release/x.y.z</code>.</p></div>
+  <div class="q open"><p><b>4. F.</b> El promedio esconde la cola. La experiencia la marcan p95 y p99.</p></div>
+  <div class="q open"><p><b>5. F.</b> Stateless escala sumando nodos. Stateful guarda sesión o caché y exige afinidad o replicar estado. Ningún orquestador vuelve gratis esa diferencia.</p></div>
+  <div class="q open"><p><b>6. F.</b> Ante una partición se elige consistencia o disponibilidad. No se garantizan las dos juntas.</p></div>
+  <div class="q open"><p><b>7. F.</b> El contenedor comparte el kernel del host. La VM trae un sistema operativo completo.</p></div>
+  <div class="q open"><p><b>8. F.</b> Desplegar solo cada commit verde es Continuous Deployment. Delivery frena en la aprobación humana.</p></div>
+  <div class="q open"><p><b>9. V.</b> Se construye una vez y el mismo binario recorre los ambientes. Cambia la configuración.</p></div>
+  <div class="q open"><p><b>10. F.</b> Twelve-Factor guarda la configuración en el entorno, no en el código versionado.</p></div>
+</article>
+
+<article class="sheet noprint" id="mazo">
+  <p class="kicker">Recuperación activa</p>
+  <h1>Tarjetas</h1>
+  <p>Leé la pregunta, decila en voz alta y recién ahí dale vuelta. Si fallás, vuelve a aparecer enseguida. Si la sabés, se va más atrás en la cola de hoy.</p>
+  <p class="stat" id="cardStat"></p>
+  <div class="flip" id="flip">Cargando…</div>
+  <div class="row">
+    <button class="btn" id="flipBtn" type="button">Dar vuelta</button>
+    <button class="btn bad" id="missBtn" type="button">No la sabía</button>
+    <button class="btn good" id="hitBtn" type="button">La sabía</button>
+  </div>
+</article>
+
+<article class="sheet noprint" id="quiz">
+  <p class="kicker">Mixtas · con corrección inmediata</p>
+  <h1>Preguntas</h1>
+  <p class="stat" id="quizStat"></p>
+  <div id="quizBox" class="stage"></div>
+</article>
+
+<article class="sheet noprint" id="sim">
+  <p class="kicker">Secciones A y B · 60 puntos</p>
+  <h1>Simulacro</h1>
+  <p>Diez múltiple opción y diez verdadero/falso, en orden, sin ver la respuesta hasta el final. Cuando marques falso, escribí la justificación como en el examen: se muestra al final para que la compares. Tiempo sugerido: 25 minutos. Los desarrollos se practican aparte y valen los otros 40.</p>
+  <div class="row">
+    <button class="btn primary" id="simStart" type="button">Empezar simulacro</button>
+  </div>
+  <div id="simBox"></div>
+</article>
+
+<article class="sheet noprint" id="oral">
+  <p class="kicker">20 puntos · decirlo antes de leerlo</p>
+  <h1>Desarrollo oral</h1>
+  <p>Elegí una consigna, explicála en voz alta unos 8 minutos y después marcá qué puntos cubriste. El puntaje es orientativo: cada ítem pesa lo mismo.</p>
+  <div id="oralPick" class="row"></div>
+  <div id="oralBox" class="stage">Elegí una consigna.</div>
+</article>
+
+<article class="sheet noprint" id="fallos">
+  <p class="kicker">Cola de hoy</p>
+  <h1>Lo que fallaste</h1>
+  <div id="failBox" class="stage"></div>
+</article>
+
+</main>
+</div>
+<script>
+const KEY = "is3-p1-estudio-v1";
+const state = Object.assign({ done: {}, cards: {}, wrong: {}, simBest: null, oral: {} }, JSON.parse(localStorage.getItem(KEY) || "{}"));
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function $(id) { return document.getElementById(id); }
+
+const BLOCKS = ["como", "u1", "u2", "u3", "guiones", "clave", "mazo", "sim"];
+function renderProgress() {
+  const n = BLOCKS.filter(id => state.done[id]).length;
+  $("doneLabel").textContent = n + "/" + BLOCKS.length + " bloques";
+  $("doneBar").style.width = (n / BLOCKS.length * 100) + "%";
+  document.querySelectorAll("[data-mark]").forEach(el => {
+    el.textContent = state.done[el.dataset.mark] ? "✓" : "";
+  });
+}
+function show(id) {
+  document.querySelectorAll(".sheet").forEach(s => s.classList.toggle("active", s.id === id));
+  document.querySelectorAll("nav button[data-go]").forEach(b => b.classList.toggle("on", b.dataset.go === id));
+  if (id && $(id)) { history.replaceState(null, "", "#" + id); }
+  const main = $("main"); if (main) main.scrollTop = 0;
+  window.scrollTo(0, 0);
+  if (id === "mazo") renderCard();
+  if (id === "quiz") renderQuiz();
+  if (id === "oral") renderOral();
+  if (id === "fallos") renderFails();
+  if (id && id !== "home") { state.done[id] = state.done[id] || false; }
+}
+document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => show(b.dataset.go)));
+document.body.addEventListener("click", e => {
+  const t = e.target.closest("[data-go]");
+  if (t && t.dataset.go) show(t.dataset.go);
+  if (e.target.classList && e.target.classList.contains("reveal")) {
+    e.target.closest(".q").classList.toggle("open");
+  }
+  if (e.target.classList && e.target.classList.contains("markBtn")) {
+    const id = document.querySelector(".sheet.active").id;
+    state.done[id] = true; save(); renderProgress();
+  }
+});
+$("resetBtn").addEventListener("click", () => {
+  if (confirm("¿Borrar avance, tarjetas y simulacro guardados en este navegador?")) {
+    localStorage.removeItem(KEY); location.reload();
+  }
+});
+
+$("search").addEventListener("input", () => {
+  const q = $("search").value.trim().toLowerCase();
+  const hits = $("hits");
+  hits.innerHTML = "";
+  if (q.length < 3) return;
+  const found = [];
+  document.querySelectorAll(".sheet:not(.noprint)").forEach(sheet => {
+    sheet.querySelectorAll("h2, h3, p, li").forEach(h => {
+      if (found.length >= 8) return;
+      if (!h.textContent.toLowerCase().includes(q)) return;
+      if (found.some(x => x.el === h)) return;
+      found.push({ el: h, sheet });
+    });
+  });
+  found.forEach(({ el, sheet }) => {
+    const b = document.createElement("button");
+    const title = (sheet.querySelector("h1") || sheet).textContent.trim().split("\n")[0].slice(0, 28);
+    b.textContent = title + " · " + el.textContent.trim().replace(/\s+/g, " ").slice(0, 72);
+    b.addEventListener("click", () => {
+      show(sheet.id);
+      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
+    });
+    hits.appendChild(b);
+  });
+});
+
+const CARDS = [
+  ["U1", "¿Cuáles son las 4 actividades de la CM?", "Control de versiones, build del sistema, release management y administración del cambio. Optimizar un algoritmo no es CM."],
+  ["U1", "¿Diferencia entre version, snapshot, baseline y tag?", "Snapshot: captura informal. Version: snapshot aprobado y distribuible. Baseline: ese conjunto más librerías, config y docs; no se modifica. Tag: etiqueta inmutable a un commit, por ejemplo v1.2.3."],
+  ["U1", "Centralizado vs distribuido, en una frase de examen.", "SVN: un servidor, operaciones con red, SPOF del versionado. Git: cada clon tiene la historia, commit y log son locales, cada clon es un backup."],
+  ["U1", "Los 3 mecanismos de conflictos.", "Locking pesimista (lock exclusivo). Merge-before-commit (SVN: el commit rebota hasta integrar). Commit-before-merge (Git: el commit local nunca se bloquea)."],
+  ["U1", "¿Por qué un commit de Git es atómico?", "Agrupa varios archivos como una intención. SCCS/RCS versionaban por archivo y un cambio de tres archivos eran tres historias."],
+  ["U1", "Los 4 objetos de Git.", "Blob: contenido del archivo. Tree: directorio con nombres. Commit: tree + autor + mensaje + padres. Tag: referencia inmutable a un commit. El hash incluye a los padres: no se reescribe la historia en silencio."],
+  ["U1", "Las 3 áreas y los comandos.", "Working directory, staging (index), repository (.git). git add lleva al index. git commit crea el commit desde el index."],
+  ["U1", "Merge vs rebase.", "Merge crea un commit con dos padres y preserva lo que pasó. Rebase reaplica tus commits sobre la otra punta y cambia los hashes. Rebase en la feature local. Merge hacia main. Nunca rebase de una rama compartida."],
+  ["U1", "GitFlow: ramas y cuándo.", "Permanentes: main y develop. Temporales: feature, release, hotfix. Sí: producto estable, varias versiones, QA formal. No: deploy varias veces por día."],
+  ["U1", "GitHub Flow vs trunk-based.", "GitHub Flow: main siempre desplegable, feature corta, PR, merge, deploy. Trunk-based: todos integran al trunk en horas, con feature flags. Trunk-based pide equipo senior y CI maduro. Es el que correlaciona con DORA elite."],
+  ["U1", "GitLab Flow.", "Por entorno: main → staging → production. Por versión: release/2.0 y release/3.0 vivas, cherry-pick de hotfixes. Intermedio enterprise."],
+  ["U2", "Definición de sistema distribuido.", "Procesos en nodos distintos, que solo se comunican por mensajes, colaboran en un objetivo y se ven como una sola máquina (Tanenbaum)."],
+  ["U2", "¿Por qué distribuimos?", "Escalar más allá de una máquina, seguir disponibles si un nodo cae, y acercar el dato al usuario. No por moda."],
+  ["U2", "¿Por qué p99 y no el promedio?", "Promedio 100 ms con p99 de 5 s: 1 de cada 100 usuarios espera 5 segundos. El promedio esconde esa cola."],
+  ["U2", "Ley de Little.", "L = λ × W. Ítems en el sistema = tasa de arribo × tiempo medio. Si sube la carga y no la capacidad, la latencia explota cerca del límite."],
+  ["U2", "Scale-up vs scale-out.", "Vertical: más recursos en la misma máquina, simple, con techo, SPOF y downtime. Horizontal: más máquinas, sin techo práctico, sin SPOF, más complejidad. Se combinan."],
+  ["U2", "Stateless vs stateful.", "Stateless: cualquier nodo atiende cualquier request. Stateful: hay sesión o caché local; hace falta sticky sessions o replicar el estado. El estado se aísla en Redis o en la base."],
+  ["U2", "Balanceo de carga.", "L4 mira TCP. L7 mira HTTP y puede rutear por URL o header. Round-robin, least-connections, weighted, IP-hash. Sin health checks se manda tráfico a un nodo muerto."],
+  ["U2", "¿Cuándo microservicios y cuándo no?", "Cuando el monolito duele, hay equipos autónomos y CI/CD maduro. Cada servicio tiene su base y su deploy. No son el punto de partida. Fowler: no distribuyas hasta que el monolito duela."],
+  ["U2", "Síncrono vs asíncrono.", "Síncrono cuando el usuario está mirando. Asíncrono (cola o pub/sub) para lo que puede esperar: mail, recomendaciones. El broker suele dar at-least-once: la app tiene que ser idempotente."],
+  ["U2", "Nombrá las 8 falacias.", "La red es confiable. La latencia es cero. El ancho de banda es infinito. La red es segura. La topología no cambia. Hay un solo administrador. El costo de transporte es cero. La red es homogénea."],
+  ["U2", "CAP en la práctica.", "La partición ocurre. Elegís C o A. CP: el banco rechaza antes que mostrar un saldo viejo. AP: el like se atrasa y converge. No se pueden garantizar C y A juntas durante la partición."],
+  ["U2", "Happened-before.", "Lamport: A antes que B en el mismo proceso, o A es el envío y B la recepción, o por transitividad. No hay un ahora común. El reloj lógico respeta la causa; un número menor no prueba que A causó B."],
+  ["U2", "Estados del circuit breaker.", "Closed: pasan y se cuentan fallos. Open: se corta y se falla rápido. Half-open: unas pruebas; si van bien, closed; si no, open otra vez."],
+  ["U2", "Retry bien hecho.", "Solo errores transitorios. Backoff exponencial, jitter, tope de 3 a 5. Sin eso es una tormenta. No es lo mismo que el circuit breaker: el retry insiste, el breaker deja de llamar."],
+  ["U2", "Bulkhead, fallback, timeout.", "Timeout: techo de espera, basado en el p99. Bulkhead: pools separados para que pagos no se coma los hilos del catálogo. Fallback: degradar (ocultar recomendaciones) en vez de romper la página."],
+  ["U2", "¿Por qué no 2PC?", "Lockea participantes. Si el coordinador cae entre las dos fases, quedan bloqueados. A escala se usa saga: pasos locales con compensación."],
+  ["U2", "Saga de una compra.", "Reservar stock. Cobrar. Si el cobro falla, liberar stock. Confirmar. Si falla, reembolso y liberar stock. Notificar es best-effort. Orquestación: Órdenes dirige. Coreografía: eventos sin director."],
+  ["U2", "CQRS, event sourcing, idempotencia.", "CQRS separa modelo de escritura y de lectura; pueden desfasarse un momento. Event sourcing guarda hechos, no el estado final. Idempotencia: N ejecuciones = 1. Hace falta porque el mensaje puede llegar dos veces."],
+  ["U2", "Contenedor vs VM.", "VM: SO completo, gigabytes, minutos. Contenedor: comparte el kernel, namespaces y cgroups, megabytes, segundos. La imagen es el artefacto inmutable del pipeline."],
+  ["U3", "Cycle time.", "Tiempo desde que se decide un cambio hasta que está en producción, de forma repetible. La pregunta de Humble: ¿cuánto tarda una línea, y podés hacerlo otra vez igual?"],
+  ["U3", "Los 4 antipatrones.", "Día de release manual. Despliegue manual. No probar en un entorno como producción. Configuración a mano en producción (drift). La salida es automatizar, igualar ambientes e IaC."],
+  ["U3", "Principios de Humble y Farley.", "1 repetible 2 automatizar casi todo 3 todo versionado 4 si duele, más seguido 5 build quality in 6 DONE = RELEASED 7 todos responsables del release 8 mejora continua. No existe “deployar menos para bajar el riesgo”."],
+  ["U3", "Los 3 criterios del feedback.", "Todo cambio lo dispara. Llega rápido. El equipo actúa. Si falta uno, los otros no sirven. El build rojo ignorado entrena a ignorar el siguiente."],
+  ["U3", "Definición operativa de CI.", "Cada dev integra a la rama principal al menos una vez al día. Cada integración se buildéa y se testea. El build roto se arregla ya. Prerrequisitos: VCS, build de un comando, compromiso del equipo."],
+  ["U3", "CI vs Delivery vs Deployment.", "CI: build y tests en cada commit. Delivery: pipeline hasta artefacto listo; un humano aprueba producción. Deployment: si pasa los gates, va a producción solo. La diferencia Delivery/Deployment es esa aprobación."],
+  ["U3", "Etapas del deployment pipeline.", "1 commit stage < 10 min (compila, unitarios, empaqueta). 2 aceptación. 3 no funcionales. 4 UAT / exploratorio. 5 release con el mismo script. El rollback es un botón."],
+  ["U3", "Binario único.", "Se construye una vez y se promueve. Recompilar por ambiente mete entropía. Entre ambientes cambia solo la configuración externa."],
+  ["U3", "Rolling, blue-green, canary, flags.", "Rolling: de a una instancia, dos versiones conviven. Blue-green: dos entornos, el balanceador cambia de golpe, rollback instantáneo, infra doble. Canary: un porcentaje chico. Feature flag: el código está en prod apagado; separa deploy de release."],
+  ["U3", "Las 4 métricas DORA.", "Deployment Frequency y Lead Time (velocidad). Change Failure Rate y MTTR (estabilidad). Los elite tienen las dos. No confundir con uptime/latencia/throughput/error rate."],
+  ["U3", "12-Factor, el principio que toman de trampa.", "La config va en el entorno, no en el código. El mismo artefacto corre en todos lados cambiando variables. Los secretos no se commitean."],
+  ["U3", "DONE, los 4 niveles.", "1 compila y tests pasan (débil). 2 demostrado en un entorno como prod. 3 desplegado. 4 usado por usuarios reales. Done significa released."]
+];
+
+let cardQueue = [];
+let cardShown = null;
+let cardBack = false;
+function buildQueue() {
+  cardQueue = CARDS.map((_, i) => i);
+  for (let i = cardQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cardQueue[i], cardQueue[j]] = [cardQueue[j], cardQueue[i]];
+  }
+  const weak = Object.entries(state.cards).filter(([, v]) => v.lapses > v.hits).map(([k]) => +k);
+  weak.forEach(i => { if (CARDS[i]) cardQueue.unshift(i); });
+}
+function renderCard() {
+  if (!cardQueue.length) buildQueue();
+  const i = cardQueue[0];
+  cardShown = i;
+  cardBack = false;
+  const c = CARDS[i];
+  const st = state.cards[i] || { hits: 0, lapses: 0 };
+  $("flip").className = "flip";
+  $("flip").textContent = c[1];
+  $("cardStat").textContent = "Quedan " + cardQueue.length + " en la cola · esta tarjeta: " + st.hits + " aciertos, " + st.lapses + " fallos · " + c[0];
+}
+$("flipBtn").addEventListener("click", () => {
+  if (cardShown == null) return;
+  cardBack = !cardBack;
+  $("flip").className = "flip" + (cardBack ? " back" : "");
+  $("flip").textContent = cardBack ? CARDS[cardShown][2] : CARDS[cardShown][1];
+});
+$("flip").addEventListener("click", () => $("flipBtn").click());
+function gradeCard(hit) {
+  if (cardShown == null) return;
+  const i = cardShown;
+  const st = state.cards[i] || { hits: 0, lapses: 0 };
+  if (hit) st.hits++; else { st.lapses++; state.wrong["c" + i] = { q: CARDS[i][1], a: CARDS[i][2] }; }
+  state.cards[i] = st;
+  cardQueue.shift();
+  if (hit) cardQueue.push(i); else cardQueue.splice(Math.min(2, cardQueue.length), 0, i);
+  state.done.mazo = true;
+  save(); renderProgress(); renderCard();
+}
+$("hitBtn").addEventListener("click", () => gradeCard(true));
+$("missBtn").addEventListener("click", () => gradeCard(false));
+
+const QUIZ = [
+  { u: "U1", k: "mc", q: "¿Cuál NO es actividad de la CM?", opts: ["Control de versiones", "Build", "Release management", "Optimizar algoritmos internos"], a: 3, why: "Eso es diseño o performance, no gestión de configuración." },
+  { u: "U1", k: "mc", q: "¿Qué resolución de conflictos usa Git?", opts: ["Locking pesimista", "Merge-before-commit obligatorio", "Commit-before-merge", "Bloquea toda la rama al editar"], a: 2, why: "El commit local nunca se bloquea." },
+  { u: "U1", k: "vf", q: "git rebase sobre una rama compartida es una práctica recomendada.", a: false, why: "Reescribe hashes. La regla de oro: no rebase de una rama que otros usan." },
+  { u: "U1", k: "vf", q: "En GitFlow, develop es una rama temporal que se borra al cerrar el release.", a: false, why: "develop es permanente. La temporal es release/x.y.z." },
+  { u: "U1", k: "vf", q: "En un VCS distribuido se puede commitear y ver el historial completo sin red.", a: true, why: "Cada clon tiene la historia. Hace falta red para push y pull." },
+  { u: "U1", k: "mc", q: "¿Qué diferencia principal hay entre merge y rebase?", opts: ["Merge es más rápido", "Merge solo es local", "Merge preserva la historia; rebase la reescribe", "Rebase une más de dos ramas y merge no"], a: 2, why: "Rebase cambia hashes para dejar una línea. Merge agrega un commit de unión." },
+  { u: "U1", k: "mc", q: "¿Cuál modelo pide feature flags como condición y correlaciona con equipos DORA elite?", opts: ["GitFlow", "GitHub Flow", "Trunk-Based Development", "Una rama por desarrollador de larga vida"], a: 2, why: "El código incompleto entra al trunk apagado por un flag." },
+  { u: "U2", k: "mc", q: "¿Cuál es la principal ventaja de la escalabilidad horizontal sobre la vertical?", opts: ["Es más simple de implementar", "No requiere cambios de arquitectura", "Elimina el SPOF y permite escalar agregando máquinas", "Consume menos recursos totales"], a: 2, why: "Scale-out saca el punto único de fallo y no tiene el techo de una sola máquina. No es más simple: exige diseñar la app como distribuida." },
+  { u: "U2", k: "mc", q: "¿Por qué percentiles y no el promedio para la latencia?", opts: ["El promedio gasta más CPU", "Son más fáciles", "El promedio esconde la cola larga", "Son un estándar ISO"], a: 2, why: "p99 muestra al 1% que espera segundos mientras el promedio se ve sano." },
+  { u: "U2", k: "mc", q: "¿Cuál NO es falacia de Deutsch?", opts: ["La red es confiable", "La latencia es cero", "La red es segura", "Los servidores tienen memoria infinita"], a: 3, why: "Las ocho falacias hablan de la red, no de la RAM." },
+  { u: "U2", k: "mc", q: "¿Qué patrón corta llamadas cuando el downstream está degradado?", opts: ["Bulkhead", "Retry", "Circuit breaker", "Fallback"], a: 2, why: "Pasa de closed a open y falla rápido. Half-open prueba si sanó." },
+  { u: "U2", k: "vf", q: "Durante una partición se pueden garantizar a la vez consistencia y disponibilidad.", a: false, why: "P ocurre. Se elige CP o AP." },
+  { u: "U2", k: "vf", q: "La latencia promedio es la mejor métrica para caracterizar a todos los usuarios.", a: false, why: "Esconde la cola. Hay que mirar p95 y p99." },
+  { u: "U2", k: "vf", q: "Un contenedor Docker incluye un sistema operativo completo, igual que una VM.", a: false, why: "Comparte el kernel del host. La VM sí trae un SO completo." },
+  { u: "U2", k: "vf", q: "Los servicios stateful escalan tan fácil como los stateless.", a: false, why: "El stateful necesita afinidad o replicar estado. El stateless suma nodos y listo." },
+  { u: "U2", k: "mc", q: "Un pago puede ejecutarse dos veces por un retry. ¿Qué propiedad falta?", opts: ["ACID", "Idempotencia", "Un ESB", "2PC"], a: 1, why: "At-least-once más un handler sin idempotency-key cobra dos veces." },
+  { u: "U3", k: "mc", q: "¿Cuál NO es principio de Humble y Farley?", opts: ["Automatizar casi todo", "DONE significa RELEASED", "Si duele, hacerlo más seguido", "Bajar la frecuencia de deploys para minimizar el riesgo"], a: 3, why: "Eso agranda el release y concentra el riesgo." },
+  { u: "U3", k: "mc", q: "Diferencia central entre Continuous Delivery y Continuous Deployment.", opts: ["Uno usa contenedores", "Uno es solo SaaS", "Delivery exige aprobación humana; Deployment despliega solo si pasa los gates", "Son sinónimos"], a: 2, why: "Los dos automatizan el pipeline. Cambia quién autoriza producción." },
+  { u: "U3", k: "mc", q: "¿Cuáles son las 4 métricas DORA?", opts: ["Cobertura, complejidad, deuda, bugs", "Uptime, latencia, throughput, error rate", "Deployment Frequency, Lead Time, Change Failure Rate, MTTR", "Velocity, cycle time, burndown, ROI"], a: 2, why: "Dos de velocidad y dos de estabilidad. La opción de uptime es del servicio, no de DORA." },
+  { u: "U3", k: "vf", q: "Continuous Delivery implica que cada commit válido se despliega solo a producción.", a: false, why: "Eso es Continuous Deployment. Delivery deja el artefacto listo y espera aprobación." },
+  { u: "U3", k: "vf", q: "En un pipeline maduro, el mismo binario se promueve por todos los ambientes.", a: true, why: "Se construye una vez. Cambia la configuración, no el artefacto." },
+  { u: "U3", k: "vf", q: "12-Factor recomienda guardar la configuración de la app dentro del código versionado.", a: false, why: "Store config in the environment. El mismo artefacto, distintas variables." },
+  { u: "U3", k: "mc", q: "¿Qué estrategia cambia el balanceador de un entorno entero al otro y permite rollback instantáneo?", opts: ["Recreate", "Rolling", "Blue-green", "Solo un feature flag"], a: 2, why: "Blue atiende, green se calienta, el switch es instantáneo. Cuesta infra duplicada." },
+  { u: "U3", k: "mc", q: "El commit stage debería…", opts: ["Correr pruebas de carga de horas", "Terminar en menos de 10 minutos con unitarios y el artefacto", "Esperar aprobación de negocio", "Recompilar en cada ambiente"], a: 1, why: "Feedback rápido. Lo lento va en etapas posteriores." }
+];
+
+let quizOrder = [];
+let quizAt = 0;
+function shuffleQuiz() {
+  quizOrder = QUIZ.map((_, i) => i);
+  for (let i = quizOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [quizOrder[i], quizOrder[j]] = [quizOrder[j], quizOrder[i]];
+  }
+  quizAt = 0;
+}
+function renderQuiz() {
+  if (!quizOrder.length) shuffleQuiz();
+  const item = QUIZ[quizOrder[quizAt]];
+  const box = $("quizBox");
+  $("quizStat").textContent = "Pregunta " + (quizAt + 1) + " de " + QUIZ.length + " · " + item.u;
+  box.innerHTML = "<p><b>" + item.q + "</b></p>";
+  if (item.k === "mc") {
+    item.opts.forEach((op, idx) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = String.fromCharCode(97 + idx) + ") " + op;
+      b.addEventListener("click", () => gradeQuiz(idx === item.a, b, item));
+      box.appendChild(b);
+    });
+  } else {
+    ["Verdadero", "Falso"].forEach((label, idx) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = label;
+      b.addEventListener("click", () => gradeQuiz((idx === 0) === item.a, b, item));
+      box.appendChild(b);
+    });
+  }
+}
+function gradeQuiz(ok, btn, item) {
+  const box = $("quizBox");
+  box.querySelectorAll(".opt").forEach(o => o.disabled = true);
+  btn.classList.add(ok ? "correct" : "wrong");
+  if (!ok) state.wrong["q" + QUIZ.indexOf(item)] = { q: item.q, a: item.why };
+  else delete state.wrong["q" + QUIZ.indexOf(item)];
+  const p = document.createElement("p");
+  p.innerHTML = (ok ? "Bien. " : "No. ") + item.why;
+  box.appendChild(p);
+  const next = document.createElement("button");
+  next.className = "btn primary";
+  next.textContent = quizAt + 1 < QUIZ.length ? "Siguiente" : "Otra vuelta";
+  next.addEventListener("click", () => {
+    quizAt++;
+    if (quizAt >= QUIZ.length) shuffleQuiz();
+    save(); renderQuiz();
+  });
+  box.appendChild(next);
+  save();
+}
+
+const SIM_QS = ["¿Cuál NO es actividad de la CM?", "¿Qué resolución de conflictos usa Git?", "¿Qué diferencia principal hay entre merge y rebase?", "¿Cuál es la principal ventaja de la escalabilidad horizontal sobre la vertical?", "¿Por qué percentiles y no el promedio para la latencia?", "¿Cuál NO es falacia de Deutsch?", "¿Qué patrón corta llamadas cuando el downstream está degradado?", "¿Cuál NO es principio de Humble y Farley?", "Diferencia central entre Continuous Delivery y Continuous Deployment.", "¿Cuáles son las 4 métricas DORA?", "git rebase sobre una rama compartida es una práctica recomendada.", "En GitFlow, develop es una rama temporal que se borra al cerrar el release.", "En un VCS distribuido se puede commitear y ver el historial completo sin red.", "La latencia promedio es la mejor métrica para caracterizar a todos los usuarios.", "Los servicios stateful escalan tan fácil como los stateless.", "Durante una partición se pueden garantizar a la vez consistencia y disponibilidad.", "Un contenedor Docker incluye un sistema operativo completo, igual que una VM.", "Continuous Delivery implica que cada commit válido se despliega solo a producción.", "En un pipeline maduro, el mismo binario se promueve por todos los ambientes.", "12-Factor recomienda guardar la configuración de la app dentro del código versionado."];
+const SIM = SIM_QS.map(text => {
+  const found = QUIZ.find(q => q.q === text);
+  if (!found) throw new Error("Falta pregunta: " + text);
+  return found;
+});
+
+let simAnswers = [];
+let simLeft = 25 * 60;
+let simTimer = null;
+$("simStart").addEventListener("click", startSim);
+function startSim() {
+  simAnswers = SIM.map(() => null);
+  simLeft = 25 * 60;
+  clearInterval(simTimer);
+  simTimer = setInterval(() => {
+    simLeft--;
+    const m = String(Math.max(0, Math.floor(simLeft / 60))).padStart(2, "0");
+    const s = String(Math.max(0, simLeft % 60)).padStart(2, "0");
+    $("clock").textContent = m + ":" + s;
+    if (simLeft <= 0) { clearInterval(simTimer); finishSim(); }
+  }, 1000);
+  $("simStart").disabled = true;
+  drawSim(0);
+}
+function drawSim(i) {
+  const box = $("simBox");
+  const item = SIM[i];
+  box.innerHTML = "<p class='stat'>Pregunta " + (i + 1) + " de " + SIM.length + " · " + (item.k === "mc" ? "múltiple opción" : "V/F") + "</p><p><b>" + item.q + "</b></p>";
+  const chosen = { v: null, text: "" };
+  if (item.k === "mc") {
+    item.opts.forEach((op, idx) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = String.fromCharCode(97 + idx) + ") " + op;
+      b.addEventListener("click", () => { chosen.v = idx; box.querySelectorAll(".opt").forEach(o => o.classList.remove("correct")); b.classList.add("correct"); });
+      box.appendChild(b);
+    });
+  } else {
+    ["Verdadero", "Falso"].forEach((label, idx) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = label;
+      b.addEventListener("click", () => {
+        chosen.v = idx === 0;
+        box.querySelectorAll(".opt").forEach(o => o.classList.remove("correct"));
+        b.classList.add("correct");
+        $("just").style.display = chosen.v === false ? "block" : "none";
+      });
+      box.appendChild(b);
+    });
+    const ta = document.createElement("textarea");
+    ta.id = "just";
+    ta.placeholder = "Si marcás falso, escribí la justificación. Si es verdadero, dejala vacía.";
+    ta.style.display = "none";
+    box.appendChild(ta);
+  }
+  const next = document.createElement("button");
+  next.className = "btn primary";
+  next.style.marginTop = "8px";
+  next.textContent = i + 1 < SIM.length ? "Siguiente" : "Ver resultado";
+  next.addEventListener("click", () => {
+    if (chosen.v == null) { alert("Elegí una opción."); return; }
+    if (item.k === "vf" && chosen.v === false) {
+      const text = ($("just").value || "").trim();
+      if (!text) { alert("En el examen, el falso sin justificación no suma. Escribí una oración."); return; }
+      chosen.text = text;
+    }
+    simAnswers[i] = chosen;
+    if (i + 1 < SIM.length) drawSim(i + 1); else finishSim();
+  });
+  box.appendChild(next);
+}
+function finishSim() {
+  clearInterval(simTimer);
+  $("simStart").disabled = false;
+  $("clock").textContent = "60:00";
+  let pts = 0;
+  const box = $("simBox");
+  box.innerHTML = "<h2>Resultado</h2>";
+  SIM.forEach((item, i) => {
+    const ans = simAnswers[i];
+    const ok = ans && (item.k === "mc" ? ans.v === item.a : ans.v === item.a);
+    if (ok) pts += 3;
+    const p = document.createElement("div");
+    p.className = "q open";
+    p.innerHTML = "<p><b>" + (i + 1) + ". " + (ok ? "Bien" : "Mal") + ".</b> " + item.q + "</p><p class='ans' style='display:block'>" + item.why + (ans && ans.text ? "<br>Tu justificación: " + ans.text : "") + "</p>";
+    box.appendChild(p);
+    if (!ok) state.wrong["s" + i] = { q: item.q, a: item.why };
+  });
+  const passNote = pts + 40 >= 55 ? "Si los dos desarrollos estuvieran en 20/20, con estos " + pts + " ya estarías aprobado." : "Con los desarrollos en 20/20 llegarías a " + (pts + 40) + ". Todavía por debajo de 55: repasá los mal.";
+  const head = document.createElement("p");
+  head.innerHTML = "<b>" + pts + " / 60</b> en A+B. " + passNote;
+  box.prepend(head);
+  state.simBest = state.simBest == null ? pts : Math.max(state.simBest, pts);
+  state.done.sim = true;
+  save(); renderProgress();
+}
+
+const ORALS = [
+  ["U3 · CI / Delivery / Deployment + pipeline", "Diferenciá CI, Continuous Delivery y Continuous Deployment. Para cada uno: qué automatiza y qué sigue siendo humano. Después, las etapas del deployment pipeline.", ["Tabla con las 3 prácticas y la intervención humana", "La diferencia clave es la aprobación de producción, no los contenedores", "Commit stage en menos de 10 minutos", "Aceptación automatizada", "Tests no funcionales", "UAT / exploratorio", "Release con el mismo mecanismo", "Binario construido una sola vez", "Mismo script de deploy; cambia la config", "Ejemplo de un cambio recorriendo ambientes"]],
+  ["U3 · Cycle time, antipatrones y principios", "Definí cycle time. Describí los antipatrones de la entrega y los principios de Humble y Farley.", ["Cycle time: de la decisión al usuario, repetible", "Pregunta de la una línea de código", "Círculo vicioso: miedo, releases más raros y más grandes", "Antipatrón release manual", "Antipatrón deploy manual", "Antipatrón no probar como prod", "Antipatrón config a mano / IaC", "Los 8 principios, aunque el título diga 7", "Si duele, hacerlo más seguido", "DONE = RELEASED, con niveles"]],
+  ["U3 · Estrategias de release + DORA", "Estrategias de release y las 4 métricas DORA.", ["Recreate con downtime", "Rolling y convivencia de dos versiones", "Blue-green y rollback por balanceador", "Canary por porcentaje", "Feature flags: deploy ≠ release", "Progressive delivery las combina", "4 métricas: 2 de velocidad y 2 de estabilidad", "Elite es rápido y estable a la vez", "No confundir DORA con uptime/latencia", "Ejemplo con flag + canary"]],
+  ["U3 · CI, release candidate, binario único", "Prerrequisitos y prácticas de CI. Release candidate. Construir una sola vez.", ["VCS, build de un comando, compromiso", "CI es práctica, no Jenkins", "Check-in al menos diario al trunk", "Arreglar el build ya o revertir", "Tests locales antes del push", "Cada commit verde puede ser un RC", "Costo del defecto: 1× al escribir, ~100× en prod", "Trazabilidad por hash", "No recompilar por ambiente", "Se promueve el artefacto; cambia la config"]],
+  ["U3 · Ambientes, 12-Factor, secretos, IaC", "Ambientes, configuración externa, secretos e infraestructura como código.", ["Misma artefacto de local a prod", "Solo cambia la config", "12-Factor: config en el entorno", "Secretos fuera del repo, con rotación", "SemVer y conventional commits, si entra", "IaC: reproducible, auditable, rollback = commit anterior", "Drift si se configura por SSH", "Paridad dev/prod", "Ejemplo de connection string", "El antipatrón 4 cierra el argumento"]],
+  ["U1 · 4 branching models", "GitFlow, GitHub Flow, Trunk-Based y GitLab Flow. Filosofía, ramas, cuándo sí y cuándo no. Tabla.", ["GitFlow: main, develop, feature, release, hotfix", "GitFlow sí en producto estable y varias versiones", "GitFlow no si hay varios deploys por día", "GitHub Flow: main desplegable + PR", "Trunk-based: ramas de horas + flags", "Trunk-based no sin CI ni en equipo junior", "GitLab Flow por entorno o por versión", "Tabla: complejidad, frecuencia, versiones vivas", "Feature flags como habilitador del trunk", "A más madurez, flujo más simple"]],
+  ["U1 · Objetos, 3 áreas, merge vs rebase", "Modelo de objetos, working/staging/repository, merge vs rebase.", ["Blob, tree, commit, tag", "Merkle: el hash incluye a los padres", "Una rama es un puntero", "Working, index, .git", "git add y git commit", "Merge preserva y crea un commit de dos padres", "Rebase reescribe hashes y linealiza", "Regla: rebase local, merge a main", "Nunca rebase compartido", "Un dibujo de la historia"]],
+  ["U1 · VCS centralizado vs distribuido + conflictos", "Arquitecturas de VCS y los tres modelos de resolución de conflictos.", ["SVN: un servidor, hace falta red", "Git: historia en cada clon", "SPOF del servidor de versionado", "Ramas caras vs punteros", "Locking pesimista", "Merge-before-commit (SVN)", "Commit-before-merge (Git)", "Ejemplo de Ana y Bruno en el mismo archivo", "Atomicidad por commit, no por archivo", "Tres generaciones, si sobra espacio"]],
+  ["U2 · Definición, falacias, CAP", "Qué es un sistema distribuido, por qué distribuir, 8 falacias y CAP.", ["Tanenbaum: varias máquinas, una sola vista", "Mensajes, no memoria compartida", "Escalar, disponibilidad, cercanía", "Las 8 falacias, cada una con consecuencia", "Memoria infinita NO es de Deutsch", "P no se elige", "CP: banco", "AP: likes o DNS", "Consistencia eventual y un caso donde no se tolera", "Tipos de fallo, si entra: crash, omisión, timing, bizantino"]],
+  ["U2 · Resiliencia y consistencia", "Retry, timeout, circuit breaker, bulkhead, fallback. Saga, CQRS, idempotencia.", ["Timeout según p99", "Retry con backoff, jitter y tope", "Retry mal hecho amplifica", "Closed, open, half-open", "Bulkhead: pools separados", "Fallback de recomendaciones", "Ejemplo de pagos", "2PC y por qué se abandona", "Saga con compensaciones de la compra", "Idempotency-key"]],
+  ["U2 · Escalabilidad", "Vertical vs horizontal, stateless vs stateful, balanceo.", ["Scale-up: simple, techo, SPOF, downtime", "Scale-out: sin techo, sin SPOF, más complejo", "Se combinan", "Stateless suma nodos", "Stateful: sticky o replicar", "Aislar estado en Redis o la base", "L4 vs L7", "Estrategias de balanceo", "Health checks", "Ejemplo del catálogo vs la sesión en memoria"]],
+  ["U2 · Modelos arquitectónicos", "Cliente-servidor, N capas, microservicios, event-driven y serverless. Cuándo cada uno.", ["Cliente-servidor: MVP, SPOF", "N capas: separación, puede quedar monolito", "Microservicios: base propia, deploy propio, costo operativo", "Fowler: no empezar por microservicios", "Event-driven: bajo acoplamiento, flujo difícil de seguir", "Serverless: escala a cero, cold start, lock-in", "Tabla de acoplamiento y escala", "Síncrono si el usuario espera", "Cola vs pub/sub", "P2P o SOA si sobra espacio"]]
+];
+
+function renderOral() {
+  const pick = $("oralPick");
+  if (!pick.childElementCount) {
+    ORALS.forEach((o, i) => {
+      const b = document.createElement("button");
+      b.className = "btn";
+      b.textContent = o[0];
+      b.addEventListener("click", () => openOral(i));
+      pick.appendChild(b);
+    });
+  }
+}
+function openOral(i) {
+  const o = ORALS[i];
+  const box = $("oralBox");
+  box.innerHTML = "<p class='pill'>" + o[0] + "</p><h2>" + o[1] + "</h2><p>Explicá en voz alta. Cuando termines, marcá lo que realmente dijiste.</p>";
+  o[2].forEach((pt, idx) => {
+    const lab = document.createElement("label");
+    lab.className = "check";
+    lab.innerHTML = "<input type='checkbox' data-i='" + idx + "'> <span>" + pt + "</span>";
+    box.appendChild(lab);
+  });
+  const b = document.createElement("button");
+  b.className = "btn primary";
+  b.textContent = "Calcular /20";
+  b.addEventListener("click", () => {
+    const n = box.querySelectorAll("input:checked").length;
+    const score = Math.round(n / o[2].length * 20);
+    state.oral[i] = Math.max(state.oral[i] || 0, score);
+    state.done.guiones = true;
+    save(); renderProgress();
+    alert(score + "/20 orientativos (" + n + " de " + o[2].length + " puntos). Mejor marca en esta consigna: " + state.oral[i] + ".");
+  });
+  box.appendChild(b);
+}
+
+function renderFails() {
+  const box = $("failBox");
+  const entries = Object.entries(state.wrong);
+  if (!entries.length) {
+    box.innerHTML = "<p>Todavía no hay fallos guardados. Hacé tarjetas, preguntas o el simulacro.</p>";
+    return;
+  }
+  box.innerHTML = "<p>" + entries.length + " para repasar. La respuesta está oculta.</p>";
+  entries.forEach(([id, item]) => {
+    const d = document.createElement("div");
+    d.className = "q";
+    d.innerHTML = "<p>" + item.q + "</p><button class='btn reveal' type='button'>Ver respuesta</button><p class='ans'>" + item.a + "</p>";
+    const rm = document.createElement("button");
+    rm.className = "btn";
+    rm.textContent = "Ya la sé, sacar de la cola";
+    rm.addEventListener("click", () => { delete state.wrong[id]; save(); renderFails(); });
+    d.appendChild(rm);
+    box.appendChild(d);
+  });
+}
+
+let clockLeft = 60 * 60;
+setInterval(() => {
+  if ($("simBox") && $("simBox").innerHTML && $("simStart").disabled) return;
+  clockLeft--;
+  if (clockLeft < 0) clockLeft = 60 * 60;
+  const m = String(Math.floor(clockLeft / 60)).padStart(2, "0");
+  const s = String(clockLeft % 60).padStart(2, "0");
+  if (!$("simStart").disabled) $("clock").textContent = m + ":" + s;
+}, 1000);
+
+renderProgress();
+const initial = (location.hash || "#home").slice(1);
+if ($(initial)) show(initial); else show("home");
+</script>
+</body>
+</html>

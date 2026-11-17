@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Análisis Matemático II · Final teórico</title><link rel='stylesheet' href='estilo.css'></head><body>
+<header class='top'><strong>AM II teórico</strong><a href='index.html'>Plan</a><a href='AM2.html'>Práctico</a><a href='#examenes'>Lo que tomaron</a><a href='#u1'>Límite</a><a href='#u2'>Derivadas</a><a href='#u3'>Extremos</a><a href='#u4'>ED 1.er orden</a><a href='#u5'>ED 2.º orden</a><a href='#u6'>Integrales</a><a href='#u7'>Curvas</a><a href='#u8'>Campos</a><a href='#u9'>Green</a><a href='#plan'>Plan</a></header>
+<main>
+<p class='k'>UCC · Ingeniería · Evaluación final teórica</p>
+<h1>Análisis Matemático II. El teórico completo, con las demostraciones.</h1>
+<div class='box warn'><p class='ans'>Es un examen aparte.</p><p>“Evaluación Final Teórica”: 120 minutos, cuatro consignas de 20% a 30%, 55% para aprobar. <b>Sin calculadora, sin lápiz</b> (birome), sin material. Corrigen vocabulario técnico, coherencia y prolijidad: cada demostración arranca con hipótesis y tesis escritas. Preguntá en la cátedra si el teórico se toma el mismo 18 junto con el práctico o en otro horario.</p></div>
+<p>Cómo usar esta página: el enunciado de cada teorema está a la vista; la demostración está cerrada. Leé el enunciado, escribí la demostración en una hoja, después abrí y compará. Lo que está marcado con ★ ya cayó en algún final.</p>
+
+<h2 id='examenes'>Lo que tomaron, examen por examen</h2>
+<table><tr><th>Fecha</th><th>Consigna 1</th><th>Consigna 2</th><th>Consigna 3</th><th>Consigna 4</th></tr>
+<tr><td>17/07/2024</td><td>Continuidad de la compuesta</td><td>Taylor de 2.º orden, Hessiana, condición suficiente</td><td>∇ × (∇f) = 0</td><td>Ecuación exacta</td></tr>
+<tr><td>26/06/2024</td><td>Teorema fundamental / independencia del camino</td><td>D<sub>u</sub>f = ∇f · u y condición necesaria de extremo</td><td>Green</td><td>Bernoulli</td></tr>
+<tr><td>22/11/2023</td><td>D<sub>u</sub>f = ∇f · u</td><td>Condición necesaria y Taylor para clasificar</td><td>Condiciones de campo conservativo y probar F = (2x − 3, −z, cos z)</td><td>2.º orden homogénea, los tres casos</td></tr>
+<tr><td>07/12/2022</td><td>Lagrange e interpretación geométrica</td><td>Regla de la cadena matricial</td><td>Independencia de la trayectoria</td><td>Ecuación exacta</td></tr>
+<tr><td>29/07/2022</td><td>D<sub>u</sub>f = ∇f · u</td><td>Taylor para clasificar puntos críticos</td><td>Independencia de la trayectoria</td><td>Bernoulli</td></tr>
+<tr><td>Examen viejo</td><td>Teorema de Euler de funciones homogéneas</td><td>Curvatura constante y torsión 0 ⇒ circunferencia</td><td>Área con una integral de línea</td><td>Gradiente de una compuesta v(f, g, h)</td></tr></table>
+<div class='box ok'><p class='ans'>Las seis que tenés que poder escribir dormido.</p><p>1) D<sub>u</sub>f = ∇f · u (cuatro veces). 2) Condición necesaria de extremo y Taylor con Hessiana (cuatro). 3) Independencia del camino / teorema fundamental (cuatro). 4) Bernoulli o exacta (cinco, alternándose). 5) Green (una, y es la base del práctico). 6) Segundo orden homogénea con los tres casos (una). Con esas seis cubrís casi todas las consignas que salieron.</p></div>
+
+<h2 id='u1'>1. Topología, límite y continuidad</h2><div class='box ley1'><p class='ans'>Cómo subrayar lo que copiaste:</p><p><mark>Resaltado amarillo</mark>: se escribe textual en el examen. <span class='r'>Subrayado rojo</span>: palabra que no puede faltar. <span class='v'>Verde</span>: explicación, para entender. <span class='t'>Ondulado azul</span>: trampa o pregunta típica.</p></div><h3>Conceptos topológicos ★ (lista de la cátedra)</h3><p><mark>B(x₀, r) = {x : ‖x − x₀‖ <span class='r'>&lt;</span> r} es la <span class='r'>bola abierta</span>.</mark> Sea U ⊂ ℝⁿ.</p><table><tr><td><b>Interior</b></td><td><mark>x₀ es interior a U si <span class='r'>existe</span> r &gt; 0 con B(x₀, r) <span class='r'>⊂ U</span>.</mark></td></tr><tr><td><b>Exterior</b></td><td><mark><span class='r'>existe</span> r &gt; 0 con B(x₀, r) ⊂ <span class='r'>ℝⁿ − U</span>.</mark></td></tr><tr><td><b>Frontera</b></td><td><mark><span class='r'>toda</span> bola B(x₀, r) tiene puntos de U <span class='r'>y</span> puntos fuera de U.</mark> <span class='t'>Puede pertenecer o no a U.</span></td></tr><tr><td><b>Aislado</b></td><td><mark>x₀ <span class='r'>∈ U</span> y <span class='r'>existe</span> r con B(x₀, r) ∩ U = {x₀}.</mark></td></tr><tr><td><b>De acumulación</b></td><td><mark><span class='r'>toda</span> bola <span class='r'>reducida</span> B(x₀, r) − {x₀} contiene puntos de U.</mark> <span class='t'>No hace falta que x₀ ∈ U.</span> <span class='v'>El límite se define en puntos de acumulación.</span></td></tr></table><p>U es <b>abierto</b> si <mark><span class='r'>todos</span> sus puntos son interiores</mark>; <b>cerrado</b> si <mark><span class='r'>contiene su frontera</span></mark>; <b>acotado</b> si <mark>está dentro de una bola</mark>; <b>compacto</b> si <mark>es <span class='r'>cerrado y acotado</span></mark>; <b>conexo por arcos</b> si <mark>dos puntos cualesquiera se unen con una <span class='r'>curva contenida en U</span></mark>.</p><h3>Límite</h3><p><mark>lím<sub>x→x₀</sub> f(x) = b si <span class='r'>para todo ε &gt; 0 existe δ &gt; 0</span> tal que x ∈ U, <span class='r'>0 &lt;</span> ‖x − x₀‖ &lt; δ ⇒ |f(x) − b| &lt; ε.</mark></p><p><b>Límites iterados ★:</b> <mark>L₁₂ = lím<sub>x→x₀</sub>[lím<sub>y→y₀</sub> f(x, y)] y L₂₁ con el orden cambiado. Si existe el límite doble y existen los iterados, <span class='r'>todos coinciden</span>.</mark> <span class='t'>Por eso: iterados distintos ⇒ no existe el límite. Pero iterados iguales <b>no</b> garantizan el límite</span> <span class='v'>(ejemplo: xy/(x² + y²), iterados 0 y 0, por y = mx da m/(1 + m²))</span>. <span class='t'>Lo mismo con límites por rectas o por curvas: sirven para probar que no existe, nunca que existe.</span> <span class='v'>Para probar existencia: acotación o polares con cota independiente de θ.</span></p><div class='enun'><b>Teorema ★ (unicidad del límite).</b> <mark>Si x₀ es <span class='r'>de acumulación</span> de U y lím f(x) existe, es <span class='r'>único</span>.</mark></div><details open><summary>Demostración</summary><p><mark>Supongo lím f = b₁ y lím f = b₂ con <span class='r'>b₁ ≠ b₂</span>.</mark> Dado ε &gt; 0 hay δ₁ con 0 &lt; ‖x − x₀‖ &lt; δ₁ ⇒ |f(x) − b₁| &lt; ε, y δ₂ con lo mismo para b₂. <mark>Sea δ = mín(δ₁, δ₂).</mark> <span class='r'>Como x₀ es de acumulación</span>, existe x ∈ U con 0 &lt; ‖x − x₀‖ &lt; δ. <mark>Por la <span class='r'>desigualdad triangular</span>:</mark></p><p><mark>|b₁ − b₂| ≤ |b₁ − f(x)| + |f(x) − b₂| &lt; 2ε.</mark></p><p><mark>Tomo ε = |b₁ − b₂|/2 &gt; 0</mark>: queda |b₁ − b₂| &lt; |b₁ − b₂|, <span class='r'>absurdo</span>. <mark>Entonces b₁ = b₂.</mark></p></details><div class='enun'><b>Propiedades (la cátedra pide a y b).</b> <mark>a) lím c f = c b. b) lím (f + g) = b₁ + b₂.</mark></div><details open><summary>Demostración</summary><p>a) Si c = 0 es trivial. Si no, dado ε <mark>tomo el δ que corresponde a <span class='r'>ε/|c|</span> para f</mark>: <mark>|c f(x) − c b| = |c| |f(x) − b| &lt; |c| ε/|c| = ε.</mark></p><p>b) Dado ε, <mark>tomo δ₁ para f con <span class='r'>ε/2</span> y δ₂ para g con ε/2, y δ = mín.</mark> Entonces <mark>|f + g − (b₁ + b₂)| ≤ |f − b₁| + |g − b₂| &lt; ε/2 + ε/2 = ε.</mark></p></details><p><b>Continuidad:</b> <mark>f es continua en x₀ ∈ U si lím<sub>x→x₀</sub> f(x) = f(x₀).</mark> <span class='r'>Tres condiciones</span>: <mark>f(x₀) existe, el límite existe, son iguales.</mark></p><div class='enun'><b>Teorema ★ (continuidad de la compuesta, 17/07/2024).</b> <mark>f: U ⊂ ℝⁿ → ℝᵐ, g: V ⊂ ℝᵐ → ℝᵖ, <span class='r'>f(U) ⊂ V</span>. Si f es <span class='r'>continua en x₀</span> y g es <span class='r'>continua en y₀ = f(x₀)</span>, entonces g ∘ f es continua en x₀.</mark></div><details open><summary>Demostración</summary><p><mark>Tesis: dado ε &gt; 0 existe δ &gt; 0 tal que ‖x − x₀‖ &lt; δ ⇒ ‖g(f(x)) − g(f(x₀))‖ &lt; ε.</mark></p><p><mark><span class='r'>Como g es continua en y₀</span>, para ese ε existe γ &gt; 0 con ‖y − y₀‖ &lt; γ ⇒ ‖g(y) − g(y₀)‖ &lt; ε.</mark></p><p><mark><span class='r'>Como f es continua en x₀</span>, para ese γ</mark> <span class='v'>(usado como el “ε” de f)</span> <mark>existe δ &gt; 0 con ‖x − x₀‖ &lt; δ ⇒ ‖f(x) − f(x₀)‖ &lt; γ.</mark></p><p><mark><span class='r'>Encadenando</span>: si ‖x − x₀‖ &lt; δ, entonces y = f(x) cumple ‖y − y₀‖ &lt; γ, y por lo tanto ‖g(f(x)) − g(f(x₀))‖ &lt; ε.</mark></p></details><h2 id='u2'>2. Derivadas parciales, diferenciabilidad, direccional, regla de la cadena</h2><div class='box ok'><p>Versión marcada para el cuaderno: <a href='AM2-teorico-u2.html'>Teórico 2 marcado</a>.</p></div>
+<p><b>Derivada parcial:</b> ∂f/∂x<sub>i</sub>(x₀) = lím<sub>h→0</sub> [f(x₀ + h e<sub>i</sub>) − f(x₀)]/h. Geométricamente, en ℝ²: pendiente de la recta tangente a la curva que sale de cortar la superficie con el plano y = y₀ (para ∂f/∂x).</p>
+<p><b>Diferenciable:</b> f: U ⊂ ℝⁿ → ℝᵐ es diferenciable en x₀ si existe una matriz L (m × n) tal que lím<sub>h→0</sub> ‖f(x₀ + h) − f(x₀) − L h‖/‖h‖ = 0. En ℝ² con valores reales: lím [f(x₀ + h, y₀ + k) − f(x₀, y₀) − f<sub>x</sub>h − f<sub>y</sub>k]/√(h² + k²) = 0.</p>
+<p><b>Plano tangente ★:</b> si f es diferenciable en (x₀, y₀): z = f(x₀, y₀) + f<sub>x</sub>(x₀, y₀)(x − x₀) + f<sub>y</sub>(x₀, y₀)(y − y₀). Es la mejor aproximación lineal; el error es o(‖h‖). Normal: (f<sub>x</sub>, f<sub>y</sub>, −1).</p>
+<div class='enun'><b>Teorema.</b> Si f es diferenciable en x₀, existen todas las parciales y L es la matriz jacobiana: l<sub>ij</sub> = ∂f<sub>i</sub>/∂x<sub>j</sub>(x₀). En particular L es única.</div>
+<details><summary>Demostración</summary>
+<p>La condición de diferenciabilidad vale componente a componente: lím |f<sub>i</sub>(x₀ + h) − f<sub>i</sub>(x₀) − (Lh)<sub>i</sub>|/‖h‖ = 0.</p>
+<p>Tomo h = a e<sub>j</sub> (a en el lugar j, ceros en el resto), ‖h‖ = |a|, (L a e<sub>j</sub>)<sub>i</sub> = a l<sub>ij</sub>. Queda lím<sub>a→0</sub> |[f<sub>i</sub>(x₀ + a e<sub>j</sub>) − f<sub>i</sub>(x₀)]/a − l<sub>ij</sub>| = 0.</p>
+<p>Eso dice que el cociente incremental tiende a l<sub>ij</sub>: la parcial ∂f<sub>i</sub>/∂x<sub>j</sub>(x₀) existe y vale l<sub>ij</sub>.</p></details>
+<div class='enun'><b>Teorema.</b> Diferenciable en x₀ ⇒ continua en x₀.</div>
+<details><summary>Demostración</summary>
+<p>Para una matriz A vale ‖A h‖ ≤ M ‖h‖ con M = (Σ a<sub>ij</sub>²)<sup>1/2</sup> (Cauchy-Schwarz).</p>
+<p>Con ε = 1 en la definición, hay δ₁ tal que 0 &lt; ‖h‖ &lt; δ₁ ⇒ ‖f(x₀ + h) − f(x₀) − Df(x₀)h‖ &lt; ‖h‖.</p>
+<p>Entonces ‖f(x₀ + h) − f(x₀)‖ ≤ ‖f(x₀ + h) − f(x₀) − Df h‖ + ‖Df h‖ &lt; ‖h‖ + M‖h‖ = (1 + M)‖h‖.</p>
+<p>Dado ε′, tomo δ = mín(δ₁, ε′/(1 + M)): ‖h‖ &lt; δ ⇒ ‖f(x₀ + h) − f(x₀)‖ &lt; ε′. Es la continuidad.</p></details>
+<div class='enun'><b>Teorema (condición suficiente de diferenciabilidad).</b> Si las parciales existen y son continuas en un entorno de x, f es diferenciable en x.</div>
+<details><summary>Demostración (caso f: ℝ² → ℝ, se generaliza igual)</summary>
+<p>Suma telescópica: f(x + h, y + k) − f(x, y) = [f(x + h, y + k) − f(x, y + k)] + [f(x, y + k) − f(x, y)].</p>
+<p>Por el teorema del valor medio en una variable: el primer corchete es f<sub>x</sub>(c₁, y + k) h con c₁ entre x y x + h; el segundo es f<sub>y</sub>(x, c₂) k con c₂ entre y e y + k.</p>
+<p>Entonces |f(x + h, y + k) − f(x, y) − f<sub>x</sub>(x, y)h − f<sub>y</sub>(x, y)k| ≤ |f<sub>x</sub>(c₁, y + k) − f<sub>x</sub>(x, y)| |h| + |f<sub>y</sub>(x, c₂) − f<sub>y</sub>(x, y)| |k|.</p>
+<p>Divido por ‖(h, k)‖ y uso |h|, |k| ≤ ‖(h, k)‖: el cociente queda acotado por la suma de las dos diferencias, que tienden a 0 por la continuidad de las parciales (c₁ → x, c₂ → y). Así el límite de la definición es 0.</p></details>
+<p class='small'>Resumen de implicaciones: parciales continuas ⇒ diferenciable ⇒ continua y con parciales. Ninguna vuelta vale. Existencia de parciales no implica continuidad.</p>
+
+<h3>Derivada direccional ★★★★</h3>
+<p><b>Definición:</b> sea u unitario. D<sub>u</sub>f(x₀) = ∂f/∂u (x₀) = lím<sub>t→0</sub> [f(x₀ + t u) − f(x₀)]/t. Es la razón de cambio de f en la dirección u. Las parciales son las direccionales en los e<sub>i</sub>.</p>
+<p><b>Gradiente:</b> ∇f(x₀) = (∂f/∂x₁, …, ∂f/∂xₙ)(x₀).</p>
+<div class='enun'><b>Teorema ★ (29/07/2022, 22/11/2023, 26/06/2024).</b> Si f: U ⊂ ℝⁿ → ℝ es diferenciable en x₀ y u es unitario, entonces D<sub>u</sub>f(x₀) = ∇f(x₀) · u.</div>
+<details><summary>Demostración</summary>
+<p>Por diferenciabilidad: f(x₀ + h) = f(x₀) + ∇f(x₀) · h + ε(h)‖h‖, con ε(h) → 0 cuando h → 0.</p>
+<p>Tomo h = t u. Como ‖u‖ = 1, ‖h‖ = |t|: f(x₀ + t u) − f(x₀) = t ∇f(x₀) · u + ε(tu)|t|.</p>
+<p>Divido por t ≠ 0: [f(x₀ + t u) − f(x₀)]/t = ∇f(x₀) · u + ε(tu) · |t|/t.</p>
+<p>|t|/t vale ±1 y ε(tu) → 0 cuando t → 0, así que el último término tiende a 0. El límite existe y vale ∇f(x₀) · u. ∎</p>
+<p><i>Otra forma (la de la regla de la cadena):</i> g(t) = f(x₀ + t u). Por la regla de la cadena g′(0) = ∇f(x₀) · (x₀ + t u)′ = ∇f(x₀) · u, y g′(0) es justamente la definición de D<sub>u</sub>f(x₀).</p></details>
+<p><b>Consecuencias:</b> D<sub>u</sub>f = ‖∇f‖ cos θ, con θ el ángulo entre ∇f y u. Máxima en la dirección del gradiente, y vale ‖∇f‖; mínima en −∇f; cero en las direcciones perpendiculares. El gradiente es perpendicular a las curvas (superficies) de nivel: si γ(t) está en f = c, f(γ(t)) = c ⇒ ∇f · γ′ = 0.</p>
+
+<h3>Regla de la cadena ★ (07/12/2022)</h3>
+<div class='enun'><b>Teorema.</b> G: ℝⁿ → ℝᵐ diferenciable en x₀, F: ℝᵐ → ℝᵖ diferenciable en y₀ = G(x₀). Entonces F ∘ G es diferenciable en x₀ y D(F ∘ G)(x₀) = DF(y₀) · DG(x₀) (producto de matrices p×m por m×n).</div>
+<details><summary>Expresión en coordenadas y esquema de la prueba</summary>
+<p>Con y = G(x), z = F(y), elemento (i, j) del producto: <b>∂z<sub>i</sub>/∂x<sub>j</sub> = Σ<sub>k=1</sub><sup>m</sup> (∂F<sub>i</sub>/∂y<sub>k</sub>)(∂G<sub>k</sub>/∂x<sub>j</sub>)</b>. Cada variable final se deriva pasando por todas las intermedias.</p>
+<p>Caso típico: z = f(x, y), x = x(s, t), y = y(s, t): ∂z/∂s = f<sub>x</sub> x<sub>s</sub> + f<sub>y</sub> y<sub>s</sub>; ∂z/∂t = f<sub>x</sub> x<sub>t</sub> + f<sub>y</sub> y<sub>t</sub>. En matrices: [z<sub>s</sub> z<sub>t</sub>] = [f<sub>x</sub> f<sub>y</sub>] · [[x<sub>s</sub> x<sub>t</sub>], [y<sub>s</sub> y<sub>t</sub>]].</p>
+<p>Esquema: G(x₀ + h) − G(x₀) = DG h + o(‖h‖) y F(y₀ + k) − F(y₀) = DF k + o(‖k‖). Con k = G(x₀ + h) − G(x₀), que cumple ‖k‖ ≤ M₁‖h‖ (porque G es diferenciable), queda F(G(x₀ + h)) − F(G(x₀)) = DF · DG h + DF · o(‖h‖) + o(‖k‖), y los dos restos son o(‖h‖).</p></details>
+<div class='enun'><b>Examen viejo.</b> u(x) = v(f(x), g(x), h(x)), con v: ℝ³ → ℝ. Probar que ∇u = a ∇f + b ∇g + c ∇h y hallar a, b, c.</div>
+<details><summary>Resolución</summary><p>Por la regla de la cadena, ∂u/∂x<sub>j</sub> = v₁ ∂f/∂x<sub>j</sub> + v₂ ∂g/∂x<sub>j</sub> + v₃ ∂h/∂x<sub>j</sub>, con v<sub>k</sub> = ∂v/∂y<sub>k</sub> evaluada en (f(x), g(x), h(x)). Juntando las j: ∇u = v₁ ∇f + v₂ ∇g + v₃ ∇h. <b>a = ∂v/∂y₁, b = ∂v/∂y₂, c = ∂v/∂y₃</b>, evaluadas en (f, g, h).</p></details>
+<div class='enun'><b>Teorema de Euler (examen viejo).</b> Si f(t x) = tᵏ f(x) para todo t (f homogénea de grado k) y f es diferenciable, entonces Σ x<sub>i</sub> ∂f/∂x<sub>i</sub>(x) = k f(x).</div>
+<details><summary>Demostración</summary><p>Fijo x y derivo los dos miembros respecto de t. Izquierda, por la regla de la cadena: Σ ∂f/∂x<sub>i</sub>(t x) · x<sub>i</sub>. Derecha: k t<sup>k−1</sup> f(x). Evalúo en t = 1: Σ x<sub>i</sub> ∂f/∂x<sub>i</sub>(x) = k f(x).</p></details>
+<p><b>Schwarz:</b> si f<sub>xy</sub> y f<sub>yx</sub> existen y son continuas en un entorno, son iguales. Se usa en ∇ × ∇f = 0 y en las exactas.</p>
+
+<h2 id='u3'>3. Extremos</h2><div class='box ok'><p>Versión marcada para el cuaderno: <a href='AM2-teorico-u3.html'>Teórico 3 marcado</a>.</p></div>
+<p><b>Definiciones:</b> x₀ es máximo local si existe un entorno donde f(x) ≤ f(x₀); mínimo local con ≥. Punto crítico: ∇f(x₀) = 0 o alguna parcial no existe. Punto de ensilladura: crítico que no es extremo (en todo entorno hay puntos con f mayor y con f menor).</p>
+<div class='enun'><b>Teorema ★ (condición necesaria, 22/11/2023, 26/06/2024).</b> Si f tiene un extremo local en x₀ interior a U y existen las parciales en x₀, entonces ∇f(x₀) = 0.</div>
+<details><summary>Demostración</summary>
+<p>Supongo máximo local (el mínimo es igual). Fijo i y defino g(t) = f(x₀ + t e<sub>i</sub>), una función de una variable definida cerca de t = 0 porque x₀ es interior.</p>
+<p>Como f(x) ≤ f(x₀) cerca de x₀, g(t) ≤ g(0) cerca de 0: g tiene máximo local en t = 0.</p>
+<p>g es derivable en 0 y g′(0) = lím [f(x₀ + t e<sub>i</sub>) − f(x₀)]/t = ∂f/∂x<sub>i</sub>(x₀). Por Fermat (una variable), g′(0) = 0.</p>
+<p>Esto vale para cada i = 1, …, n: todas las parciales son 0, ∇f(x₀) = 0. ∎ La recíproca es falsa: f = x² − y² tiene ∇f(0, 0) = 0 y es silla.</p></details>
+<div class='enun'><b>Teorema ★ (Taylor de 2.º orden y condición suficiente; 29/07/2022, 22/11/2023, 17/07/2024).</b> f de clase C³ cerca de x₀. Entonces f(x₀ + h) = f(x₀) + ∇f(x₀) · h + ½ hᵀ H(x₀) h + R₂(h), con R₂(h)/‖h‖² → 0. Si x₀ es crítico y la Hessiana H es definida positiva, x₀ es mínimo local; si es definida negativa, máximo local; si es indefinida, ensilladura.</div>
+<details><summary>Desarrollo completo (lo que hay que escribir)</summary>
+<p><b>Fórmula:</b> f(x₀ + h) = f(x₀) + Σ<sub>i</sub> f<sub>x<sub>i</sub></sub> h<sub>i</sub> + ½ Σ<sub>i</sub> Σ<sub>j</sub> f<sub>x<sub>i</sub>x<sub>j</sub></sub>(x₀) h<sub>i</sub> h<sub>j</sub> + R₂. En ℝ²: f(x₀ + h, y₀ + k) = f + f<sub>x</sub>h + f<sub>y</sub>k + ½[f<sub>xx</sub>h² + 2f<sub>xy</sub>hk + f<sub>yy</sub>k²] + R₂.</p>
+<p><b>Forma matricial:</b> la forma cuadrática es ½ hᵀ H h con H = [[f<sub>xx</sub>, f<sub>xy</sub>], [f<sub>xy</sub>, f<sub>yy</sub>]] (simétrica por Schwarz). En n variables H = (∂²f/∂x<sub>i</sub>∂x<sub>j</sub>).</p>
+<p><b>Por qué clasifica:</b> en un punto crítico ∇f = 0, así que f(x₀ + h) − f(x₀) = ½ hᵀHh + R₂. Como R₂ es despreciable frente a ‖h‖², para h chico el signo de la diferencia lo decide la forma cuadrática. Si hᵀHh &gt; 0 para todo h ≠ 0, f(x₀ + h) &gt; f(x₀): mínimo. Si &lt; 0 siempre: máximo. Si toma los dos signos: hay direcciones donde f sube y otras donde baja, ensilladura.</p>
+<p><b>Criterio en dos variables</b> (completando cuadrados, con a = f<sub>xx</sub>, b = f<sub>xy</sub>, c = f<sub>yy</sub>): ah² + 2bhk + ck² = a[(h + bk/a)² + (ac − b²)k²/a²]. Con D = ac − b² = det H:</p>
+<table><tr><td>D &gt; 0 y f<sub>xx</sub> &gt; 0</td><td>definida positiva: mínimo local</td></tr>
+<tr><td>D &gt; 0 y f<sub>xx</sub> &lt; 0</td><td>definida negativa: máximo local</td></tr>
+<tr><td>D &lt; 0</td><td>indefinida: ensilladura</td></tr>
+<tr><td>D = 0</td><td>el criterio no decide: hay que estudiar f cerca del punto</td></tr></table>
+<p><b>En n variables (Sylvester):</b> menores principales Δ₁, Δ₂, …, Δₙ de H. Todos positivos ⇒ mínimo. Alternan empezando negativo (Δ₁ &lt; 0, Δ₂ &gt; 0, …) ⇒ máximo. det H ≠ 0 y ninguno de los dos patrones ⇒ ensilladura.</p></details>
+<p><b>Extremos absolutos:</b> por Weierstrass, una función continua en un compacto alcanza máximo y mínimo. Se buscan: críticos interiores + extremos sobre la frontera (con Lagrange o parametrizando) y se compara f en todos.</p>
+<div class='enun'><b>Teorema ★ (multiplicadores de Lagrange, 07/12/2022).</b> Si x₀ es extremo de f sujeto a g(x) = c, f y g son C¹ y ∇g(x₀) ≠ 0, existe λ con ∇f(x₀) = λ ∇g(x₀).</div>
+<details><summary>Método e interpretación geométrica</summary>
+<p><b>Método:</b> resolver el sistema ∇f = λ∇g, g = c (n + 1 ecuaciones, n + 1 incógnitas: x₁, …, xₙ, λ). Evaluar f en las soluciones; si la restricción es compacta (por ejemplo una elipse), el mayor valor es el máximo y el menor el mínimo. Con dos restricciones: ∇f = λ∇g + μ∇h.</p>
+<p><b>Por qué:</b> sea γ(t) una curva sobre g = c con γ(0) = x₀. Como g(γ(t)) = c, ∇g(x₀) · γ′(0) = 0. Como f(γ(t)) tiene extremo en t = 0, ∇f(x₀) · γ′(0) = 0. Ambos gradientes son perpendiculares a todo vector tangente a la restricción en x₀: son paralelos.</p>
+<p><b>Interpretación geométrica:</b> en el extremo, la curva de nivel de f que pasa por x₀ es <b>tangente</b> a la curva de restricción g = c. Si la cortara, moviéndose sobre la restricción se pasaría a niveles de f más altos y más bajos, y no sería extremo. λ mide cuánto cambia el valor óptimo si se cambia c.</p></details>
+
+<h2 id='u4'>4. Ecuaciones diferenciales de primer orden</h2><div class='box ok'><p>Versión resumida (solo lo que sale): <a href='AM2-teorico-u4.html'>Teórico 4</a>.</p></div>
+<h3>Variables separables</h3>
+<p>Forma y′ = f(x) g(y), o M(x) dx + N(y) dy = 0. Se separa: dy/g(y) = f(x) dx (si g(y) ≠ 0) y se integra a los dos lados: ∫ dy/g(y) = ∫ f(x) dx + C. Las y con g(y) = 0 son soluciones constantes que hay que revisar aparte.</p>
+<h3>Lineales</h3>
+<div class='enun'>y′ + P(x) y = Q(x). Solución general: y = e<sup>−∫P dx</sup> [∫ Q e<sup>∫P dx</sup> dx + C].</div>
+<details><summary>Deducción</summary>
+<p>Multiplico por μ(x) = e<sup>∫P dx</sup>, que cumple μ′ = Pμ. Queda μy′ + μPy = μQ, y el lado izquierdo es (μy)′ por la regla del producto.</p>
+<p>(μy)′ = μQ ⇒ μy = ∫ μQ dx + C ⇒ y = (1/μ)[∫ μQ dx + C]. La parte C/μ es la solución de la homogénea y la otra es una particular.</p></details>
+<h3>Exactas ★ (07/12/2022, 17/07/2024)</h3>
+<div class='enun'>M(x, y) dx + N(x, y) dy = 0 es <b>exacta</b> si existe F(x, y) con ∂F/∂x = M y ∂F/∂y = N; entonces la ecuación es dF = 0 y la solución general es F(x, y) = C. <b>Condición:</b> si M y N son C¹ en un rectángulo (simplemente conexo), es exacta si y solo si ∂M/∂y = ∂N/∂x.</div>
+<details><summary>Necesidad, suficiencia y fórmula resolvente</summary>
+<p><b>Necesaria:</b> si F<sub>x</sub> = M y F<sub>y</sub> = N, entonces M<sub>y</sub> = F<sub>xy</sub> y N<sub>x</sub> = F<sub>yx</sub>, que son iguales por Schwarz.</p>
+<p><b>Suficiente y construcción de F:</b> defino F(x, y) = ∫ M(x, y) dx + g(y) (integrando en x con y fija). Así F<sub>x</sub> = M. Pido F<sub>y</sub> = N: ∂/∂y ∫ M dx + g′(y) = N, o sea g′(y) = N − ∂/∂y ∫ M dx.</p>
+<p>Hay que ver que el lado derecho no depende de x: su derivada respecto de x es N<sub>x</sub> − M<sub>y</sub> = 0 por la condición. Entonces g se obtiene integrando en y.</p>
+<p><b>Fórmula resolvente:</b> F(x, y) = ∫<sub>x₀</sub><sup>x</sup> M(t, y) dt + ∫<sub>y₀</sub><sup>y</sup> N(x₀, t) dt = C.</p>
+<p><b>Si no es exacta:</b> se busca un factor integrante μ. Si (M<sub>y</sub> − N<sub>x</sub>)/N depende solo de x, μ(x) = e<sup>∫(M<sub>y</sub> − N<sub>x</sub>)/N dx</sup>. Si (N<sub>x</sub> − M<sub>y</sub>)/M depende solo de y, μ(y) = e<sup>∫(N<sub>x</sub> − M<sub>y</sub>)/M dy</sup>.</p></details>
+<p><b>Homogéneas</b> (y′ = f(y/x)): cambio y = vx, y′ = v + xv′, queda separable en v y x.</p>
+<h3>Bernoulli ★ (29/07/2022, 26/06/2024)</h3>
+<div class='enun'>y′ + P(x) y = Q(x) yⁿ, con n ≠ 0, 1 (si n = 0 o 1 es lineal). Con v = y<sup>1−n</sup> se transforma en la lineal v′ + (1 − n)P v = (1 − n)Q.</div>
+<details><summary>Deducción de la fórmula resolvente</summary>
+<p>Divido por yⁿ (y ≠ 0; y = 0 es solución si n &gt; 0): y<sup>−n</sup> y′ + P y<sup>1−n</sup> = Q.</p>
+<p>Cambio v = y<sup>1−n</sup>. Entonces v′ = (1 − n) y<sup>−n</sup> y′, o sea y<sup>−n</sup> y′ = v′/(1 − n).</p>
+<p>Reemplazo: v′/(1 − n) + P v = Q ⇒ <b>v′ + (1 − n)P v = (1 − n)Q</b>, lineal en v.</p>
+<p>Por la fórmula de las lineales, con μ = e<sup>(1−n)∫P dx</sup>: v = (1/μ)[∫ (1 − n) Q μ dx + C].</p>
+<p>Y se vuelve: <b>y = v<sup>1/(1−n)</sup></b> = {e<sup>−(1−n)∫P</sup>[(1 − n)∫ Q e<sup>(1−n)∫P</sup> dx + C]}<sup>1/(1−n)</sup>.</p>
+<p class='small'>Ejemplo para tener a mano: y′ + y = x y² (n = 2). v = 1/y, v′ − v = −x, v = x + 1 + Ce<sup>x</sup>, y = 1/(x + 1 + Ce<sup>x</sup>).</p></details>
+
+<h2 id='u5'>5. Ecuaciones diferenciales de segundo orden</h2>
+<p><b>Forma general lineal:</b> y″ + p(x) y′ + q(x) y = r(x). Homogénea si r = 0. La <b>solución general</b> de la completa es y = y<sub>h</sub> + y<sub>p</sub>: la general de la homogénea (C₁y₁ + C₂y₂, con y₁, y₂ linealmente independientes) más una particular cualquiera. Independencia: el wronskiano W = y₁y₂′ − y₂y₁′ ≠ 0. Dos condiciones iniciales y(x₀), y′(x₀) fijan C₁ y C₂.</p>
+<div class='enun'><b>Teorema (superposición).</b> Si y₁ e y₂ son soluciones de la homogénea, C₁y₁ + C₂y₂ también lo es.</div>
+<details><summary>Demostración</summary>
+<p>Sea y = C₁y₁ + C₂y₂. Por linealidad de la derivada: y′ = C₁y₁′ + C₂y₂′, y″ = C₁y₁″ + C₂y₂″.</p>
+<p>y″ + py′ + qy = C₁(y₁″ + py₁′ + qy₁) + C₂(y₂″ + py₂′ + qy₂) = C₁ · 0 + C₂ · 0 = 0. ∎</p>
+<p>Y si y<sub>p</sub> es particular de la completa, y<sub>h</sub> + y<sub>p</sub> también: L(y<sub>h</sub> + y<sub>p</sub>) = 0 + r = r.</p></details>
+<div class='enun'><b>Teorema ★ (homogénea a coeficientes constantes, 22/11/2023).</b> y″ + a y′ + b y = 0, a, b reales. Con las raíces de m² + am + b = 0: reales distintas, y = C₁e<sup>m₁x</sup> + C₂e<sup>m₂x</sup>; doble, y = (C₁ + C₂x)e<sup>mx</sup>; complejas α ± βi, y = e<sup>αx</sup>(C₁ cos βx + C₂ sen βx).</div>
+<details><summary>Deducción partiendo de y = e<sup>mx</sup></summary>
+<p>Propongo y = e<sup>mx</sup>: y′ = m e<sup>mx</sup>, y″ = m² e<sup>mx</sup>. Reemplazando: e<sup>mx</sup>(m² + am + b) = 0. Como e<sup>mx</sup> ≠ 0, e<sup>mx</sup> es solución si y solo si m es raíz de la <b>ecuación característica</b> m² + am + b = 0. Discriminante Δ = a² − 4b.</p>
+<p><b>Caso 1, Δ &gt; 0:</b> raíces reales m₁ ≠ m₂. e<sup>m₁x</sup> y e<sup>m₂x</sup> son soluciones independientes (W = (m₂ − m₁)e<sup>(m₁+m₂)x</sup> ≠ 0). Por superposición, y = C₁e<sup>m₁x</sup> + C₂e<sup>m₂x</sup>.</p>
+<p><b>Caso 2, Δ = 0:</b> raíz doble m = −a/2, así que 2m + a = 0. Solo tengo e<sup>mx</sup>; pruebo y₂ = x e<sup>mx</sup>: y₂′ = (1 + mx)e<sup>mx</sup>, y₂″ = (2m + m²x)e<sup>mx</sup>. Reemplazo: e<sup>mx</sup>[2m + m²x + a + amx + bx] = e<sup>mx</sup>[x(m² + am + b) + (2m + a)] = 0, porque los dos paréntesis son 0. Independientes (W = e<sup>2mx</sup> ≠ 0). y = (C₁ + C₂x)e<sup>mx</sup>.</p>
+<p><b>Caso 3, Δ &lt; 0:</b> m = α ± βi. Las soluciones complejas son e<sup>(α±βi)x</sup> = e<sup>αx</sup>(cos βx ± i sen βx) por Euler. Su semisuma y su semidiferencia dividida i (combinaciones lineales, que son solución por superposición) dan dos soluciones reales independientes: e<sup>αx</sup> cos βx y e<sup>αx</sup> sen βx. y = e<sup>αx</sup>(C₁ cos βx + C₂ sen βx).</p></details>
+<h3>Coeficientes indeterminados ★ (lista de la cátedra)</h3>
+<p>Para y″ + ay′ + by = r(x) con r de una de estas formas, se propone y<sub>p</sub> con la misma forma y coeficientes a determinar; se reemplaza y se igualan coeficientes.</p>
+<table><tr><th>r(x)</th><th>y<sub>p</sub> propuesta</th></tr>
+<tr><td>Polinomio de grado n</td><td>A<sub>n</sub>xⁿ + … + A₀</td></tr>
+<tr><td>k e<sup>αx</sup></td><td>A e<sup>αx</sup></td></tr>
+<tr><td>k cos βx o k sen βx</td><td>A cos βx + B sen βx (siempre los dos)</td></tr>
+<tr><td>Pₙ(x) e<sup>αx</sup></td><td>(polinomio de grado n) · e<sup>αx</sup></td></tr>
+<tr><td>e<sup>αx</sup>(… cos βx + … sen βx)</td><td>e<sup>αx</sup>(A cos βx + B sen βx)</td></tr></table>
+<p><b>Regla de modificación:</b> si algún término de la propuesta ya es solución de la homogénea, se multiplica la propuesta por x; si sigue siéndolo (raíz doble), por x². Equivalente: α (o 0 para polinomios, o βi para senos) es raíz de la característica de multiplicidad s ⇒ multiplicar por xˢ. Si r es suma de términos, y<sub>p</sub> es la suma de las particulares de cada uno (superposición).</p>
+<p class='small'>Variación de parámetros (cuando r no es de esas formas): y<sub>p</sub> = u₁y₁ + u₂y₂ con u₁′ = −y₂r/W, u₂′ = y₁r/W.</p>
+
+<h2 id='u6'>6. Integrales múltiples</h2>
+<div class='enun'><b>Fubini.</b> Si f es continua en R = [a, b] × [c, d], ∬<sub>R</sub> f dA = ∫<sub>a</sub><sup>b</sup> [∫<sub>c</sub><sup>d</sup> f(x, y) dy] dx = ∫<sub>c</sub><sup>d</sup> [∫<sub>a</sub><sup>b</sup> f(x, y) dx] dy. Para regiones tipo I (g₁(x) ≤ y ≤ g₂(x)) o tipo II, igual con límites variables.</div>
+<details><summary>Interpretación geométrica ★</summary>
+<p>Si f ≥ 0, ∬ f dA es el volumen bajo la superficie z = f sobre R. Fijando x, A(x) = ∫<sub>c</sub><sup>d</sup> f(x, y) dy es el área de la sección (rebanada) del sólido por el plano vertical en x. El volumen es la suma de esas rebanadas de espesor dx: V = ∫<sub>a</sub><sup>b</sup> A(x) dx (principio de Cavalieri). Cortar en y en vez de x da el mismo volumen: por eso el orden no importa.</p></details>
+<div class='enun'><b>Cambio de variables ★.</b> T(u, v) = (x(u, v), y(u, v)) de clase C¹, inyectiva, que lleva D* en D, con jacobiano J = ∂(x, y)/∂(u, v) = det[[x<sub>u</sub>, x<sub>v</sub>], [y<sub>u</sub>, y<sub>v</sub>]] ≠ 0. Entonces ∬<sub>D</sub> f(x, y) dx dy = ∬<sub>D*</sub> f(x(u, v), y(u, v)) |J| du dv.</div>
+<details><summary>Demostración (la idea que se escribe)</summary>
+<p>Divido D* en rectángulos chicos de lados Δu, Δv con vértice (u, v). T los lleva en regiones curvas de D. Por diferenciabilidad, cerca de (u, v), T(u + Δu, v) − T(u, v) ≈ T<sub>u</sub> Δu = (x<sub>u</sub>, y<sub>u</sub>)Δu y T(u, v + Δv) − T(u, v) ≈ T<sub>v</sub> Δv.</p>
+<p>La imagen del rectángulo es aproximadamente el paralelogramo generado por esos dos vectores, de área |T<sub>u</sub> × T<sub>v</sub>| ΔuΔv = |x<sub>u</sub>y<sub>v</sub> − x<sub>v</sub>y<sub>u</sub>| ΔuΔv = |J| ΔuΔv.</p>
+<p>La suma de Riemann de f sobre D se escribe entonces Σ f(T(u, v)) |J(u, v)| ΔuΔv, que es una suma de Riemann sobre D*. Al refinar la partición, el error de la aproximación lineal es o(ΔuΔv) y desaparece en el límite: quedan las dos integrales iguales. |J| es el factor de escala de áreas.</p></details>
+<table><tr><th>Coordenadas</th><th>Transformación</th><th>|J|</th></tr>
+<tr><td>Polares</td><td>x = r cos θ, y = r sen θ; r ≥ 0, θ ∈ [0, 2π)</td><td>r</td></tr>
+<tr><td>Cilíndricas</td><td>x = r cos θ, y = r sen θ, z = z</td><td>r</td></tr>
+<tr><td>Esféricas</td><td>x = ρ sen φ cos θ, y = ρ sen φ sen θ, z = ρ cos φ; φ ∈ [0, π]</td><td>ρ² sen φ</td></tr></table>
+<details><summary>Jacobianos calculados</summary>
+<p>Polares: det[[cos θ, −r sen θ], [sen θ, r cos θ]] = r cos²θ + r sen²θ = r.</p>
+<p>Esféricas: el determinante 3×3 de ∂(x, y, z)/∂(ρ, φ, θ), desarrollado por la última fila (cos φ, −ρ sen φ, 0), da ρ² sen φ. Con el orden (ρ, θ, φ) da el opuesto; en valor absoluto es lo mismo, y sen φ ≥ 0 porque φ ∈ [0, π].</p></details>
+
+<h2 id='u7'>7. Curvas</h2>
+<p><b>Curva:</b> una función continua γ: [a, b] → ℝⁿ, γ(t) = (x₁(t), …, xₙ(t)); su imagen es la traza. Es <b>regular</b> si γ es C¹ y γ′(t) ≠ 0; <b>cerrada</b> si γ(a) = γ(b); <b>simple</b> si no se corta a sí misma. γ′(t) es el vector tangente (velocidad).</p>
+<div class='enun'><b>Teorema ★ (longitud de arco).</b> Si γ es C¹ en [a, b], su longitud es L = ∫<sub>a</sub><sup>b</sup> ‖γ′(t)‖ dt.</div>
+<details><summary>Demostración</summary>
+<p>Tomo una partición a = t₀ &lt; t₁ &lt; … &lt; t<sub>N</sub> = b y la poligonal inscripta que une γ(t<sub>k−1</sub>) con γ(t<sub>k</sub>). Su longitud es Σ ‖γ(t<sub>k</sub>) − γ(t<sub>k−1</sub>)‖.</p>
+<p>En ℝ²: γ(t<sub>k</sub>) − γ(t<sub>k−1</sub>) = (x(t<sub>k</sub>) − x(t<sub>k−1</sub>), y(t<sub>k</sub>) − y(t<sub>k−1</sub>)). Por el valor medio en cada componente: = (x′(c<sub>k</sub>) Δt<sub>k</sub>, y′(d<sub>k</sub>) Δt<sub>k</sub>), con c<sub>k</sub>, d<sub>k</sub> en (t<sub>k−1</sub>, t<sub>k</sub>).</p>
+<p>La longitud de la poligonal es Σ √(x′(c<sub>k</sub>)² + y′(d<sub>k</sub>)²) Δt<sub>k</sub>. Como x′ e y′ son continuas, al refinar la partición c<sub>k</sub> y d<sub>k</sub> se confunden y esto es una suma de Riemann de √(x′² + y′²) = ‖γ′(t)‖. La longitud se define como el límite (supremo) de las poligonales: L = ∫ ‖γ′‖ dt. ∎</p>
+<p>Función longitud de arco: s(t) = ∫<sub>a</sub><sup>t</sup> ‖γ′(τ)‖ dτ, con ds/dt = ‖γ′(t)‖. Parametrizar por longitud de arco es usar s como parámetro: entonces ‖dγ/ds‖ = 1.</p></details>
+<h3>Triedro de Frenet</h3>
+<table><tr><td><b>Tangente</b></td><td>T = γ′/‖γ′‖</td></tr>
+<tr><td><b>Normal principal</b></td><td>N = T′/‖T′‖ (T′ es perpendicular a T porque ‖T‖ = 1: derivando T · T = 1 sale 2T · T′ = 0)</td></tr>
+<tr><td><b>Binormal</b></td><td>B = T × N</td></tr>
+<tr><td><b>Curvatura</b></td><td>κ = ‖dT/ds‖ = ‖T′(t)‖/‖γ′(t)‖ = ‖γ′ × γ″‖/‖γ′‖³. Mide cuánto gira la tangente por unidad de longitud. Radio de curvatura 1/κ.</td></tr>
+<tr><td><b>Torsión</b></td><td>dB/ds = −τN. Mide cuánto se sale la curva de su plano osculador. τ = (γ′ × γ″) · γ‴/‖γ′ × γ″‖².</td></tr>
+<tr><td><b>Fórmulas de Frenet-Serret</b></td><td>dT/ds = κN; dN/ds = −κT + τB; dB/ds = −τN.</td></tr></table>
+<div class='enun'><b>Examen viejo.</b> Si γ está parametrizada por longitud de arco, κ(s) = c &gt; 0 constante y τ(s) = 0, la traza es una circunferencia de radio 1/c.</div>
+<details><summary>Demostración</summary>
+<p>τ = 0 ⇒ dB/ds = 0 ⇒ B constante. Entonces (γ · B)′ = T · B = 0: γ · B es constante, la curva está en un plano perpendicular a B.</p>
+<p>Defino el candidato a centro: m(s) = γ(s) + (1/c) N(s). Derivo: m′ = T + (1/c)(−cT + τB) = T − T + 0 = 0. El centro m es constante.</p>
+<p>‖γ(s) − m‖ = ‖−(1/c)N‖ = 1/c. Todos los puntos están a distancia 1/c de m, en un plano: es una circunferencia de radio 1/c. ∎</p></details>
+
+<h2 id='u8'>8. Integrales de línea y campos vectoriales</h2>
+<p><b>De un campo escalar:</b> ∫<sub>C</sub> f ds = ∫<sub>a</sub><sup>b</sup> f(γ(t)) ‖γ′(t)‖ dt. No depende de la orientación. Si f = 1 da la longitud; si f es densidad, la masa.</p>
+<p><b>De un campo vectorial:</b> ∫<sub>C</sub> F · dr = ∫<sub>a</sub><sup>b</sup> F(γ(t)) · γ′(t) dt = ∫ P dx + Q dy + R dz. Cambia de signo si se invierte la orientación. Física: trabajo de la fuerza F a lo largo de C. Las dos no dependen de la parametrización (con la misma orientación).</p>
+<p><b>Campo vectorial:</b> F: U ⊂ ℝⁿ → ℝⁿ, que asigna un vector a cada punto. F = (P, Q, R).</p>
+<p><b>Divergencia:</b> ∇ · F = P<sub>x</sub> + Q<sub>y</sub> + R<sub>z</sub> (escalar). Mide el flujo neto que sale por unidad de volumen: &gt; 0 fuente, &lt; 0 sumidero, = 0 incompresible.</p>
+<p><b>Rotor:</b> ∇ × F = det[[i, j, k], [∂<sub>x</sub>, ∂<sub>y</sub>, ∂<sub>z</sub>], [P, Q, R]] = (R<sub>y</sub> − Q<sub>z</sub>, P<sub>z</sub> − R<sub>x</sub>, Q<sub>x</sub> − P<sub>y</sub>). Mide la rotación local (circulación por unidad de área alrededor del eje que indica). Si es 0, el campo es irrotacional. En el plano, la tercera componente Q<sub>x</sub> − P<sub>y</sub> es la que aparece en Green.</p>
+<div class='enun'><b>Teorema ★ (17/07/2024).</b> Si f es C², ∇ × (∇f) = 0. Si F es C², ∇ · (∇ × F) = 0.</div>
+<details><summary>Demostración</summary>
+<p>∇f = (f<sub>x</sub>, f<sub>y</sub>, f<sub>z</sub>). ∇ × ∇f = (f<sub>zy</sub> − f<sub>yz</sub>, f<sub>xz</sub> − f<sub>zx</sub>, f<sub>yx</sub> − f<sub>xy</sub>). Como f es C², por Schwarz las derivadas cruzadas son iguales: cada componente es 0.</p>
+<p>∇ · (∇ × F) = ∂<sub>x</sub>(R<sub>y</sub> − Q<sub>z</sub>) + ∂<sub>y</sub>(P<sub>z</sub> − R<sub>x</sub>) + ∂<sub>z</sub>(Q<sub>x</sub> − P<sub>y</sub>) = R<sub>yx</sub> − Q<sub>zx</sub> + P<sub>zy</sub> − R<sub>xy</sub> + Q<sub>xz</sub> − P<sub>yz</sub> = 0, otra vez por Schwarz (se cancelan de a pares).</p></details>
+<h3>Campos conservativos ★</h3>
+<p>F es <b>conservativo</b> si existe f (la <b>función potencial</b>) con F = ∇f. El potencial es único salvo una constante (en un dominio conexo).</p>
+<p><b>Condición necesaria:</b> si F es C¹ y conservativo, ∇ × F = 0 (porque es el rotor de un gradiente). En el plano: P<sub>y</sub> = Q<sub>x</sub>. <b>Es también suficiente</b> si el dominio es simplemente conexo (sin agujeros). Contraejemplo con agujero: F = (−y, x)/(x² + y²) tiene rotor 0 en ℝ² − {0} pero su integral sobre la circunferencia unidad es 2π.</p>
+<div class='enun'><b>22/11/2023.</b> ¿Es conservativo F = (2x − 3, −z, cos z)?</div>
+<details><summary>Resolución</summary><p>∇ × F = (R<sub>y</sub> − Q<sub>z</sub>, P<sub>z</sub> − R<sub>x</sub>, Q<sub>x</sub> − P<sub>y</sub>) = (0 − (−1), 0 − 0, 0 − 0) = (1, 0, 0) ≠ 0. <b>No es conservativo</b>: falla la condición necesaria.</p></details>
+<p><b>Cómo obtener el potencial:</b> f = ∫ P dx + g(y, z). Derivo en y e igualo a Q para hallar g<sub>y</sub>; integro. Derivo en z e igualo a R. Ejemplo: F = (2xy, x² + z, y): f = x²y + g(y, z); f<sub>y</sub> = x² + g<sub>y</sub> = x² + z ⇒ g = yz + h(z); f<sub>z</sub> = y + h′ = y ⇒ h constante. f = x²y + yz + C.</p>
+<div class='enun'><b>Teorema ★ (fundamental de las integrales de línea, 26/06/2024).</b> Si f es C¹ y C es una curva C¹ por tramos de A = γ(a) a B = γ(b), ∫<sub>C</sub> ∇f · dr = f(B) − f(A).</div>
+<details><summary>Demostración</summary>
+<p>∫<sub>C</sub> ∇f · dr = ∫<sub>a</sub><sup>b</sup> ∇f(γ(t)) · γ′(t) dt.</p>
+<p>Por la regla de la cadena, d/dt [f(γ(t))] = ∇f(γ(t)) · γ′(t). El integrando es la derivada de la función de una variable t ↦ f(γ(t)).</p>
+<p>Por la regla de Barrow: ∫<sub>a</sub><sup>b</sup> d/dt[f(γ(t))] dt = f(γ(b)) − f(γ(a)) = f(B) − f(A). Si la curva es C¹ por tramos se aplica en cada tramo y la suma es telescópica. ∎</p>
+<p><b>Corolarios:</b> la integral de un campo gradiente solo depende de los extremos; sobre una curva cerrada vale 0.</p></details>
+<div class='enun'><b>Teorema ★★★ (independencia de la trayectoria; 29/07/2022, 07/12/2022, 26/06/2024).</b> Sea F continuo en un abierto U conexo por arcos. Son equivalentes: (1) F es conservativo; (2) ∫<sub>C</sub> F · dr depende solo de los extremos de C; (3) ∮ F · dr = 0 sobre toda curva cerrada en U.</div>
+<details><summary>Demostración</summary>
+<p><b>(1) ⇒ (2):</b> si F = ∇f, por el teorema fundamental ∫<sub>C</sub> F · dr = f(B) − f(A), que no depende del camino.</p>
+<p><b>(2) ⇔ (3):</b> una curva cerrada se parte en dos caminos C₁ y C₂ de A a B, y ∮ = ∫<sub>C₁</sub> − ∫<sub>C₂</sub>. Una cosa es 0 si y solo si las dos integrales son iguales.</p>
+<p><b>(2) ⇒ (1):</b> fijo x₀ ∈ U. Defino f(x) = ∫<sub>x₀</sub><sup>x</sup> F · dr por cualquier curva en U de x₀ a x: existe porque U es conexo por arcos, y está bien definida (no depende de la curva) por (2).</p>
+<p>Calculo ∂f/∂x en un punto (x, y) (en el plano; en ℝ³ igual). Como U es abierto, el segmento horizontal de (x, y) a (x + h, y) está en U para h chico. Por (2) puedo ir de x₀ a (x, y) por cualquier curva y seguir por ese segmento: f(x + h, y) − f(x, y) = ∫<sub>segmento</sub> P dx + Q dy = ∫<sub>x</sub><sup>x+h</sup> P(t, y) dt (dy = 0 en el segmento).</p>
+<p>Divido por h y hago h → 0: por el teorema fundamental del cálculo (P continua), ∂f/∂x = P(x, y). Con un segmento vertical, ∂f/∂y = Q. Entonces ∇f = F: F es conservativo. ∎</p></details>
+
+<h2 id='u9'>9. Teorema de Green ★</h2>
+<div class='enun'><b>Teorema.</b> Sea D una región del plano acotada por una curva C cerrada simple, C¹ por tramos, orientada en sentido positivo (antihorario, D a la izquierda). Si P y Q tienen derivadas parciales continuas en un abierto que contiene a D: ∮<sub>C</sub> P dx + Q dy = ∬<sub>D</sub> (∂Q/∂x − ∂P/∂y) dA.</div>
+<details><summary>Demostración (región de tipo I y II a la vez)</summary>
+<p>Basta probar por separado ∮ P dx = −∬ P<sub>y</sub> dA y ∮ Q dy = ∬ Q<sub>x</sub> dA, y sumar.</p>
+<p><b>Primera.</b> Veo D como tipo I: D = {a ≤ x ≤ b, g₁(x) ≤ y ≤ g₂(x)}. Por Fubini y Barrow:</p>
+<p>∬<sub>D</sub> P<sub>y</sub> dA = ∫<sub>a</sub><sup>b</sup> ∫<sub>g₁(x)</sub><sup>g₂(x)</sup> P<sub>y</sub> dy dx = ∫<sub>a</sub><sup>b</sup> [P(x, g₂(x)) − P(x, g₁(x))] dx.</p>
+<p>El borde tiene cuatro tramos: C₁, el de abajo y = g₁(x), recorrido con x de a a b: ∫<sub>C₁</sub> P dx = ∫<sub>a</sub><sup>b</sup> P(x, g₁(x)) dx. C₃, el de arriba y = g₂(x), recorrido de b a a: ∫<sub>C₃</sub> P dx = −∫<sub>a</sub><sup>b</sup> P(x, g₂(x)) dx. Los lados verticales x = a y x = b tienen dx = 0: aportan 0.</p>
+<p>Sumando: ∮ P dx = ∫<sub>a</sub><sup>b</sup> [P(x, g₁) − P(x, g₂)] dx = −∬<sub>D</sub> P<sub>y</sub> dA. ✓</p>
+<p><b>Segunda.</b> Veo D como tipo II: D = {c ≤ y ≤ d, h₁(y) ≤ x ≤ h₂(y)}. ∬ Q<sub>x</sub> dA = ∫<sub>c</sub><sup>d</sup> [Q(h₂(y), y) − Q(h₁(y), y)] dy. En el borde, el lado derecho x = h₂(y) se recorre hacia arriba (+) y el izquierdo hacia abajo (−); los horizontales tienen dy = 0. Da lo mismo. ✓</p>
+<p>Sumando las dos: Green. Para regiones más generales, se cortan en regiones de este tipo; las integrales sobre los cortes interiores se recorren dos veces en sentidos opuestos y se cancelan. ∎</p></details>
+<p><b>Área con una integral de línea (examen viejo):</b> con P = −y/2, Q = x/2, Q<sub>x</sub> − P<sub>y</sub> = 1, así que <span class='f'>A(D) = ½ ∮<sub>C</sub> x dy − y dx</span>. También A = ∮ x dy = −∮ y dx. Ejemplo: elipse x = a cos t, y = b sen t: ½∫<sub>0</sub><sup>2π</sup> (ab cos²t + ab sen²t) dt = πab.</p>
+<p><b>Relación con lo anterior:</b> si P<sub>y</sub> = Q<sub>x</sub> en un dominio simplemente conexo, Green da ∮ = 0 para toda curva cerrada, y por el teorema de independencia el campo es conservativo. Esa es la prueba de que la condición necesaria es suficiente en el plano.</p>
+
+<h2 id='plan'>Plan del teórico, del 4 al 17</h2>
+<p>Cuarenta minutos por día, después del práctico. Escribir, no leer: hoja en blanco, enunciado con hipótesis y tesis, demostración, y recién ahí abrir.</p>
+<table><tr><th>Día</th><th>Escribir de memoria</th></tr>
+<tr><td>4 nov</td><td>Topología (las cinco definiciones). Unicidad del límite.</td></tr>
+<tr><td>5</td><td>Continuidad de la compuesta. Límites iterados y su relación con el límite doble.</td></tr>
+<tr><td>6</td><td>D<sub>u</sub>f = ∇f · u, las dos versiones. Plano tangente.</td></tr>
+<tr><td>7</td><td>Diferenciable ⇒ parciales y jacobiana; diferenciable ⇒ continua; condición suficiente.</td></tr>
+<tr><td>8</td><td>Condición necesaria de extremo. Taylor de 2.º orden, Hessiana, criterio (con el completamiento de cuadrados).</td></tr>
+<tr><td>9</td><td>Lagrange con la interpretación geométrica. Regla de la cadena matricial. Euler.</td></tr>
+<tr><td>10</td><td>Separables, lineales (deducción), exactas (fórmula resolvente), Bernoulli (deducción).</td></tr>
+<tr><td>11</td><td>Superposición. Homogénea de 2.º orden, los tres casos. Coeficientes indeterminados.</td></tr>
+<tr><td>12</td><td>Fubini e interpretación. Cambio de variables con la idea de la demostración. Jacobianos.</td></tr>
+<tr><td>13</td><td>Longitud de arco. Frenet. Integrales de línea. Rotor, divergencia, ∇ × ∇f = 0, ∇ · ∇ × F = 0.</td></tr>
+<tr><td>14</td><td>Teorema fundamental, independencia de la trayectoria, potencial. Green.</td></tr>
+<tr><td>15</td><td><b>Simulacro teórico 1:</b> el del 26/06/2024, 120 minutos, birome.</td></tr>
+<tr><td>16</td><td><b>Simulacro teórico 2:</b> el del 17/07/2024. Lo que falló.</td></tr>
+<tr><td>17</td><td>Repasar las seis de la caja verde, leyendo en voz alta.</td></tr></table>
+<p class='small'>Fuentes: fuentes/AM2-Temas-teorico.pdf y fuentes/AM2-Teoremas.pdf (la lista y las demostraciones de la cátedra); finales teóricos de 2022 a 2024 en el zip “ANALISIS 2”, carpeta Finales teórico; Marsden-Tromba para las demás.</p>
+</main></body></html>

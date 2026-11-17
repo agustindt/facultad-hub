@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Análisis Matemático II · Hojas resueltas</title>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap'>
+<style>
+body { margin:0; color:#1b1b1b; font:17px/1.5 'Iowan Old Style', Palatino, Georgia, serif; background-color:#fbfbf6; background-image:linear-gradient(#dde6ef 1px, transparent 1px), linear-gradient(90deg, #dde6ef 1px, transparent 1px); background-size:24px 24px; }
+nav { position:sticky; top:0; z-index:5; background:#1c1712; padding:8px 16px; display:flex; flex-wrap:wrap; gap:14px; font:14px system-ui, sans-serif; }
+nav a { color:#e4b397; text-decoration:none; } nav b { color:#f6f1e8; }
+main { max-width:1000px; margin:0 auto; padding:24px 22px 100px; }
+h1 { font-family:'Kalam', cursive; text-align:center; font-size:34px; margin:10px 0 4px; }
+.sub { text-align:center; margin:0 0 24px; color:#555; }
+h2 { font-family:'Kalam', cursive; font-size:27px; margin:44px 0 8px; border-bottom:2px solid #1b1b1b; display:inline-block; }
+h3 { font-family:'Kalam', cursive; font-size:22px; margin:28px 0 6px; text-decoration:underline; text-underline-offset:5px; }
+h4 { font-family:'Kalam', cursive; font-size:19px; margin:18px 0 4px; color:#444; }
+.def { border-top:2px solid #1b1b1b; border-bottom:2px solid #1b1b1b; padding:8px 4px; margin:10px 0 16px; background:rgba(255,255,255,.7); }
+.fun { font-size:19px; padding:8px 0; }
+.l { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 330px); gap:20px; align-items:center; padding:7px 0; border-bottom:1px dashed #c9d3dd; }
+.l .m, .l .M { overflow-x:auto; overflow-y:hidden; }
+.n { font-family:'Kalam', cursive; color:#1f4fa3; font-size:17px; line-height:1.3; }
+.n.ojo { color:#b3261e; }
+.n::before { content:'← '; }
+.concl { background:#e6f3ea; border:2px solid #3c7a55; border-radius:10px; padding:10px 16px; margin:14px 0 8px; }
+.concl b:first-child { color:#2d6a45; }
+.hoja { background:#fff; border:1px solid #bbb; border-left:5px solid #3c7a55; padding:10px 16px; margin:10px 0 18px; }
+.hoja::before { content:'EN LA HOJA SE ESCRIBE ASÍ'; display:block; font:700 12px system-ui, sans-serif; letter-spacing:.08em; color:#3c7a55; margin-bottom:4px; }
+.err { background:#fdecea; border:2px solid #b3261e; border-radius:10px; padding:10px 16px; margin:14px 0; }
+.err h3 { margin-top:4px; color:#b3261e; }
+.tip { background:#fff7df; border:2px dashed #c79a1a; border-radius:10px; padding:8px 16px; margin:12px 0; }
+table { border-collapse:collapse; background:#fff; margin:8px 0 14px; }
+th, td { border:1px solid #bbb; padding:6px 10px; text-align:left; vertical-align:middle; }
+th { background:#f0f0ea; font:600 13px system-ui, sans-serif; }
+svg { background:#fff; border:1px solid #bbb; max-width:100%; height:auto; }
+.fig { display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin:10px 0; }
+@media (max-width: 720px) { .l { grid-template-columns:1fr; gap:2px; } .n { padding-left:10px; } }
+@media print { nav { display:none; } body { background:#fff; } }
+</style></head><body>
+<nav><b>AM II · Hojas</b><a href='index.html'>Plan</a><a href='AM2-desde-cero.html'>Desde cero</a><a href='#corr'>Tu hoja corregida</a><a href='#e1'>1. Función partida</a><a href='#e2'>2. Extremos</a><a href='#e3'>3. Lagrange</a><a href='#e4'>4. Volumen</a><a href='#e5'>5. Green</a><a href='#e6'>6. Ecuación diferencial</a></nav>
+<main>
+<h1>Análisis Matemático II</h1>
+<p class='sub'>Ejercicios resueltos en formato hoja: cada línea es una cuenta, y a la derecha (en azul) está <b>por qué</b> se hace. En rojo, los errores que hay que evitar.</p>
+
+<div class='err' id='corr'>
+<h3>Tu hoja: qué está bien y qué hay que corregir</h3>
+<p>El formato está perfecto (enunciado con la llave, definición recuadrada, cuentas en cadena, conclusión al costado). Hay cuatro errores de cuentas, y el más importante es que mezclaste dos funciones: la conclusión <span class='m'>m/(1+m^2)</span> de la guía era de <span class='m'>xy/(x^2+y^2)</span>, que no tiene raíz. La tuya tiene raíz.</p>
+<div class='l'><div class='m'>@sqrt{x^2+m^2x^2} @ne x+mx</div><div class='n ojo'>La raíz de una suma NO se separa: √(a + b) ≠ √a + √b. Hay que sacar factor común x² adentro de la raíz.</div></div>
+<div class='l'><div class='m'>@dfrac{mx^2}{x(1+m)} = @dfrac{mx}{1+m} @ne @dfrac{m}{1+m}</div><div class='n ojo'>Al simplificar x² con x queda una x arriba, no se va del todo.</div></div>
+<div class='l'><div class='m'>@sqrt{x^2+y^2}=@sqrt{r^2}=r @quad(@text{no } r^2)</div><div class='n ojo'>En polares el denominador con raíz da r, no r².</div></div>
+<div class='l'><div class='m'>(r@cos@theta)(r@,@operatorname{sen}@theta)=r^2@cos@theta@,@operatorname{sen}@theta @ne r(@cos@theta+@operatorname{sen}@theta)</div><div class='n ojo'>Es un producto: r·r = r², y cos y sen quedan multiplicando. El factor común es para sumas.</div></div>
+<p><b>Resultado correcto de tu función:</b> por rectas da 0 para todo m (no prueba nada), y en polares queda <span class='m'>r@cos@theta@,@operatorname{sen}@theta</span>, que tiende a 0: <b>es continua</b>. Está hecho entero abajo, línea por línea.</p></div>
+
+<h2 id='e1'>1. Función partida en el origen</h2>
+<div class='fun M'>f(x,y)=@begin{cases} @dfrac{xy}{@sqrt{x^2+y^2}} &amp; @text{si } (x,y)@neq(0,0) @@[10pt] 0 &amp; @text{si } (x,y)=(0,0) @end{cases}</div>
+<p>Consignas: a) continuidad en (0, 0); b) derivadas parciales en (0, 0); c) diferenciabilidad en (0, 0); d) derivada direccional en (0, 0).</p>
+
+<h3>Paso 0: mirar los grados (borrador, no se entrega)</h3>
+<table><tr><th>Arriba: xy</th><th>Abajo: √(x² + y²)</th><th>Diferencia</th><th>Qué espero</th></tr>
+<tr><td>grado 1 + 1 = 2</td><td>la raíz de algo de grado 2 cuenta como grado 1</td><td>2 − 1 = 1</td><td>continua, pero no diferenciable</td></tr></table>
+
+<h3>Paso A: Continuidad</h3>
+<div class='def M'>f @text{ es continua en } (0,0) @iff @lim_{(x,y)@to(0,0)} f(x,y) = f(0,0) = 0</div>
+<p>Tengo que calcular el límite. Pruebo primero por rectas para ver qué número debería dar.</p>
+<h4>A.1 Por rectas y = mx (no alcanza para probar que existe, pero orienta)</h4>
+<div class='l'><div class='M'>y = mx</div><div class='n'>Me acerco al origen por una recta que pasa por (0, 0). Cada m es una recta distinta.</div></div>
+<div class='l'><div class='M'>f(x,mx)=@dfrac{x@cdot mx}{@sqrt{x^2+(mx)^2}}</div><div class='n'>Donde hay y, escribo mx. En todos lados: arriba y abajo.</div></div>
+<div class='l'><div class='M'>=@dfrac{m x^2}{@sqrt{x^2+m^2x^2}}</div><div class='n'>Arriba: x·mx = m·x². Abajo: (mx)² = m²x² (el cuadrado afecta a los dos factores).</div></div>
+<div class='l'><div class='M'>=@dfrac{m x^2}{@sqrt{x^2(1+m^2)}}</div><div class='n'>Adentro de la raíz saco factor común x²: x² + m²x² = x²(1 + m²).</div></div>
+<div class='l'><div class='M'>=@dfrac{m x^2}{@sqrt{x^2}@,@sqrt{1+m^2}}</div><div class='n'>La raíz de un PRODUCTO sí se separa: √(a·b) = √a · √b.</div></div>
+<div class='l'><div class='M'>=@dfrac{m x^2}{|x|@,@sqrt{1+m^2}}</div><div class='n ojo'>√(x²) = |x|, no x. La raíz nunca da negativo, y x puede ser negativo.</div></div>
+<div class='l'><div class='M'>=@dfrac{m@,|x|}{@sqrt{1+m^2}}</div><div class='n'>x² = |x|·|x|. Simplifico un |x| de arriba con el de abajo.</div></div>
+<div class='l'><div class='M'>@lim_{x@to 0}@dfrac{m@,|x|}{@sqrt{1+m^2}} = @dfrac{m@cdot 0}{@sqrt{1+m^2}} = 0</div><div class='n'>Cuando x → 0, |x| → 0. Da 0 para cualquier m.</div></div>
+<div class='concl'><b>Qué dice esto:</b> por todas las rectas da 0. Eso <b>no prueba</b> que el límite exista (hay infinitos caminos que no son rectas). Solo dice que, si existe, tiene que ser 0. Para probarlo, polares.</div>
+
+<h4>A.2 Por polares (esto sí prueba que existe)</h4>
+<div class='l'><div class='M'>x = r@cos@theta @qquad y = r@,@operatorname{sen}@theta @qquad r=@sqrt{x^2+y^2}@ge 0</div><div class='n'>r es la distancia al origen y θ el ángulo. Ir a (0, 0) es lo mismo que r → 0, para cualquier θ.</div></div>
+<p><b>Numerador:</b></p>
+<div class='l'><div class='M'>xy = (r@cos@theta)(r@,@operatorname{sen}@theta) = r^2@cos@theta@,@operatorname{sen}@theta</div><div class='n'>Es un producto: r · r = r². El cos y el sen quedan multiplicando.</div></div>
+<p><b>Denominador</b> (despacio, porque acá estuvo el error):</p>
+<div class='l'><div class='M'>x^2+y^2 = (r@cos@theta)^2+(r@,@operatorname{sen}@theta)^2 = r^2@cos^2@theta + r^2@operatorname{sen}^2@theta</div><div class='n'>Elevo cada uno al cuadrado: (r cos θ)² = r² cos²θ.</div></div>
+<div class='l'><div class='M'>= r^2(@cos^2@theta+@operatorname{sen}^2@theta)</div><div class='n'>Factor común r². Acá sí, porque es una suma.</div></div>
+<div class='l'><div class='M'>= r^2@cdot 1 = r^2</div><div class='n'>Identidad que vale siempre: cos²θ + sen²θ = 1.</div></div>
+<div class='l'><div class='M'>@sqrt{x^2+y^2} = @sqrt{r^2} = r</div><div class='n ojo'>Como r ≥ 0, √(r²) = r. Si no hubiera raíz, quedaría r².</div></div>
+<p><b>Junto todo:</b></p>
+<div class='l'><div class='M'>f = @dfrac{r^2@cos@theta@,@operatorname{sen}@theta}{r} = r@cos@theta@,@operatorname{sen}@theta</div><div class='n'>Simplifico una r de arriba con la de abajo. Queda r multiplicando: buena señal.</div></div>
+<p><b>Acoto</b> (es lo que demuestra):</p>
+<div class='l'><div class='M'>|f(x,y)-0| = r@,|@cos@theta|@,|@operatorname{sen}@theta|</div><div class='n'>Valor absoluto de un producto = producto de valores absolutos. r ya es positivo.</div></div>
+<div class='l'><div class='M'>@le r@cdot 1@cdot 1 = r</div><div class='n'>|cos θ| ≤ 1 y |sen θ| ≤ 1 para cualquier θ.</div></div>
+<div class='l'><div class='M'>0 @le |f(x,y)-0| @le r @;@xrightarrow[r@to 0]{}@; 0</div><div class='n'>|f| queda encerrado entre 0 y r. Si r → 0, |f| → 0 (intercalación). No depende de θ.</div></div>
+<div class='concl'><b>Conclusión A:</b> <span class='m'>@lim_{(x,y)@to(0,0)}f(x,y)=0=f(0,0)</span>, entonces <b>f es continua en (0, 0)</b>.</div>
+<div class='hoja'>Paso a polares x = r cos θ, y = r sen θ, r = √(x² + y²). Entonces f(r cos θ, r sen θ) = r² cos θ sen θ / r = r cos θ sen θ. Como |cos θ sen θ| ≤ 1, se tiene 0 ≤ |f(x, y) − 0| ≤ r → 0 cuando (x, y) → (0, 0). Por intercalación, lím f(x, y) = 0 = f(0, 0). Por lo tanto f es continua en (0, 0).</div>
+
+<h3>Paso B: Derivadas parciales en (0, 0)</h3>
+<div class='def M'>f_x(0,0)=@lim_{h@to 0}@dfrac{f(h,0)-f(0,0)}{h} @qquad f_y(0,0)=@lim_{k@to 0}@dfrac{f(0,k)-f(0,0)}{k}</div>
+<p>Se usa la definición porque en (0, 0) la fórmula no vale (daría 0/0). Me muevo solo en una dirección: en f<sub>x</sub>, x = h e y = 0.</p>
+<div class='l'><div class='M'>f(h,0)=@dfrac{h@cdot 0}{@sqrt{h^2+0^2}} = @dfrac{0}{|h|} = 0</div><div class='n'>Reemplazo x por h e y por 0. 0 dividido algo distinto de 0 es 0 (h ≠ 0 porque es un límite).</div></div>
+<div class='l'><div class='M'>f(0,0)=0</div><div class='n'>Lo dice la segunda línea de la llave.</div></div>
+<div class='l'><div class='M'>f_x(0,0)=@lim_{h@to 0}@dfrac{0-0}{h}=@lim_{h@to 0} 0 = 0</div><div class='n'>Cociente 0/h = 0 para todo h ≠ 0.</div></div>
+<div class='l'><div class='M'>f(0,k)=@dfrac{0@cdot k}{@sqrt{0^2+k^2}}=0 @;@Rightarrow@; f_y(0,0)=@lim_{k@to 0}@dfrac{0-0}{k}=0</div><div class='n'>Igual que antes, ahora x = 0 e y = k.</div></div>
+<div class='concl'><b>Conclusión B:</b> f<sub>x</sub>(0, 0) = 0 y f<sub>y</sub>(0, 0) = 0. El gradiente sería ∇f(0, 0) = (0, 0).</div>
+
+<h3>Paso C: Diferenciabilidad en (0, 0)</h3>
+<div class='def M'>f@text{ diferenciable en }(0,0)@iff @lim_{(h,k)@to(0,0)}@dfrac{f(h,k)-f(0,0)-f_x(0,0)@,h-f_y(0,0)@,k}{@sqrt{h^2+k^2}}=0</div>
+<p>La idea: f es diferenciable si el plano tangente la aproxima tan bien que el error, dividido la distancia, se va a 0.</p>
+<div class='l'><div class='M'>@dfrac{f(h,k)-0-0@cdot h-0@cdot k}{@sqrt{h^2+k^2}} = @dfrac{f(h,k)}{@sqrt{h^2+k^2}}</div><div class='n'>Pongo los números que ya tengo: f(0,0) = 0, f<sub>x</sub> = 0, f<sub>y</sub> = 0.</div></div>
+<div class='l'><div class='M'>h=r@cos@theta,@ k=r@,@operatorname{sen}@theta: @quad f(h,k)=r@cos@theta@,@operatorname{sen}@theta,@quad @sqrt{h^2+k^2}=r</div><div class='n'>Mismas polares que en A.2, con h y k en vez de x e y. f(h, k) ya lo calculé.</div></div>
+<div class='l'><div class='M'>@dfrac{r@cos@theta@,@operatorname{sen}@theta}{r} = @cos@theta@,@operatorname{sen}@theta</div><div class='n ojo'>Se fue la r: lo que queda depende SOLO del ángulo. Mala señal: el límite va a depender de la dirección.</div></div>
+<div class='l'><div class='M'>@theta=0: @quad @cos 0@cdot@operatorname{sen}0 = 1@cdot 0 = 0</div><div class='n'>Llegando por el eje x.</div></div>
+<div class='l'><div class='M'>@theta=@tfrac{@pi}{4}: @quad @tfrac{@sqrt2}{2}@cdot@tfrac{@sqrt2}{2}=@tfrac{2}{4}=@tfrac12</div><div class='n'>Llegando por la recta y = x.</div></div>
+<div class='concl'><b>Conclusión C:</b> el límite da 0 por una dirección y 1/2 por otra: no existe, entonces no vale 0. <b>f no es diferenciable en (0, 0).</b> Coincide con lo que anticipaba el paso 0.</div>
+<div class='hoja'>Analizo lím<sub>(h,k)→(0,0)</sub> [f(h, k) − f(0, 0) − f<sub>x</sub>(0,0)h − f<sub>y</sub>(0,0)k]/√(h² + k²) = lím f(h, k)/√(h² + k²). En polares: r cos θ sen θ / r = cos θ sen θ, que depende de θ (vale 0 si θ = 0 y 1/2 si θ = π/4). El límite no existe, por lo tanto no es 0, y f no es diferenciable en (0, 0).</div>
+
+<h3>Paso D: Derivada direccional en (0, 0)</h3>
+<div class='def M'>D_{@vec u}f(0,0)=@lim_{t@to 0}@dfrac{f(ta,tb)-f(0,0)}{t}, @qquad @vec u=(a,b),@ a^2+b^2=1</div>
+<div class='l'><div class='M'>f(ta,tb)=@dfrac{ta@cdot tb}{@sqrt{t^2a^2+t^2b^2}}</div><div class='n'>Reemplazo x por ta e y por tb.</div></div>
+<div class='l'><div class='M'>=@dfrac{t^2ab}{@sqrt{t^2(a^2+b^2)}}=@dfrac{t^2ab}{@sqrt{t^2}@cdot@sqrt{1}}=@dfrac{t^2ab}{|t|}</div><div class='n'>Factor común t² en la raíz; a² + b² = 1 porque u es unitario; √(t²) = |t|.</div></div>
+<div class='l'><div class='M'>@dfrac{f(ta,tb)-0}{t}=@dfrac{t^2ab}{t@,|t|}=@dfrac{|t|^2@,ab}{t@,|t|}=@dfrac{|t|}{t}@,ab</div><div class='n'>t² = |t|². Simplifico un |t|.</div></div>
+<div class='l'><div class='M'>@dfrac{|t|}{t}=@begin{cases}1 &amp; t@gt 0@@ -1 &amp; t@lt 0@end{cases}</div><div class='n ojo'>|t|/t no tiene límite en 0: por derecha da 1, por izquierda −1.</div></div>
+<div class='l'><div class='M'>t@to 0^+: @ ab @qquad t@to 0^-: @ -ab</div><div class='n'>Los laterales coinciden solo si ab = 0.</div></div>
+<div class='concl'><b>Conclusión D:</b> la derivada direccional existe solo si a = 0 o b = 0 (las direcciones de los ejes), y ahí vale 0. En cualquier otra dirección <b>no existe</b>. Otra forma de ver que f no es diferenciable: si lo fuera, existirían todas y valdrían ∇f · u.</div>

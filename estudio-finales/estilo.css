@@ -1,0 +1,41 @@
+:root { --bg:#f4efe6; --paper:#fffdf8; --ink:#1c1712; --muted:#5c5348; --line:#e4d9c8; --accent:#8d3b18; --soft:#f6e6dc; --gsoft:#e7f3ec; --gld:#f8f0dc; --red:#f9e3df; --bar:#1c1712; --barink:#f6f1e8; --barlink:#e4b397; }
+@media (prefers-color-scheme: dark) { :root { --bg:#181512; --paper:#221e1a; --ink:#efe8dd; --muted:#b3a898; --line:#3a332c; --accent:#e4a27f; --soft:#2c231d; --gsoft:#1d2b23; --gld:#2d2717; --red:#33201c; --bar:#0f0d0b; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:18px/1.55 'Iowan Old Style', Palatino, Georgia, serif; }
+header.top { position:sticky; top:0; z-index:5; background:var(--bar); color:var(--barink); padding:10px 18px; display:flex; flex-wrap:wrap; gap:14px; align-items:baseline; }
+header.top a { color:var(--barlink); font-family:'Avenir Next', system-ui, sans-serif; font-size:14px; text-decoration:none; }
+header.top strong { font-family:'Avenir Next', system-ui, sans-serif; }
+main { max-width:880px; margin:0 auto; padding:28px 20px 90px; }
+h1 { font-size:34px; line-height:1.1; margin:0 0 10px; }
+h2 { font-size:25px; margin:1.8em 0 .4em; padding-top:.3em; border-top:2px solid var(--line); }
+h3 { font-size:19px; margin:1.3em 0 .3em; }
+a { color:var(--accent); }
+.k { font-family:'Avenir Next', system-ui, sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0; }
+.box { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin:12px 0; }
+.ok { background:var(--gsoft); } .warn { background:var(--gld); } .soft { background:var(--soft); } .bad { background:var(--red); }
+table { border-collapse:collapse; width:100%; font-size:15.5px; margin:8px 0 14px; display:block; overflow-x:auto; }
+th, td { border-bottom:1px solid var(--line); text-align:left; padding:5px 8px; vertical-align:top; }
+th { font-family:'Avenir Next', system-ui, sans-serif; font-size:12.5px; color:var(--muted); }
+td.n { text-align:right; font-variant-numeric:tabular-nums; }
+.ans { font-weight:650; }
+.f { font-family:'Iowan Old Style', Palatino, serif; background:var(--soft); padding:1px 6px; border-radius:5px; white-space:nowrap; }
+details { background:var(--paper); border:1px dashed var(--accent); border-radius:10px; padding:8px 14px; margin:10px 0 16px; }
+details summary { cursor:pointer; font-family:'Avenir Next', system-ui, sans-serif; font-size:14px; font-weight:700; color:var(--accent); }
+details[open] summary { margin-bottom:6px; }
+.enun { border-left:4px solid var(--accent); padding:6px 14px; background:var(--paper); margin:10px 0; }
+ol li, ul li { margin:.25em 0; }
+.chk label { display:block; margin:3px 0; }
+.small { font-size:15px; color:var(--muted); }
+@media print { header.top { display:none; } body { background:#fff; color:#000; } details { border:none; } details > *:not(summary) { display:block !important; } .box, .enun { break-inside:avoid; } }
+
+.ej { background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--muted); border-radius:8px; padding:6px 14px; margin:8px 0 14px; }
+.ej p, .hoja p { margin:.35em 0; }
+.hoja { background:var(--gsoft); border-left:4px solid #3c7a55; border-radius:8px; padding:6px 14px; margin:8px 0 16px; }
+.hoja::before { content:'En la hoja se escribe así'; display:block; font-family:system-ui, sans-serif; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#3c7a55; margin-bottom:2px; }
+h4 { font-size:17px; margin:1em 0 .2em; }
+
+mark { background:linear-gradient(transparent 10%, #fff176 10%, #fff176 90%, transparent 90%); color:#1b1b1b; padding:0 2px; }
+.r { text-decoration:underline; text-decoration-color:#d32f2f; text-decoration-thickness:2.5px; text-underline-offset:3px; font-weight:600; }
+.v { color:#2e7d32; font-style:italic; }
+.t { text-decoration:underline wavy #1565c0; text-decoration-thickness:1.5px; text-underline-offset:4px; }
+@media (prefers-color-scheme: dark) { .v { color:#86d993; } .t { text-decoration-color:#6fb3f2; } .r { text-decoration-color:#ff6b6b; } mark .v, mark .t { color:#1b1b1b; } }

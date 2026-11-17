@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>AM II · Teórico 3: extremos, Taylor, Hessiana, Lagrange</title>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap'>
+<link rel='stylesheet' href='marcado.css'></head><body>
+<nav><b>AM II · Teórico 3</b><a href='index.html'>Plan</a><a href='AM2-teorico-u2.html'>Teórico 2</a><a href='AM2-teorico.html'>Teórico completo</a><a href='#def'>Definiciones</a><a href='#nec'>Condición necesaria</a><a href='#tay'>Taylor y Hessiana</a><a href='#suf'>Condición suficiente</a><a href='#abs'>Absolutos</a><a href='#lag'>Lagrange</a><a href='#chk'>Para el examen</a></nav>
+<main>
+<h1>Teórico 3: Extremos, Taylor y Hessiana</h1>
+<div class='ley'><b>Mismo código:</b>
+<div><mark>Amarillo</mark>: textual en el examen. <span class='r'>Rojo</span>: no puede faltar. <span class='v'>Verde</span>: para entender. <span class='t'>Ondulado azul</span>: trampa. Recuadro: teorema con <b style='color:#6a1b9a'>H)</b> y <b style='color:#6a1b9a'>T)</b>. Línea violeta: demostración.</div>
+<div><b>Martes 10:</b> secciones 1 a 4. <b>Miércoles 11:</b> secciones 5 y 6.</div></div>
+
+<h2 id='def'>1. Definiciones</h2>
+<p><mark>f tiene un <span class='r'>máximo local</span> en x₀ si <span class='r'>existe un entorno</span> B(x₀, r) tal que f(x) <span class='r'>≤</span> f(x₀) para todo x de ese entorno.</mark> <mark><span class='r'>Mínimo local</span>: lo mismo con f(x) <span class='r'>≥</span> f(x₀).</mark></p>
+<p><mark><span class='r'>Máximo (mínimo) absoluto</span> en U: f(x) ≤ f(x₀) (≥) para <span class='r'>todo</span> x ∈ U.</mark></p>
+<p><mark>x₀ es <span class='r'>punto crítico</span> si ∇f(x₀) = 0 <span class='r'>o</span> alguna derivada parcial no existe en x₀.</mark></p>
+<p><mark>x₀ es <span class='r'>punto de ensilladura</span> si es crítico pero no es extremo: <span class='r'>en todo entorno</span> hay puntos con f mayor y puntos con f menor que f(x₀).</mark></p>
+<p class='v'>Local = gana en su barrio. Absoluto = gana en todo el dominio. Ensilladura = la silla de montar: subiendo en una dirección y bajando en otra.</p>
+
+<h2 id='nec'>2. Condición necesaria de extremo ★ (2023 y 2024)</h2>
+<div class='teo'><div class='tit'>Teorema</div>
+<div class='ht'><b>H)</b><div><mark>f: U ⊂ ℝⁿ → ℝ tiene un extremo local en x₀, <span class='r'>x₀ interior</span> a U, y <span class='r'>existen las derivadas parciales</span> en x₀.</mark></div><b>T)</b><div><mark>∇f(x₀) = 0.</mark></div></div></div>
+<div class='dem'><p><span class='paso'>1.</span> <mark>Supongo que es un <span class='r'>máximo local</span></mark> (el mínimo es igual, con las desigualdades al revés).</p>
+<p><span class='paso'>2.</span> <mark>Fijo una coordenada i y defino una función de <span class='r'>una variable</span>: g(t) = f(x₀ + t eᵢ).</mark> <span class='v'>Es f restringida a la recta que pasa por x₀ en la dirección del eje i.</span></p>
+<p><span class='paso'>3.</span> <mark>g está definida cerca de t = 0 <span class='r'>porque x₀ es interior</span></mark> (hay una bola alrededor de x₀ dentro de U). <span class='v'>Acá se usa esa hipótesis.</span></p>
+<p><span class='paso'>4.</span> <mark>Como f(x) ≤ f(x₀) cerca de x₀, se cumple g(t) ≤ g(0) cerca de 0: <span class='r'>g tiene un máximo local en t = 0</span>.</mark></p>
+<p><span class='paso'>5.</span> <mark>g es derivable en 0 y g′(0) = lím<sub>t→0</sub> [f(x₀ + t eᵢ) − f(x₀)]/t = ∂f/∂xᵢ (x₀)</mark> <span class='v'>(es exactamente la definición de derivada parcial; existe por hipótesis).</span></p>
+<p><span class='paso'>6.</span> <mark>Por el <span class='r'>teorema de Fermat</span> en una variable</mark> (máximo local interior y derivable ⇒ derivada 0): g′(0) = 0, o sea ∂f/∂xᵢ (x₀) = 0.</p>
+<p><span class='paso'>7.</span> <mark>Esto vale para cada i = 1, …, n: ∇f(x₀) = 0.</mark> ∎</p></div>
+<div class='ojo'><p class='t'>Trampa 1: la recíproca es FALSA. f = x² − y² tiene ∇f(0, 0) = 0 y en (0, 0) hay una ensilladura (sobre el eje x sube, sobre el eje y baja).</p>
+<p class='t'>Trampa 2: puede haber extremo donde las parciales no existen. f = √(x² + y²) (el cono) tiene mínimo en (0, 0) y ahí no existen las parciales. Por eso “punto crítico” incluye ese caso.</p></div>
+
+<h2 id='tay'>3. Fórmula de Taylor de segundo orden y Hessiana ★</h2>
+<div class='teo'><div class='tit'>Teorema de Taylor de 2.º orden (17/07/2024, 29/07/2022)</div>
+<div class='ht'><b>H)</b><div><mark>f: U ⊂ ℝⁿ → ℝ de <span class='r'>clase C³</span> en un abierto que contiene a x₀.</mark></div><b>T)</b><div><mark>f(x₀ + h) = f(x₀) + Σᵢ ∂f/∂xᵢ (x₀) hᵢ + <span class='r'>½</span> Σᵢ Σⱼ ∂²f/∂xᵢ∂xⱼ (x₀) hᵢ hⱼ + R₂(x₀, h), con <span class='r'>R₂(x₀, h)/‖h‖² → 0</span> cuando h → 0.</mark></div></div></div>
+<p><mark><b>En dos variables</b> (h = Δx, k = Δy):</mark></p>
+<p><mark>f(x₀ + h, y₀ + k) = f + f<sub>x</sub>h + f<sub>y</sub>k + ½ [f<sub>xx</sub>h² + <span class='r'>2</span>f<sub>xy</sub>hk + f<sub>yy</sub>k²] + R₂</mark>, todo evaluado en (x₀, y₀).</p>
+<p class='t'>Trampa: el 2 delante de f<sub>xy</sub> (porque aparecen f<sub>xy</sub>hk y f<sub>yx</sub>kh, que son iguales). Y el ½ adelante de todo el corchete.</p>
+<p><mark><b>Matriz Hessiana:</b> H(x₀) = ( ∂²f/∂xᵢ∂xⱼ (x₀) ). En ℝ²: H = [[f<sub>xx</sub>, f<sub>xy</sub>], [f<sub>xy</sub>, f<sub>yy</sub>]].</mark> <mark>Es <span class='r'>simétrica</span> por el teorema de <span class='r'>Schwarz</span>.</mark></p>
+<p><mark><b>Forma matricial:</b> f(x₀ + h) = f(x₀) + ∇f(x₀) · h + ½ hᵀ H(x₀) h + R₂.</mark></p>
+<p class='v'>Lectura: f cerca de x₀ es un número (la altura), más una parte lineal (el plano tangente, con el gradiente), más una parte cuadrática (la curvatura, con la Hessiana), más un resto despreciable. Es el polinomio de Taylor de una variable, en versión con vectores y matrices.</p>
+<div class='teo'><div class='tit'>Ejemplo para fijar (de control)</div>
+<p>f = eˣ cos y en (0, 0). f = 1; f<sub>x</sub> = eˣ cos y = 1; f<sub>y</sub> = −eˣ sen y = 0; f<sub>xx</sub> = 1; f<sub>xy</sub> = −eˣ sen y = 0; f<sub>yy</sub> = −eˣ cos y = −1.</p>
+<p><mark>P₂(x, y) = 1 + x + ½ (x² − y²).</mark> <span class='v'>Control: eˣ ≈ 1 + x + x²/2 y cos y ≈ 1 − y²/2; multiplicando y quedándome con grado ≤ 2 sale lo mismo.</span></p></div>
+
+<h2 id='suf'>4. Condición suficiente: clasificar con la Hessiana ★</h2>
+<div class='teo'><div class='tit'>Teorema (17/07/2024, 29/07/2022, 22/11/2023)</div>
+<div class='ht'><b>H)</b><div><mark>f de <span class='r'>clase C³</span> cerca de x₀, x₀ <span class='r'>punto crítico</span> (∇f(x₀) = 0).</mark></div><b>T)</b><div><mark>Si H(x₀) es <span class='r'>definida positiva</span>, x₀ es un <span class='r'>mínimo local</span>. Si es <span class='r'>definida negativa</span>, <span class='r'>máximo local</span>. Si es <span class='r'>indefinida</span>, <span class='r'>ensilladura</span>.</mark></div></div></div>
+<p><mark>Definida positiva: hᵀHh &gt; 0 para todo h ≠ 0. Definida negativa: &lt; 0 para todo h ≠ 0. Indefinida: toma valores positivos y negativos.</mark></p>
+<div class='dem'><p><b>Demostración</b> (caso mínimo; los otros son iguales):</p>
+<p><span class='paso'>1.</span> <mark>Taylor en un punto crítico</mark>: como ∇f(x₀) = 0, el término lineal se va: <mark>f(x₀ + h) − f(x₀) = ½ hᵀHh + R₂.</mark> <span class='v'>El signo de la izquierda dice si f sube o baja al moverme de x₀.</span></p>
+<p><span class='paso'>2.</span> <mark>Como H es <span class='r'>definida positiva</span>, existe m &gt; 0 con ½ hᵀHh ≥ m‖h‖²</mark> <span class='v'>(la forma cuadrática es continua y positiva sobre la esfera ‖h‖ = 1, que es compacta: ahí tiene un mínimo positivo; después se escala por ‖h‖²).</span></p>
+<p><span class='paso'>3.</span> <mark>Como R₂/‖h‖² → 0, existe δ tal que ‖h‖ &lt; δ ⇒ |R₂| &lt; m‖h‖².</mark> <span class='v'>Uso la definición de límite con ε = m.</span></p>
+<p><span class='paso'>4.</span> <mark>Entonces, para 0 &lt; ‖h‖ &lt; δ: f(x₀ + h) − f(x₀) ≥ m‖h‖² − |R₂| &gt; 0.</mark></p>
+<p><span class='paso'>5.</span> <mark>f(x₀ + h) &gt; f(x₀) cerca de x₀: <span class='r'>mínimo local</span> (estricto).</mark> ∎</p>
+<p class='v'>Si es indefinida: hay una dirección h₁ con h₁ᵀHh₁ &gt; 0 (ahí f sube) y otra h₂ con h₂ᵀHh₂ &lt; 0 (ahí f baja), tomando t·h₁ y t·h₂ con t chico. Eso es una ensilladura.</p></div>
+<h3>El criterio práctico en dos variables (de dónde sale)</h3>
+<p>Con a = f<sub>xx</sub>, b = f<sub>xy</sub>, c = f<sub>yy</sub> y a ≠ 0, <mark>completando cuadrados</mark>:</p>
+<p><mark>a h² + 2b hk + c k² = a [ (h + (b/a) k)² + ((ac − b²)/a²) k² ]</mark></p>
+<p class='v'>Desarrollá la derecha para comprobarlo: a(h² + 2(b/a)hk + (b²/a²)k²) + ((ac − b²)/a) k² = ah² + 2bhk + ck².</p>
+<p><mark>Con <span class='r'>D = ac − b² = det H</span>:</mark> si D &gt; 0, el corchete es suma de dos cosas positivas (para (h, k) ≠ 0), y el signo de todo es el de a. Si D &lt; 0, con k = 0 da el signo de a, y con h = −(b/a)k da (D/a)k², de signo contrario: toma los dos signos.</p>
+<table><tr><th>D = f<sub>xx</sub>f<sub>yy</sub> − f<sub>xy</sub>²</th><th>f<sub>xx</sub></th><th>Hessiana</th><th>Conclusión</th></tr>
+<tr><td><mark>D &gt; 0</mark></td><td><mark>&gt; 0</mark></td><td>definida positiva</td><td><mark><span class='r'>mínimo local</span></mark></td></tr>
+<tr><td><mark>D &gt; 0</mark></td><td><mark>&lt; 0</mark></td><td>definida negativa</td><td><mark><span class='r'>máximo local</span></mark></td></tr>
+<tr><td><mark>D &lt; 0</mark></td><td>cualquiera</td><td>indefinida</td><td><mark><span class='r'>ensilladura</span></mark></td></tr>
+<tr><td><mark>D = 0</mark></td><td></td><td>semidefinida</td><td><mark><span class='r'>no decide</span></mark></td></tr></table>
+<p class='t'>Trampa del D = 0: x⁴ + y⁴ tiene mínimo en el origen, −x⁴ − y⁴ máximo y x⁴ − y⁴ ensilladura, y en los tres D = 0. Hay que estudiar f cerca del punto.</p>
+<p><mark><b>En n variables (criterio de Sylvester)</b>, con los menores principales Δ₁, Δ₂, …, Δₙ de H: todos <span class='r'>positivos</span> ⇒ definida positiva (mínimo). Signos <span class='r'>alternados empezando negativo</span> (Δ₁ &lt; 0, Δ₂ &gt; 0, Δ₃ &lt; 0…) ⇒ definida negativa (máximo). det H ≠ 0 y ninguno de los dos patrones ⇒ ensilladura.</mark></p>
+
+<h2 id='abs'>5. Extremos absolutos (miércoles 11)</h2>
+<p><mark><b>Teorema de Weierstrass:</b> si f es <span class='r'>continua</span> en un conjunto <span class='r'>compacto</span> (cerrado y acotado), alcanza un máximo y un mínimo absolutos.</mark></p>
+<p><mark><b>Procedimiento:</b> 1) puntos críticos del <span class='r'>interior</span>; 2) extremos sobre la <span class='r'>frontera</span> (con Lagrange o parametrizando el borde); 3) <span class='r'>evaluar f en todos</span> los candidatos y comparar.</mark></p>
+<p class='v'>Ya no hace falta la Hessiana: alcanza con comparar valores, porque Weierstrass garantiza que el máximo y el mínimo están entre los candidatos.</p>
+
+<h2 id='lag'>6. Multiplicadores de Lagrange ★ (07/12/2022, miércoles 11)</h2>
+<div class='teo'><div class='tit'>Teorema</div>
+<div class='ht'><b>H)</b><div><mark>f y g de <span class='r'>clase C¹</span>; x₀ es extremo de f <span class='r'>restringida</span> a S = {g(x) = c}; <span class='r'>∇g(x₀) ≠ 0</span>.</mark></div><b>T)</b><div><mark><span class='r'>Existe λ</span> ∈ ℝ tal que ∇f(x₀) = λ ∇g(x₀).</mark></div></div></div>
+<div class='dem'><p><b>Por qué vale</b> (la idea que se escribe):</p>
+<p><span class='paso'>1.</span> <mark>Tomo cualquier curva γ(t) contenida en S con γ(0) = x₀.</mark></p>
+<p><span class='paso'>2.</span> <mark>Como g(γ(t)) = c para todo t, derivo con la <span class='r'>regla de la cadena</span>: ∇g(x₀) · γ′(0) = 0.</mark> <span class='v'>∇g es perpendicular a todo vector tangente a S.</span></p>
+<p><span class='paso'>3.</span> <mark>Como f(γ(t)) tiene un extremo en t = 0, su derivada ahí es 0: ∇f(x₀) · γ′(0) = 0.</mark> <span class='v'>∇f también es perpendicular a todo vector tangente a S.</span></p>
+<p><span class='paso'>4.</span> <mark>Los dos gradientes son perpendiculares al mismo espacio tangente: son <span class='r'>paralelos</span>, ∇f(x₀) = λ∇g(x₀).</mark> ∎ <span class='v'>Hace falta ∇g ≠ 0 para que el espacio tangente sea el correcto.</span></p></div>
+<p><mark><b>Método:</b> resolver el sistema ∇f = λ∇g, g = c (n + 1 ecuaciones con n + 1 incógnitas: x₁, …, xₙ, λ). Evaluar f en las soluciones; si S es compacto, el mayor valor es el máximo y el menor el mínimo.</mark> Con dos restricciones: <mark>∇f = λ∇g + μ∇h.</mark></p>
+<p><mark><b>Interpretación geométrica:</b> en el extremo, la <span class='r'>curva de nivel de f</span> que pasa por x₀ es <span class='r'>tangente</span> a la curva de restricción g = c.</mark> <span class='v'>Si la cortara, moviéndome sobre la restricción pasaría a niveles de f más altos de un lado y más bajos del otro, y no sería extremo. Tangentes ⇔ gradientes paralelos.</span></p>
+<p><span class='v'>λ mide cuánto cambia el valor óptimo de f si cambio un poco c.</span></p>
+
+<h2 id='chk'>Para el examen</h2>
+<div class='ojo'><p><b>Lo que salió de este tema:</b> “Condición necesaria de extremo” (22/11/2023, 26/06/2024); “Taylor para clasificar puntos críticos” (29/07/2022, 22/11/2023); “Taylor de 2.º grado, Hessiana en forma matricial y teorema de condiciones suficientes” (17/07/2024); “Lagrange e interpretación geométrica” (07/12/2022).</p>
+<p><b>No puede faltar:</b> en la condición necesaria, que x₀ es <span class='r'>interior</span>, la función g(t) de una variable y <span class='r'>Fermat</span>. En Taylor, el <span class='r'>½</span>, el <span class='r'>2f<sub>xy</sub></span> y que R₂/‖h‖² → 0. En la suficiente, “como ∇f(x₀) = 0, el signo lo decide la forma cuadrática”.</p>
+<p><b>Lo que más se confunde:</b> creer que ∇f = 0 garantiza extremo; olvidarse de que D = 0 no decide; poner f<sub>xx</sub> como criterio cuando D &lt; 0 (ahí ya es ensilladura).</p></div>
+</main></body></html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modelos y Simulación · Final</title>
+<style>
+  :root { --bg:#f4efe6; --paper:#fffdf8; --ink:#1c1712; --muted:#5c5348; --line:#e4d9c8; --accent:#8d3b18; --soft:#f6e6dc; --gsoft:#e7f3ec; --gld:#f8f0dc; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font: 18px/1.5 "Iowan Old Style", Palatino, Georgia, serif; }
+  header { position:sticky; top:0; z-index:5; background:#1c1712; color:#f6f1e8; padding:12px 22px; display:flex; gap:16px; align-items:baseline; }
+  header a { color:#e4b397; font-family:"Avenir Next", sans-serif; font-size:14px; text-decoration:none; }
+  header strong { font-family:"Avenir Next", sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:28px 22px 80px; }
+  h1 { font-size:34px; line-height:1.1; margin:0 0 8px; }
+  h2 { font-size:24px; margin:1.6em 0 .4em; }
+  h3 { font-size:18px; margin:1.2em 0 .3em; }
+  .k { font-family:"Avenir Next", sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0; }
+  .box { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { background:var(--gsoft); border-color:#c9e4d4; }
+  .warn { background:var(--gld); border-color:#ead7a4; }
+  .soft { background:var(--soft); }
+  table { border-collapse:collapse; width:100%; font-size:15px; margin:8px 0 14px; }
+  th, td { border-bottom:1px solid var(--line); text-align:left; padding:5px 7px; vertical-align:top; }
+  th { font-family:"Avenir Next", sans-serif; font-size:12px; color:var(--muted); }
+  .ans { font-weight:650; }
+  td.n, th.n { text-align:right; font-variant-numeric: tabular-nums; }
+  @media print { header { display:none; } body { background:#fff; } .box { break-inside:avoid; } }
+</style>
+<link rel=stylesheet href=estilo.css></head>
+<body>
+<header>
+  <strong>Mod y Sim</strong>
+  <a href="index.html">Plan</a><a href="MyS.html">Guía del final</a>
+  <a href="#ks">Kolmogorov</a>
+  <a href="#cola">Cola</a>
+  <a href="#stock">Stock</a>
+  <a href="#decision">Decisión</a>
+</header>
+<main>
+<p class="k">Universidad Católica de Córdoba · Facultad de Ingeniería · 24 de noviembre</p>
+<h1>Modelos y Simulación. El parcial 2 del 19/06/2026, corrido.</h1>
+<p>El parcial del 19 de junio de 2026 (el de las fotos) es el molde de la parte de simulación: un ajuste de Kolmogorov-Smirnov, una cola, un stock, un diagrama de Forrester y cinco preguntas de teoría. La parte de modelos, en los parciales de 2024, es decisión bajo incertidumbre, Bayes y juegos. El final junta las dos.</p>
+<p>El parcial dice: 90 minutos, 55% para aprobar, sin material ni fórmulas. La guía completa del final es <a href=MyS.html>MyS.html</a>. En simulación escriben la fórmula genérica una vez y piden 4 decimales en probabilidades, 2 en plata. Truncan, no redondean, cuando el enunciado lo dice.</p>
+
+<h2 id="ks">1. Kolmogorov-Smirnov con Lilliefors</h2>
+<p>La tabla del parcial ya está armada. FO absoluta: 42, 15, 6, 6, 0, 0, 1. Suma 70, así que n = 70. La columna Error Abs es |FO acumulada relativa − FE acumulada relativa|. El estadístico es el máximo de esa columna.</p>
+<div class="box">
+<p>H₀: la muestra proviene de una normal.</p>
+<p>H₁: no proviene de una normal.</p>
+<p>D = 0,1607.</p>
+<p>Valor crítico de Lilliefors, α = 0,05, n &gt; 30: 0,886 / √n = 0,886 / √70 = 0,1059.</p>
+<p class="ans">0,1607 &gt; 0,1059. Se rechaza H₀. Con α = 0,05 los datos no son compatibles con una normal.</p>
+</div>
+<p>Si en la hoja te dan la tabla de Lilliefors impresa, usá ese número y no la fórmula. La comparación es la misma: D mayor que el crítico, se rechaza.</p>
+<p>El otro ejercicio de las fotos (70 datos crudos, α = 0,05, “verificar si son normales”) es este mismo procedimiento desde cero: media y desvío muestrales, intervalos, FO, FE con la normal estándar, acumuladas, D, comparar.</p>
+
+<h2 id="cola">2. Cola de un solo servidor</h2>
+<p>Autolavado. Llegadas exponenciales con media 8 minutos. Servicio normal con media 15 y desvío 3. Un box. Cinco autos.</p>
+<p>Aleatorios de llegada: 0,34 · 0,57 · 0,12 · 0,89 · 0,46.</p>
+<p>Aleatorios de lavado: 0,62 · 0,28 · 0,81 · 0,15 · 0,53.</p>
+
+<h3>Generar los tiempos</h3>
+<p>Entre llegadas, exponencial de media 8: t = −8 ln(R). El primer auto no llega en el minuto 0: llega después del primer entre-llegadas.</p>
+<p>Servicio: z = Φ⁻¹(R) leído en la tabla normal, y el tiempo es 15 + 3z. Los z de abajo son el inverso exacto; en el examen van a salir de tu tabla y pueden diferir en el tercer decimal. El procedimiento no cambia.</p>
+<table>
+<tr><th>Auto</th><th class="n">R llegada</th><th class="n">Entre llegadas</th><th class="n">Hora de llegada</th><th class="n">R servicio</th><th class="n">z</th><th class="n">Lavado</th></tr>
+<tr><td>1</td><td class="n">0,34</td><td class="n">8,63</td><td class="n">8,63</td><td class="n">0,62</td><td class="n">0,31</td><td class="n">15,92</td></tr>
+<tr><td>2</td><td class="n">0,57</td><td class="n">4,50</td><td class="n">13,13</td><td class="n">0,28</td><td class="n">−0,58</td><td class="n">13,25</td></tr>
+<tr><td>3</td><td class="n">0,12</td><td class="n">16,96</td><td class="n">30,09</td><td class="n">0,81</td><td class="n">0,88</td><td class="n">17,63</td></tr>
+<tr><td>4</td><td class="n">0,89</td><td class="n">0,93</td><td class="n">31,02</td><td class="n">0,15</td><td class="n">−1,04</td><td class="n">11,89</td></tr>
+<tr><td>5</td><td class="n">0,46</td><td class="n">6,21</td><td class="n">37,23</td><td class="n">0,53</td><td class="n">0,08</td><td class="n">15,23</td></tr>
+</table>
+
+<h3>Correr el servidor</h3>
+<p>Inicio de lavado = máximo entre la llegada y el fin del anterior. Espera = inicio − llegada. Fin = inicio + lavado.</p>
+<table>
+<tr><th>Auto</th><th class="n">Llegada</th><th class="n">Inicio</th><th class="n">Fin</th><th class="n">Espera</th><th class="n">En el sistema</th></tr>
+<tr><td>1</td><td class="n">8,63</td><td class="n">8,63</td><td class="n">24,55</td><td class="n">0</td><td class="n">15,92</td></tr>
+<tr><td>2</td><td class="n">13,13</td><td class="n">24,55</td><td class="n">37,80</td><td class="n">11,42</td><td class="n">24,67</td></tr>
+<tr><td>3</td><td class="n">30,09</td><td class="n">37,80</td><td class="n">55,43</td><td class="n">7,71</td><td class="n">25,34</td></tr>
+<tr><td>4</td><td class="n">31,02</td><td class="n">55,43</td><td class="n">67,32</td><td class="n">24,41</td><td class="n">36,30</td></tr>
+<tr><td>5</td><td class="n">37,23</td><td class="n">67,32</td><td class="n">82,55</td><td class="n">30,09</td><td class="n">45,32</td></tr>
+</table>
+<p class="ans">Espera promedio: 14,73 min. Permanencia promedio: 29,51 min.</p>
+<p class="ans">Fila máxima: 3.</p>
+<p>Se ve en el reloj. A las 37,23 llegan a estar esperando los autos 3, 4 y 5, porque el 2 sigue adentro hasta las 37,80. Antes de eso la fila llega a 2 (31,02) y a 1 (13,13).</p>
+
+<h2 id="stock">3. Stock con pedido fijo</h2>
+<p>Ferretería. Pide 25 cajas cuando el inventario al final del día queda en 12 o menos, y no pide si ya hay un pedido viajando. Demanda entera uniforme de 4 a 8. El pedido llega en 1 día con probabilidad 0,70 y en 2 días con 0,30, y se recibe al inicio del día. Arranca con 20 cajas. Costos: pedido 800, mantenimiento 15 por caja al cierre, faltante 120 por caja no atendida. Cinco días.</p>
+<p>Aleatorios de demanda, en orden: 0,07 · 0,43 · 0,61 · 0,28 · 0,95.</p>
+<p>Aleatorios de plazo, en orden de uso: 0,33 · 0,78 · 0,50 · 0,81 · 0,16.</p>
+<div class="box soft">
+<p>Demanda. Cinco enteros equiprobables, cada uno con ancho 0,20: 0,00–0,20 → 4; 0,20–0,40 → 5; 0,40–0,60 → 6; 0,60–0,80 → 7; 0,80–1,00 → 8.</p>
+<p>Plazo. R ≤ 0,70 → 1 día; si no, 2 días. “Llega en 1 día” lo tomé como: pedido al cierre del día t, recepción al inicio de t+1. Si la cátedra cuenta el día de emisión adentro del plazo, el día 3 no recibe y hay que rehacer la tabla. El resto del método queda igual.</p>
+</div>
+<table>
+<tr><th>Día</th><th class="n">Llega</th><th class="n">Stock inicial</th><th class="n">Demanda</th><th class="n">Vende</th><th class="n">Falta</th><th class="n">Stock final</th><th>Pedido</th></tr>
+<tr><td>1</td><td class="n">0</td><td class="n">20</td><td class="n">4</td><td class="n">4</td><td class="n">0</td><td class="n">16</td><td>no, 16 &gt; 12</td></tr>
+<tr><td>2</td><td class="n">0</td><td class="n">16</td><td class="n">6</td><td class="n">6</td><td class="n">0</td><td class="n">10</td><td>sí, 25. R = 0,33 → llega el día 3</td></tr>
+<tr><td>3</td><td class="n">25</td><td class="n">35</td><td class="n">7</td><td class="n">7</td><td class="n">0</td><td class="n">28</td><td>no</td></tr>
+<tr><td>4</td><td class="n">0</td><td class="n">28</td><td class="n">5</td><td class="n">5</td><td class="n">0</td><td class="n">23</td><td>no</td></tr>
+<tr><td>5</td><td class="n">0</td><td class="n">23</td><td class="n">8</td><td class="n">8</td><td class="n">0</td><td class="n">15</td><td>no, 15 &gt; 12</td></tr>
+</table>
+<p class="ans">a) Demanda promedio: (4+6+7+5+8)/5 = 6 cajas/día.</p>
+<p class="ans">b) Stock final promedio: (16+10+28+23+15)/5 = 18,4 cajas.</p>
+<p class="ans">c) Faltantes: 0.</p>
+<p class="ans">d) Pedidos: 1.</p>
+<p class="ans">e) Costo: 800 + 15·(16+10+28+23+15) + 120·0 = 800 + 1380 = 2180.</p>
+
+<h2>4. Forrester y las preguntas de teoría</h2>
+<p>En el diagrama de la epidemia hay que separar nivel, flujo y auxiliar. No es lo mismo el dibujo.</p>
+<table>
+<tr><th>Símbolo</th><th>Qué es</th><th>En el ejemplo</th></tr>
+<tr><td>Rectángulo</td><td>Nivel, stock, “capital”</td><td>Población enferma, población sana</td></tr>
+<tr><td>Válvula sobre la flecha</td><td>Flujo</td><td>Flujo de contagio</td></tr>
+<tr><td>Círculo</td><td>Auxiliar o constante</td><td>Porcentaje de contagios, contactos que producen la infección</td></tr>
+</table>
+<p>La opción correcta del símbolo “Capital” es variable de nivel. Las demás están mal.</p>
+<div class="box">
+<p><span class="ans">Pseudoaleatorio.</span> Lo genera un algoritmo determinista y la secuencia imita el azar. No es un proceso físico, y la secuencia se repite cuando se acaba el período.</p>
+<p><span class="ans">Desventaja de Monte Carlo.</span> Da una solución aproximada, no una fórmula cerrada. La ventaja es la contraria de lo que dice una de las opciones: sí puede meter distribuciones feas.</p>
+<p><span class="ans">Cadena de Markov.</span> La probabilidad del próximo evento depende solo del estado inmediato anterior, no de toda la historia.</p>
+</div>
+
+<h2 id="decision">5. La otra mitad: universos de decisión</h2>
+<p>Esto es el parcial 1 de la materia (el de septiembre de 2024). En el final lo preguntan en corto: criterio, fórmula, y un renglón de qué supone.</p>
+<table>
+<tr><th>Universo</th><th>Qué sabés</th><th>Qué usás</th></tr>
+<tr><td>Cierto</td><td>El estado que va a ocurrir</td><td>Elegís directo el mejor resultado de ese estado</td></tr>
+<tr><td>Aleatorio</td><td>Probabilidades</td><td>Valor esperado. VEIP. Bayes si hay una prueba</td></tr>
+<tr><td>Incierto</td><td>Resultados, sin probabilidades</td><td>Wald, optimista, Hurwicz, Savage, Laplace</td></tr>
+<tr><td>Hostil</td><td>Hay un rival que elige contra vos</td><td>Juegos. Punto de silla o estrategia mixta</td></tr>
+</table>
+
+<h3>Incierto, beneficios</h3>
+<p>Wald, pesimista: de cada alternativa, el peor resultado; después el máximo de esos. En costos es al revés: el mejor de los peores costos, o sea el mínimo de los máximos.</p>
+<p>Optimista: el mejor de los mejores. En beneficios, max de los max. En costos, min de los min.</p>
+<p>Hurwicz, beneficios: para cada fila, α · (mejor) + (1 − α) · (peor), y te quedás con la fila mayor. α = 0 es Wald. α = 1 es el optimista. En costos, α pesa el mejor costo (el mínimo) y (1 − α) el peor.</p>
+<p>Savage: armás la matriz de lamentos. En beneficios, lamento = mejor de la columna − lo que vos sacaste. En costos, lamento = tu costo − el menor costo de la columna. Después Wald sobre los lamentos: min del máximo lamento.</p>
+<p>Laplace: le ponés probabilidad 1/n a cada estado y calculás el promedio de la fila. En beneficios, la mayor. En costos, la menor.</p>
+
+<h3>Aleatorio</h3>
+<p>Valor esperado de una alternativa: suma de (resultado · probabilidad). En beneficios se maximiza, en costos se minimiza.</p>
+<p>Con información perfecta harías, en cada estado, la mejor alternativa de ese estado. El valor esperado de eso, pesado con las probabilidades de los estados, es el VE con información perfecta.</p>
+<p class="ans">VEIP = ese valor − el mejor VE sin información.</p>
+<p>Es lo máximo que pagarías por enterarte del estado antes de decidir. Si la prueba no es perfecta, el valor de la información es la diferencia de valores esperados con y sin la prueba, y después le restás lo que cuesta usarla.</p>
+
+<h3>Bayes, el árbol del control de calidad</h3>
+<p>El ejercicio de 2024: 20% de defectuosos. Aceptar un malo pierde 100, aceptarlo bueno gana 80. Rechazar un bueno pierde 100, rechazar un malo gana 80. La prueba acierta 98% si es mala y 99% si es buena, y cuesta 5.</p>
+<p>Sin prueba. P(malo) = 0,20, P(bueno) = 0,80.</p>
+<p>Aceptar: 0,20 · (−100) + 0,80 · 80 = 44.</p>
+<p>Rechazar: 0,20 · 80 + 0,80 · (−100) = −64.</p>
+<p class="ans">Sin información extra, se acepta. VE = 44.</p>
+<p>Si la prueba dice “buena”, la posterior del estado sale de Bayes. A priori por verosimilitud, dividido la conjunta total.</p>
+<p>P(dice buena | bueno) = 0,99. P(dice buena | malo) = 0,02.</p>
+<p>P(dice buena) = 0,99 · 0,80 + 0,02 · 0,20 = 0,796.</p>
+<p>P(bueno | dice buena) = 0,792 / 0,796 = 0,9950. P(malo | dice buena) = 0,004 / 0,796 = 0,0050.</p>
+<p>Si dice “mala”: P(dice mala) = 0,01 · 0,80 + 0,98 · 0,20 = 0,204.</p>
+<p>P(bueno | dice mala) = 0,008 / 0,204 = 0,0392. P(malo | dice mala) = 0,196 / 0,204 = 0,9608.</p>
+<p>Con esas posteriores se recalcula el VE de aceptar y de rechazar en cada rama, se elige la mejor, se pesa por P(dice buena) y P(dice mala), y se resta el costo 5. Conviene la prueba solo si ese VE neto supera 44.</p><div class=box><p class=ans>La cuenta terminada.</p><p>Rama dice buena (0,796): aceptar = (0,792·80 − 0,004·100)/0,796 = 79,10; rechazar = (0,004·80 − 0,792·100)/0,796 = −99,10. Se acepta: 79,10.</p><p>Rama dice mala (0,204): aceptar = (0,008·80 − 0,196·100)/0,204 = −92,94; rechazar = (0,196·80 − 0,008·100)/0,204 = 72,94. Se rechaza: 72,94.</p><p>VE bruto con prueba = 0,796·79,10 + 0,204·72,94 = 62,96 + 14,88 = 77,84. Neto: 77,84 − 5 = 72,84 &gt; 44. <b>Conviene usar la prueba.</b></p><p>Valor de la información imperfecta (VEIM) = 77,84 − 44 = 33,84. Información perfecta: aceptar los buenos y rechazar los malos da 80 siempre, VEIP = 80 − 44 = 36. La prueba vale menos que la perfecta, como tiene que ser.</p></div>
+<p>El enunciado a veces te ahorra la cuenta final y te dice: si el VE bruto con prueba es 100 y sin prueba es 90, ¿conviene pagar? Conviene si 100 − costo &gt; 90. Con costo 5, 95 &gt; 90, sí.</p>
+
+<h3>Juegos de suma cero</h3>
+<p>Estrategia pura: existe si el maximin del que maximiza iguala al minimax del que minimiza. Ese número es el valor del juego, y las estrategias que lo logran son la solución. Si no se igualan, no hay pura y hay que mezclar.</p>
+<p>Dominancia: una fila se tira si otra le gana (o empata y le gana en alguna) en todas las columnas. En columnas, al revés, porque el rival minimiza.</p>
+<p>Mixta: cada jugador asigna probabilidades. El valor tiene que quedarle igual sea cual sea la columna (o fila) que use el otro entre las que quedan en la mezcla. En 2×2 se plantea el sistema y se despeja. Si son más grandes, el parcial pide el modelo de programación lineal, no la cuenta a mano.</p>
+<p>Lo que significa una solución p = (0,2; 0,3; 0,5), q = (0,4; 0,2; 0,4), V = 5: A juega sus tres estrategias con esas frecuencias, B las suyas, y a la larga A gana 5 por jugada. Que los dos V coincidan es la señal de que está bien resuelto.</p>
+
+<p>El plan de estudio de Modelos está en <a href=MyS.html>MyS.html</a>.</p></main>
+</body>
+</html>

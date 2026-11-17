@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Análisis Matemático II · Final</title>
+<style>
+  :root { --bg:#f4efe6; --paper:#fffdf8; --ink:#1c1712; --muted:#5c5348; --line:#e4d9c8; --accent:#8d3b18; --soft:#f6e6dc; --green:#1c5c3a; --gsoft:#e7f3ec; --gold:#8a5a10; --gld:#f8f0dc; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font: 18px/1.5 "Iowan Old Style", Palatino, Georgia, serif; }
+  header { position:sticky; top:0; z-index:5; background:#1c1712; color:#f6f1e8; padding:12px 22px; display:flex; gap:16px; align-items:baseline; }
+  header a { color:#e4b397; font-family:"Avenir Next", sans-serif; font-size:14px; text-decoration:none; }
+  header strong { font-family:"Avenir Next", sans-serif; }
+  main { max-width:820px; margin:0 auto; padding:28px 22px 80px; }
+  h1 { font-size:34px; line-height:1.1; margin:0 0 8px; }
+  h2 { font-size:24px; margin:1.6em 0 .4em; }
+  h3 { font-size:18px; margin:1.2em 0 .3em; }
+  .k { font-family:"Avenir Next", sans-serif; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0; }
+  .box { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:12px 0; }
+  .ok { background:var(--gsoft); border-color:#c9e4d4; }
+  .warn { background:var(--gld); border-color:#ead7a4; }
+  .soft { background:var(--soft); }
+  table { border-collapse:collapse; width:100%; font-size:16px; margin:8px 0 14px; }
+  th, td { border-bottom:1px solid var(--line); text-align:left; padding:6px 8px; vertical-align:top; }
+  th { font-family:"Avenir Next", sans-serif; font-size:13px; color:var(--muted); }
+  code, .m { font-family:"Iowan Old Style", Palatino, serif; }
+  ol.pasos { padding-left:1.2em; }
+  ol.pasos li { margin:.35em 0; }
+  .ans { font-weight:650; }
+  nav.toc a { display:block; color:var(--accent); text-decoration:none; margin:4px 0; }
+  @media print { header { display:none; } body { background:#fff; } .box { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <strong>AM II</strong>
+  <a href="index.html">Plan</a>
+  <a href="#modelo">Modelo 02/07/25</a>
+  <a href="#2026">Práctica 2026</a>
+  <a href="#teoria">Teórico</a>
+</header>
+<main>
+<p class="k">Universidad Católica de Córdoba · Facultad de Ingeniería</p>
+<h1>Análisis Matemático II. El final práctico, resuelto.</h1>
+<p>El modelo oficial del 2 de julio de 2025 y las prácticas de Einstein de 2025 y 2026 son el mismo examen con otros números. Cuatro ejercicios, 25% cada uno, 120 minutos, calculadora sí, formulario no. Se aprueba con 55% (nota 4).</p>
+
+<div class="box warn">
+<p class="ans">Regla de tiempo.</p>
+<p>Si te trabás en un ejercicio, a los 25 minutos lo dejás y pasás al siguiente. Con tres ejercicios bien hechos estás en 75%, que es un 7. Con dos, estás en 50% y desaprobás. El final se gana no dejando ninguno en blanco.</p>
+</div>
+
+<h2>Los cuatro que caen siempre</h2>
+<table>
+<tr><th></th><th>Qué piden</th><th>Qué tenés que poder hacer dormido</th></tr>
+<tr><td>1</td><td>Función partida en (0,0)</td><td>Continua por acotación. Parciales por definición. No diferenciable porque el cociente no tiende a 0.</td></tr>
+<tr><td>2</td><td>Extremos</td><td>Libres: ∇f = 0 y Hessiano. Condicionados: Lagrange, y evaluar f en los puntos.</td></tr>
+<tr><td>3</td><td>Volumen</td><td>Altura = techo − piso. Pasar a polares. El jacobiano es r. No olvidarlo.</td></tr>
+<tr><td>4</td><td>Integral de línea cerrada</td><td>Green primero (es un área). Después la directa, con la orientación que cierre el mismo número.</td></tr>
+</table>
+<p>A veces el 2 es una derivada direccional, o el 4 es una ecuación diferencial de segundo orden. Abajo están las dos variantes, resueltas.</p>
+
+<h2 id="modelo">Modelo oficial. 2 de julio de 2025</h2>
+<p>Fuente: <code>fuentes/AM2-Modelo-final-practico-2025-07-02.pdf</code>. Evaluación final práctica, 120 min.</p>
+
+<h3>Ejercicio 1. La función partida</h3>
+<div class="box">
+<p>f(x, y) = xy / √(x² + y²) si (x, y) ≠ (0, 0), y f(0, 0) = 0.</p>
+</div>
+
+<p><span class="ans">a) Es continua en (0,0).</span> En polares, x = r cos θ, y = r sen θ:</p>
+<p>f = (r cos θ · r sen θ) / r = r cos θ sen θ = (r/2) sen(2θ).</p>
+<p>El módulo es ≤ r/2, que tiende a 0 cuando r → 0, para cualquier θ. El límite es 0, que es f(0,0). Continua.</p>
+
+<p><span class="ans">b) Parciales por definición.</span></p>
+<p>∂f/∂x (0,0) = lím<sub>h→0</sub> [f(h, 0) − 0] / h = 0, porque f(h, 0) = 0.</p>
+<p>∂f/∂y (0,0) = lím<sub>k→0</sub> [f(0, k) − 0] / k = 0, porque f(0, k) = 0.</p>
+
+<p><span class="ans">c) No es diferenciable.</span> El candidato a diferencial es el gradiente (0, 0). Hay que ver si</p>
+<p>lím<sub>(h,k)→(0,0)</sub> f(h, k) / √(h² + k²) = 0.</p>
+<p>Ese cociente es |cos θ sen θ| = |sen(2θ)| / 2. Sobre y = x vale 1/2, sobre los ejes vale 0. No existe el límite. No es diferenciable.</p>
+<div class="box soft">
+<p>El molde, para cualquier f que te pongan: polares para la continuidad. Parciales solo sobre los ejes. Para la diferenciabilidad, el cociente [f − f(0) − fx h − fy k] / r tiene que ir a 0 en toda dirección. Si depende de θ, listo, no es diferenciable.</p>
+</div>
+
+<h3>Ejercicio 2. Extremos libres</h3>
+<p>f(x, y) = x³ + y² − 3x − 4y.</p>
+<p>∂f/∂x = 3x² − 3 = 0 ⇒ x² = 1 ⇒ x = ±1.</p>
+<p>∂f/∂y = 2y − 4 = 0 ⇒ y = 2.</p>
+<p>Puntos críticos: (1, 2) y (−1, 2).</p>
+<p>∂²f/∂x² = 6x, ∂²f/∂y² = 2, ∂²f/∂x∂y = 0. Hessiano H = 12x.</p>
+<table>
+<tr><th>Punto</th><th>H</th><th>fxx</th><th>Tipo</th><th>f</th></tr>
+<tr><td>(1, 2)</td><td>12 &gt; 0</td><td>6 &gt; 0</td><td>mínimo local</td><td>1 + 4 − 3 − 8 = −6</td></tr>
+<tr><td>(−1, 2)</td><td>−12 &lt; 0</td><td></td><td>punto de ensilladura</td><td>−1 + 4 + 3 − 8 = −2</td></tr>
+</table>
+<p>Si H &gt; 0 y fxx &gt; 0, mínimo. Si H &gt; 0 y fxx &lt; 0, máximo. Si H &lt; 0, ensilladura. Si H = 0, el criterio no dice nada.</p>
+
+<h3>Ejercicio 3. Volumen en polares</h3>
+<p>1 ≤ z ≤ 2 − √(x² + y²), con x ≥ 0.</p>
+<p>El techo toca el piso cuando 2 − r = 1, o sea r = 1. La región del plano es el semicírculo derecho r ≤ 1, θ de −π/2 a π/2.</p>
+<p>Volumen = ∬<sub>D</sub> (1 − r) dA = ∫<sub>−π/2</sub><sup>π/2</sup> ∫<sub>0</sub><sup>1</sup> (1 − r) r dr dθ.</p>
+<p>La integral en r: [r²/2 − r³/3]<sub>0</sub><sup>1</sup> = 1/2 − 1/3 = 1/6.</p>
+<p>La integral en θ vale π. <span class="ans">Volumen = π/6.</span></p>
+<div class="box soft">
+<p>El error típico es integrar (1 − r) sin el jacobiano r, o tomar θ de 0 a 2π cuando el enunciado dice x ≥ 0.</p>
+</div>
+
+<h3>Ejercicio 4. Green y directa</h3>
+<p>∮<sub>C</sub> y dx + 2x dy, con C la frontera positiva de 1 − x² ≤ y ≤ 1, 0 ≤ x ≤ 1.</p>
+<p><span class="ans">Green.</span> P = y, Q = 2x. ∂Q/∂x − ∂P/∂y = 2 − 1 = 1.</p>
+<p>∮ = ∬<sub>D</sub> 1 dA = ∫<sub>0</sub><sup>1</sup> [1 − (1 − x²)] dx = ∫<sub>0</sub><sup>1</sup> x² dx = 1/3.</p>
+<p><span class="ans">Directa, orientación antihoraria.</span> La región queda a la izquierda.</p>
+<ol class="pasos">
+<li>Parábola y = 1 − x², x de 0 a 1, dy = −2x dx. ∫ (1 − x² − 4x²) dx = ∫<sub>0</sub><sup>1</sup> (1 − 5x²) dx = 1 − 5/3 = −2/3.</li>
+<li>Segmento x = 1, y de 0 a 1, dx = 0. ∫ 2 dy = 2.</li>
+<li>Segmento y = 1, x de 1 a 0, dy = 0. ∫<sub>1</sub><sup>0</sup> 1 dx = −1.</li>
+</ol>
+<p>Suma: −2/3 + 2 − 1 = <span class="ans">1/3</span>. Coincide con Green. Si no coincide, la orientación está al revés: cambiá el signo de los tres tramos.</p>
+
+<h2 id="2026">Práctica Einstein 2026</h2>
+<p>Fuente: <code>fuentes/AM2-Final-2026-Einstein.pdf</code>. Mismos cuatro moldes, uno de ellos es una ecuación diferencial.</p>
+
+<h3>1. Otra función partida</h3>
+<p>F(x, y) = 3x y² / (x² + y²) si (x, y) ≠ 0, y 0 en el origen.</p>
+<p>Continua: |F| ≤ 3|x| · 1 → 0. Parciales en el origen: F(h, 0) = 0 y F(0, k) = 0, así que las dos valen 0.</p>
+<p>No diferenciable: F/r = 3 |cos θ| sen² θ. En θ = π/4 vale 3√2/4 ≠ 0, en los ejes vale 0. El límite no es 0.</p>
+
+<h3>2. Extremos sobre la circunferencia</h3>
+<p>F = xy sobre x² + y² = 4. Lagrange: ∇F = λ ∇g, con g = x² + y² − 4.</p>
+<p>(y, x) = λ (2x, 2y). Entonces y = 2λx y x = 2λy, de donde x² = y². Sobre la circunferencia, |x| = |y| = √2.</p>
+<table>
+<tr><th>Punto</th><th>F = xy</th></tr>
+<tr><td>(√2, √2) y (−√2, −√2)</td><td>2, máximo</td></tr>
+<tr><td>(√2, −√2) y (−√2, √2)</td><td>−2, mínimo</td></tr>
+</table>
+<p>El conjunto es cerrado y acotado, así que estos valores son los extremos globales.</p>
+
+<h3>3. Integral doble con parámetro</h3>
+<p>F = |x| y. R es la unión de dos triángulos: a la izquierda, 0 ≤ y ≤ λx + 3 con −3/λ ≤ x ≤ 0; a la derecha, 0 ≤ y ≤ 3 − x con 0 ≤ x ≤ 3. λ &gt; 0. Piden λ tal que la integral valga 9/2.</p>
+<p>A la derecha |x| = x:</p>
+<p>∫<sub>0</sub><sup>3</sup> x · (1/2) (3 − x)² dx = 27/8.</p>
+<p>A la izquierda |x| = −x. El cambio u = λx + 3 deja</p>
+<p>27 / (8λ²).</p>
+<p>27/8 + 27/(8λ²) = 9/2 ⇒ 1 + 1/λ² = 4/3 ⇒ <span class="ans">λ = √3</span>.</p>
+
+<h3>4. Ecuación de segundo orden</h3>
+<p>y″ − 4y = e<sup>2x</sup>, con y(0) = 1, y′(0) = 1/3.</p>
+<p>Característica: r² − 4 = 0, r = ±2. Homogénea: C₁ e<sup>2x</sup> + C₂ e<sup>−2x</sup>.</p>
+<p>El e<sup>2x</sup> ya está en la homogénea, así que la particular es A x e<sup>2x</sup>. Al derivar dos veces y restar 4y queda 4A e<sup>2x</sup>. Entonces A = 1/4.</p>
+<p>y = C₁ e<sup>2x</sup> + C₂ e<sup>−2x</sup> + (x/4) e<sup>2x</sup>.</p>
+<p>y(0): C₁ + C₂ = 1.</p>
+<p>y′(0): 2C₁ − 2C₂ + 1/4 = 1/3 ⇒ C₁ − C₂ = 1/24.</p>
+<p><span class="ans">C₁ = 25/48, C₂ = 23/48.</span></p>
+
+<div class="box">
+<p class="ans">Coeficientes indeterminados, los tres casos.</p>
+<p>y″ + ay′ + by = lado derecho.</p>
+<ol class="pasos">
+<li>Polinomio de grado n: particular del mismo grado. Si r = 0 es raíz simple, multiplicá por x. Si es doble, por x².</li>
+<li>e<sup>αx</sup>: particular A e<sup>αx</sup>. Si α es raíz, A x e<sup>αx</sup>. Si es raíz doble, A x² e<sup>αx</sup>.</li>
+<li>cos(βx) o sen(βx): A cos(βx) + B sen(βx). Si ±iβ son raíces, multiplicá todo por x. Es el caso y″ + 4y = cos(2x): la particular es (x/4) sen(2x).</li>
+</ol>
+</div>
+
+<h2>El otro final de Einstein, en corto</h2>
+<p>Fuente: <code>fuentes/AM2-Final-Einstein.pdf</code>.</p>
+<p><span class="ans">1.</span> f = |x|² y / (x² + y²) = x² y / (x² + y²). |f| ≤ |y| → 0, continua. Parciales en el origen: 0. El cociente f/r = |cos² θ sen θ| no tiende a 0 (en θ = π/2 vale 0, en θ = π/4 vale √2/4). No diferenciable.</p>
+<p><span class="ans">2.</span> f = x² + 2y² sujeta a (x − 1)² + 2y² = 1. Lagrange: (2x, 4y) = λ (2(x − 1), 4y).</p>
+<p>De la segunda coordenada, 4y = λ 4y, así que y = 0 o λ = 1.</p>
+<p>Si y = 0: (x − 1)² = 1, x = 0 o x = 2. f(0, 0) = 0, f(2, 0) = 4.</p>
+<p>Si λ = 1: 2x = 2(x − 1), que da 0 = −2, imposible. No hay más puntos.</p>
+<p>Mínimo global 0 en (0, 0). Máximo global 4 en (2, 0).</p>
+<p><span class="ans">3.</span> ∮ y dx + 2x dy sobre la misma región del modelo. Ya dio 1/3.</p>
+
+<h2>Derivada direccional, el reemplazo del ejercicio 2</h2>
+<p>Fuente: <code>fuentes/AM2-Final-2025-Einstein.pdf</code>. f(x, y, z) = x² y + ln(z) + y z² en (1, 1, 1), dirección u = (√3/2, 0, 1/2). Ya es unitario: (√3/2)² + (1/2)² = 1.</p>
+<p>∇f = (2xy, x² + z², 1/z + 2yz). En el punto: (2, 2, 3).</p>
+<p><span class="ans">Direccional</span> = ∇f · u = 2·(√3/2) + 0 + 3·(1/2) = √3 + 3/2.</p>
+<p><span class="ans">Máxima razón de cambio</span> = ‖∇f‖ = √(4 + 4 + 9) = √17, en la dirección del gradiente.</p>
+
+<p>En ese mismo PDF el volumen es 0 ≤ z ≤ 4 − x² − y² con x² + y² ≤ x. Completando el cuadrado, el disco es (x − 1/2)² + y² ≤ 1/4. En polares conviene dejarlo como r ≤ cos θ, con θ de −π/2 a π/2 (porque r ≥ 0 exige cos θ ≥ 0).</p>
+<p>V = ∫<sub>−π/2</sub><sup>π/2</sup> ∫<sub>0</sub><sup>cos θ</sup> (4 − r²) r dr dθ = ∫<sub>−π/2</sub><sup>π/2</sup> [2 cos² θ − (1/4) cos⁴ θ] dθ.</p>
+<p>cos² θ = (1 + cos 2θ)/2, así que el primer término integra π en ese intervalo. cos⁴ θ = (3 + 4 cos 2θ + cos 4θ)/8 integra 3π/8. Queda π − (1/4)·(3π/8) = <span class="ans">29π/32</span>.</p>
+<p>El campo de ese PDF es F = (2xy, x²). ∂Q/∂x − ∂P/∂y = 2x − 2x = 0, así que Green da 0 y el campo es conservativo: potencial φ = x² y.</p>
+
+<h2>Cuestionario viejo, para no regalar el 40%</h2>
+<p>Si el día del final hay opciones múltiples, estos tres salen por simetría o por Green, sin integrar de verdad.</p>
+<div class="box">
+<p>Anillo 1 ≤ x² + y² ≤ 9, ∬ (3x + 1) dA. El 3x es impar en x sobre una región simétrica: aporta 0. Queda el área, π(9 − 1) = <span class="ans">8π</span>.</p>
+<p>∮ (y − e<sup>cos² x</sup>) dx + (2x + e<sup>cos² y</sup>) dy sobre el borde de [2, 5] × [0, 4]. ∂Q/∂x − ∂P/∂y = 2 − 1 = 1. El área es 3 · 4 = <span class="ans">12</span>.</p>
+<p>y′ + y = x + e<sup>x</sup>. Factor e<sup>x</sup>. (y e<sup>x</sup>)′ = x e<sup>x</sup> + e<sup>2x</sup>. Integrando, <span class="ans">y = C e<sup>−x</sup> + x − 1 + e<sup>x</sup>/2</span>.</p>
+<p>x² y′ + 2xy = cos x es (x² y)′ = cos x. <span class="ans">y = (sen x + C) / x²</span>.</p>
+</div>
+
+<h2 id="teoria">Lo que hay que poder escribir en el teórico</h2>
+<p>La cátedra dice que entra todo el programa. Esta es la lista que ellos mismos marcaron como frecuente, en <code>fuentes/AM2-Temas-teorico.pdf</code>. Las demostraciones largas están en <code>fuentes/AM2-Teoremas.pdf</code>: leelas en voz alta, no las reescribas de memoria la primera vez.</p>
+<ol class="pasos">
+<li>Punto interior, exterior, frontera, aislado, de acumulación.</li>
+<li>Límite iterado, y que la existencia de los iterados no implica el límite.</li>
+<li>Unicidad del límite. La demostración está abajo.</li>
+<li>Derivada parcial y plano tangente.</li>
+<li>Si f es diferenciable, la direccional es ∇f · u. Demostración abajo.</li>
+<li>Condición necesaria de extremo libre. Demostración abajo.</li>
+<li>Condición suficiente: el Hessiano. Saber decir qué pasa si H &gt; 0, H &lt; 0, H = 0.</li>
+<li>ED de primer orden: separables, lineales, exactas, Bernoulli. La forma y cómo sale la general.</li>
+<li>ED de segundo orden: si y₁ e y₂ resuelven la homogénea, también C₁ y₁ + C₂ y₂. Los tres casos de la característica. Coeficientes indeterminados.</li>
+<li>Fubini, cambio de variables, polares, cilíndricas, esféricas.</li>
+<li>Longitud de arco. Triedro de Frenet: T, N, B.</li>
+<li>Integral de línea escalar y vectorial.</li>
+<li>Rotor y divergencia. ∇ × ∇f = 0 y ∇ · (∇ × F) = 0. Campo conservativo, potencial, teorema fundamental, independencia de la trayectoria.</li>
+<li>Green, enunciado y demostración.</li>
+</ol>
+
+<h3>Unicidad del límite</h3>
+<p>Si el límite existe, es único. Supongamos dos límites b₁ ≠ b₂. Para ε &gt; 0 hay δ₁ y δ₂. Con δ = min(δ₁, δ₂) y un punto a distancia menor que δ,</p>
+<p>|b₁ − b₂| ≤ |b₁ − f| + |f − b₂| &lt; 2ε.</p>
+<p>Eso vale para todo ε &gt; 0. Tomando ε = |b₁ − b₂|/2 se llega a |b₁ − b₂| &lt; |b₁ − b₂|, absurdo.</p>
+
+<h3>Direccional = gradiente por u</h3>
+<p>Si f es diferenciable en x₀ y u es unitario, la direccional es el límite de [f(x₀ + t u) − f(x₀)] / t.</p>
+<p>Por diferenciabilidad, f(x₀ + t u) − f(x₀) = ∇f · (t u) + ε(t) |t|, con ε(t) → 0. Dividiendo por t queda ∇f · u + ε(t) · (signo), que tiende a ∇f · u.</p>
+
+<h3>Necesaria para un extremo libre</h3>
+<p>Si x₀ es extremo local interior y existen las parciales, entonces ∇f(x₀) = 0.</p>
+<p>La función de una variable g(t) = f(x₀ + t eᵢ) tiene extremo en t = 0, así que g′(0) = 0. Pero g′(0) es la parcial respecto de xᵢ. Todas las parciales se anulan.</p>
+
+<h3>Green, el enunciado que hay que soltar de una</h3>
+<p>Si P y Q tienen parciales continuas en un dominio simplemente conexo que contiene a D, y C es el borde de D orientado en positivo,</p>
+<p>∮<sub>C</sub> P dx + Q dy = ∬<sub>D</sub> (∂Q/∂x − ∂P/∂y) dA.</p>
+
+<h2>Cómo estudiar esto hasta el 18</h2>
+<table>
+<tr><th>Día</th><th>Qué hacer, y nada más</th></tr>
+<tr><td>4 nov</td><td>Ejercicio 1 del modelo, de cero, sin mirar. Después el de 2026.</td></tr>
+<tr><td>5</td><td>Extremos libres. Modelo, ejercicio 2. Inventá una f cúbica y clasificá.</td></tr>
+<tr><td>6</td><td>Lagrange. El de la circunferencia y el de la elipse (x−1)² + 2y² = 1.</td></tr>
+<tr><td>7</td><td>Volumen en polares. Modelo, ejercicio 3, y el disco r ≤ cos θ.</td></tr>
+<tr><td>8</td><td>Green y la directa del mismo recinto, hasta que den el mismo número.</td></tr>
+<tr><td>9</td><td>Dos ED: y″ − 4y = e<sup>2x</sup> y y″ + 4y = cos(2x), con condiciones iniciales.</td></tr>
+<tr><td>10</td><td>Simulacro: los cuatro del modelo, 120 minutos, hoja en blanco, sin el apunte.</td></tr>
+<tr><td>11</td><td>Teórico: límite, continuidad, diferenciabilidad. Enunciá y demostrá unicidad y direccional.</td></tr>
+<tr><td>12</td><td>Teórico: extremos, ED de primer orden, los tres casos de segundo orden.</td></tr>
+<tr><td>13</td><td>Teórico: Fubini, cambio de variables, Green, conservativo.</td></tr>
+<tr><td>14</td><td>Segundo simulacro, los cuatro de la práctica 2026, cronometrado.</td></tr>
+<tr><td>15</td><td>Solo lo que salió mal. No abras temas nuevos.</td></tr>
+<tr><td>16</td><td>Un ejercicio de cada tipo, en voz alta, explicando el porqué.</td></tr>
+<tr><td>17</td><td>Repasá los moldes. Dormí.</td></tr>
+<tr><td>18</td><td>Rendís. 25 minutos por ejercicio.</td></tr>
+</table>
+<p>El 2 de diciembre queda como segundo intento. Si el 18 sale aprobado, ese día no se usa y se destraba Física y Análisis III.</p>
+</main>
+</body>
+</html>

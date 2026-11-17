@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Modelos y Simulación · Final</title><link rel='stylesheet' href='estilo.css'></head><body>
+<header class='top'><strong>Mod y Sim</strong><a href='index.html'>Plan</a><a href='#entra'>Qué entra</a><a href='#pl'>PL</a><a href='#inv'>Inventarios</a><a href='#pert'>PERT</a><a href='#pd'>Prog. dinámica</a><a href='#dec'>Decisión</a><a href='#ahp'>Multicriterio</a><a href='#sim'>Simulación</a><a href='#teo'>Teórico</a><a href='MyS-parcial2.html'>Parcial 2 corrido</a></header>
+<main>
+<p class='k'>UCC · Ingeniería · Final del 24 de noviembre</p>
+<h1>Modelos y Simulación. El final, como lo toman.</h1>
+
+<h2 id='entra'>Qué entra, sacado de los finales que tenés</h2>
+<p>Los finales de la cátedra tienen siempre el mismo formato: una <b>parte práctica de dos problemas</b> y una <b>parte teórica de cinco preguntas</b>, una por tema. Los parciales de 2024 a 2026 son más cortos, pero los temas son los mismos. Sin material ni fórmulas: todo lo de esta página hay que poder escribirlo de memoria.</p>
+<table><tr><th>Final</th><th>Práctica</th><th>Teoría</th></tr>
+<tr><td>16-12-2024</td><td>Salida de Solver de un PL (sensibilidad). Matriz de decisión con Savage y VEIP.</td><td>Características de PL. Asignación como PL. Condiciones para usar esperanza matemática. Valor de un juego sin punto de silla. Etapas de la simulación.</td></tr>
+<tr><td>Dic. 2023 (dos versiones)</td><td>Lote económico de materia prima con descuento. Aureliano: modelado de PL.</td><td>Restricciones lógicas con binarias. Costo reducido. Reaprovisionamiento uniforme. Consistencia en multicriterio. Generar valores de una normal.</td></tr>
+<tr><td>06-02-2024</td><td>Asignación de operarios (modelado).</td><td>Restricciones lógicas. Inventarios con descuento. Teoría de decisión. Simulación.</td></tr>
+<tr><td>23-02-2023</td><td>Profesional con tres clientes (programación dinámica). Aureliano.</td><td>Binarias. Problema de transporte. Reaprovisionamiento uniforme. Nivel de reorden. Reemplazo de equipos con PD.</td></tr>
+<tr><td>IO I 2021 (misma cátedra)</td><td>PERT con probabilidades. Asignación con penalidad. Profesional con tres clientes.</td><td>Rango del lado derecho. Dijkstra. Márgenes en PERT. Stock sin ruptura. Costo fijo y tamaño de lote con binarias.</td></tr></table>
+<div class='box warn'><p class='ans'>Lo que más se repite.</p><p>Práctica: modelar un PL (objetivo literal, variables, función objetivo, restricciones), inventarios, PERT, programación dinámica, y un problema de decisión. Teoría: <b>restricciones lógicas con binarias</b> (cayó en tres finales), <b>reaprovisionamiento uniforme</b> (tres), transporte o asignación como PL (tres), márgenes en PERT, y una de simulación.</p></div>
+
+<h2 id='pl'>1. Programación lineal</h2>
+<h3>La receta de modelado, que es lo que corrigen</h3>
+<ol><li><b>Objetivo literal:</b> una oración. “Determinar cuánto invertir en cada negocio para maximizar la ganancia total.”</li>
+<li><b>Variables de decisión:</b> qué son y en qué unidad. “x₁ = miles de dólares invertidos con Melquíades.”</li>
+<li><b>Función objetivo:</b> la fórmula y qué es cada parámetro.</li>
+<li><b>Restricciones:</b> cada una con una frase. “Horas disponibles”, “mínimo 40% en José”.</li>
+<li><b>No negatividad</b> (y si hace falta, enteras o binarias).</li></ol>
+<p>Supuestos del modelo (es pregunta de teoría): un solo objetivo, proporcionalidad, aditividad, divisibilidad, certidumbre, no negatividad.</p>
+
+<h3>Aureliano y la herencia (cayó dos veces)</h3>
+<div class='enun'>US$350.000. Con Melquíades puede poner hasta 250 mil y 500 horas, ganancia 80%. Con José Arcadio hasta 150 mil y 600 horas, ganancia 140%. Participación y horas proporcionales al monto. Máximo 600 horas en total. Al menos 40% de lo invertido en José.</div>
+<details><summary>Resolución</summary>
+<p><b>Objetivo:</b> determinar cuánto invertir con cada socio para maximizar la ganancia total.</p>
+<p><b>Variables:</b> x₁ = miles de US$ con Melquíades; x₂ = miles de US$ con José Arcadio.</p>
+<p><b>FO:</b> Máx Z = 0,8 x₁ + 1,4 x₂ (miles de US$ de ganancia; 0,8 y 1,4 son las tasas de ganancia).</p>
+<p><b>Restricciones:</b></p>
+<table><tr><td>x₁ ≤ 250</td><td>tope de participación con Melquíades</td></tr>
+<tr><td>x₂ ≤ 150</td><td>tope con José</td></tr>
+<tr><td>x₁ + x₂ ≤ 350</td><td>dinero de la herencia</td></tr>
+<tr><td>2x₁ + 4x₂ ≤ 600</td><td>horas: 500/250 = 2 h por mil con Melquíades, 600/150 = 4 h por mil con José</td></tr>
+<tr><td>x₂ ≥ 0,4 (x₁ + x₂), o sea 0,6x₂ − 0,4x₁ ≥ 0</td><td>al menos 40% en José</td></tr>
+<tr><td>x₁, x₂ ≥ 0</td><td>no negatividad</td></tr></table>
+<p><b>Óptimo</b> (el que pidan resolver): las limitantes son horas y 40%. De 2x₁ + 4x₂ = 600 y 3x₂ = 2x₁: x₁ = 128,57, x₂ = 85,71, <b>Z = 222,86 mil</b>. Sobran 135,7 mil sin invertir: el cuello de botella son las horas, no la plata.</p></details>
+
+<h3>Restricciones lógicas con variables binarias</h3>
+<p>y ∈ {0, 1}, M = un número grande (una cota de la variable).</p>
+<table><tr><th>Situación</th><th>Cómo se escribe</th></tr>
+<tr><td>Costo fijo: si produzco x pago F</td><td>FO: … − F·y; restricción x ≤ M·y</td></tr>
+<tr><td>Tamaño de lote mínimo: o no produzco, o produzco al menos L</td><td>x ≥ L·y y x ≤ M·y</td></tr>
+<tr><td>Excluyentes: A o B, no los dos</td><td>y<sub>A</sub> + y<sub>B</sub> ≤ 1</td></tr>
+<tr><td>Contingente: si hago A, tengo que hacer B</td><td>y<sub>A</sub> ≤ y<sub>B</sub></td></tr>
+<tr><td>k de n proyectos</td><td>Σ y<sub>i</sub> = k (o ≥ k, ≤ k)</td></tr>
+<tr><td>Una de dos restricciones (disyuntiva)</td><td>f(x) ≤ b₁ + M·y y g(x) ≤ b₂ + M(1 − y)</td></tr></table>
+
+<h3>Transporte y asignación como PL</h3>
+<p><b>Transporte:</b> m orígenes con oferta a<sub>i</sub>, n destinos con demanda b<sub>j</sub>, costo unitario c<sub>ij</sub>. Variables x<sub>ij</sub> = unidades de i a j. Mín Σ c<sub>ij</sub> x<sub>ij</sub>, sujeto a Σ<sub>j</sub> x<sub>ij</sub> ≤ a<sub>i</sub> (oferta) y Σ<sub>i</sub> x<sub>ij</sub> ≥ b<sub>j</sub> (demanda). Si oferta ≠ demanda se agrega un origen o destino ficticio con costo 0 (o el costo de no atender).</p>
+<p><b>Asignación:</b> es un transporte con ofertas y demandas iguales a 1. x<sub>ij</sub> binaria (1 si el recurso i va a la tarea j). Cada recurso a una tarea: Σ<sub>j</sub> x<sub>ij</sub> = 1. Cada tarea a un recurso: Σ<sub>i</sub> x<sub>ij</sub> = 1. Desbalanceado: recursos ficticios. Características: uno a uno, matriz cuadrada (o se completa), solución entera aunque se resuelva como continuo.</p>
+<div class='enun'><b>Técnicos y clientes (IO, 13/11/2021).</b> 4 técnicos, 5 clientes, ingresos en miles (fila técnico, columna cliente): T1: 15 18 21 16 26 · T2: 17 22 19 14 27 · T3: 21 21 23 18 29 · T4: 15 24 23 19 23. Cliente no atendido: pérdida de 30.</div>
+<details><summary>Resolución</summary>
+<p>x<sub>ij</sub> = 1 si el técnico i atiende al cliente j. z<sub>j</sub> = 1 si el cliente j queda sin atender.</p>
+<p>Máx Z = Σ ingreso<sub>ij</sub> x<sub>ij</sub> − 30 Σ z<sub>j</sub></p>
+<p>Σ<sub>j</sub> x<sub>ij</sub> = 1 para cada técnico (i = 1..4). Σ<sub>i</sub> x<sub>ij</sub> + z<sub>j</sub> = 1 para cada cliente (j = 1..5). Todas binarias.</p>
+<p>Equivale a agregar un técnico ficticio T5 con ingreso −30 en todos los clientes.</p>
+<p>Óptimo (por si piden resolverlo): T1→C3 (21), T2→C5 (27), T3→C1 (21), T4→C2 (24), C4 sin atender. Z = 93 − 30 = <b>63</b>.</p></details>
+
+<h3>Sensibilidad: cómo leer la salida de Solver</h3>
+<table><tr><th>Columna</th><th>Qué significa</th></tr>
+<tr><td>Valor final de una variable</td><td>La solución óptima. Si es &gt; 0 la variable es básica.</td></tr>
+<tr><td>Costo reducido</td><td>Para una variable que vale 0: cuánto empeora Z por cada unidad que la obligues a tomar. Dicho al revés, cuánto tiene que mejorar su coeficiente en la FO para que convenga producirla. Las básicas tienen costo reducido 0.</td></tr>
+<tr><td>Permisible aumentar / reducir (variables)</td><td>Rango del coeficiente de la FO donde la solución (los valores de las x) no cambia. Z sí cambia: ΔZ = Δc · x.</td></tr>
+<tr><td>Holgura</td><td>LD − lo usado. Si es 0, la restricción es <b>limitante</b> (recurso agotado).</td></tr>
+<tr><td>Precio sombra</td><td>Cuánto cambia Z por cada unidad más de ese recurso. Solo las limitantes tienen precio sombra distinto de 0. Vale dentro del rango permisible del LD.</td></tr>
+<tr><td>Permisible aumentar / reducir (restricciones)</td><td>Rango del lado derecho donde el precio sombra sigue valiendo. Para una limitante: [b − Δ⁻, b + Δ⁺] y ΔZ = Δb · precio sombra. Para una no limitante ≤: va de lo usado a ∞.</td></tr></table>
+<p><b>Las cinco preguntas del final del 16-12-2024</b>, y cómo se contestan: (1) solución y Z: la columna valor final. (2) Limitantes y no limitantes: holgura 0 o no. (3) Qué recurso incrementar primero: el de <b>mayor precio sombra</b>, porque es el que más sube Z por unidad. (4) Si sumo 150 horas a B: si 150 está dentro del permisible aumentar, ΔZ = 150 · precio sombra de B; si B no es limitante, Z no cambia. (5) Rango del coeficiente de x₁: [c₁ − permisible reducir, c₁ + permisible aumentar].</p>
+
+<h2 id='inv'>2. Gestión de inventarios</h2>
+<p>Notación de la cátedra: <b>N</b> demanda en el período T (en general un año); <b>Cp</b> costo de pedir o de lanzar; <b>Cs</b> costo de mantener una unidad por unidad de tiempo; <b>Cr</b> costo de ruptura; <b>q</b> lote; <b>S</b> stock máximo; <b>h = N/T</b> tasa de demanda; <b>a</b> tasa de producción; <b>t₁ = qT/N</b> ciclo; <b>v = N/q</b> pedidos por período; <b>L</b> plazo de entrega.</p>
+<table><tr><th>Modelo</th><th>q*</th><th>Otros</th><th>CT*</th></tr>
+<tr><td>Compra sin ruptura (CEP básico)</td><td>√(2CpN / CsT)</td><td>S = q</td><td>√(2CpNCsT)</td></tr>
+<tr><td>Compra con ruptura</td><td>√(2CpN / CsT) · √((Cs+Cr)/Cr)</td><td>S* = √(2CpN / CsT) · √(Cr/(Cs+Cr)); faltante máximo q − S</td><td>√(2CpNCsT) · √(Cr/(Cs+Cr))</td></tr>
+<tr><td>Reaprovisionamiento uniforme (fabricación sin ruptura)</td><td>√(2CpN / [CsT(1 − h/a)])</td><td>S = q(1 − h/a); t₄ = q/a produciendo</td><td>√(2CpNCsT(1 − h/a))</td></tr>
+<tr><td>Descuento por cantidad</td><td colspan='3'>Cs depende del precio. Procedimiento abajo.</td></tr></table>
+<p>Costo total variable del básico: <span class='f'>CT(q) = Cp·N/q + (q/2)·Cs·T</span>. Si piden costo total con compra, se suma <span class='f'>c·N</span>.</p>
+<p><b>Nivel de reorden:</b> X₀ = h·L si L &lt; t₁. Si L &gt; t₁: X₀ = h·L − (parte entera de L/t₁)·q. Significado: es el stock al que, cuando se llega, hay que pedir para que el lote llegue justo cuando se termina.</p>
+<p><b>Pedido a tiempo fijo</b> (productos C): q = h(L + P) − S, con P el período de revisión y S el stock actual.</p>
+<p><b>ABC:</b> A ≈ 20% de los ítems y 80% del valor (control estricto, JIT); B ≈ 25% de ítems y 15% del valor (cantidad fija de pedido); C ≈ 55% de ítems y 5% del valor (tiempo fijo).</p>
+
+<h3>Reaprovisionamiento uniforme: el desarrollo que piden (cayó tres veces)</h3>
+<ol><li>Durante t₄ se produce a tasa a y se consume a tasa h: el stock sube a tasa (a − h). Después, durante t₅, solo se consume.</li>
+<li>q = a·t₄, entonces t₄ = q/a. Stock máximo S = (a − h)·t₄ = q(1 − h/a).</li>
+<li>Stock medio S/2. Costo de mantener en el período: (S/2)·Cs·T = (q/2)(1 − h/a)·Cs·T. Costo de lanzamiento: Cp·N/q.</li>
+<li><span class='f'>CT(q) = Cp·N/q + (q/2)·Cs·T·(1 − h/a)</span>. Derivo e igualo a 0: −CpN/q² + (CsT/2)(1 − h/a) = 0.</li>
+<li><b>q* = √(2CpN / [CsT(1 − h/a)])</b>, y S = q*(1 − h/a). Si a → ∞ vuelve al modelo básico.</li></ol>
+<p><b>Supuestos del básico:</b> demanda conocida y constante, no hay faltantes, entrega instantánea, costos constantes, sin descuentos, sin stock de seguridad.</p>
+<p><b>Descuentos, el procedimiento:</b> 1) calcular q* con el precio más bajo (Cs depende del precio). 2) Si cae dentro de su tramo, es el óptimo. 3) Si no, evaluar CT (incluyendo c·N) en el mínimo de ese tramo, y calcular q* del tramo siguiente; quedarse con el menor CT de todos los candidatos válidos.</p>
+
+<div class='enun'><b>Materia prima (final dic. 2023).</b> 36.000 t por año a $850. Pedir: $250. Mantener: 20% anual del costo. Lote actual 600 t. a) costo actual, b) lote económico, c) costo óptimo, d) tiempo entre pedidos, e) 10% de descuento si compra mensual.</div>
+<details><summary>Resolución</summary>
+<p>Cs = 0,20 · 850 = 170 $/t·año. T = 1 año.</p>
+<p>a) CT(600) = 250 · 36000/600 + (600/2) · 170 = 15.000 + 51.000 = <b>$66.000</b> (con la compra: 30.666.000).</p>
+<p>b) q* = √(2 · 250 · 36000 / 170) = <b>325,40 t</b>.</p>
+<p>c) CT* = √(2 · 250 · 36000 · 170) = <b>$55.317,27</b>. Con la compra: 55.317,27 + 30.600.000 = 30.655.317,27.</p>
+<p>d) t₁ = q*/N = 0,00904 años = <b>3,25 días</b> (año de 360). Son 110,6 pedidos por año.</p>
+<p>e) Mensual: q = 3000 t, precio 765, Cs = 153. CT = 250 · 12 + (3000/2) · 153 + 765 · 36000 = 3.000 + 229.500 + 27.540.000 = 27.772.500. Contra 30.655.317 sin descuento: <b>conviene</b>, ahorra 2.882.817. Acá hay que comparar con la compra incluida, porque el descuento cambia el precio.</p></details>
+
+<div class='enun'><b>Vino espumante (parcial 3, 10/11/2025).</b> 300 botellas por semana, 52 semanas, 6 días por semana. Pedido $120. Mantener 30% del precio. Precio: 1–499 a $19,20; 500–999 a $17,60; 1000 o más a $16. Hoy pide cada 3 semanas. Plazo 5 días.</div>
+<details><summary>Resolución</summary>
+<p>N = 15.600 por año. Política actual: q = 900, precio 17,60, Cs = 5,28.</p>
+<p>a) CT(900) = 120 · 15600/900 + 450 · 5,28 + 17,60 · 15600 = 2.080 + 2.376 + 274.560 = <b>$279.016</b>.</p>
+<p>b) Precio 16: Cs = 4,80, q* = √(2 · 120 · 15600 / 4,8) = 883,18. No llega a 1000, se lleva a 1000: CT(1000) = 1.872 + 2.400 + 249.600 = 253.872. Precio 17,60: q* = 842,08, dentro del tramo: CT = 279.006. <b>Óptimo q = 1000.</b></p>
+<p>c) Demanda diaria 300/6 = 50. Ciclo = 1000/50 = <b>20 días</b>.</p>
+<p>d) <b>$253.872</b>.</p>
+<p>e) X₀ = 50 · 5 = <b>250 botellas</b> (L = 5 &lt; t₁ = 20).</p></details>
+
+<div class='enun'><b>Anestesia (ejemplo de la guía, reaprovisionamiento uniforme).</b> Lanzamiento $3.500. Demanda 500 por día (15.000 por mes). Mantener $3,50 por mes. Producción 20.000 por mes. L = 2 días. Hoy lotes de 5.000.</div>
+<details><summary>Resolución</summary>
+<p>N = 182.000 por año, Cs = 42 por año, h/a = 15/20 = 0,75.</p>
+<p>CT(5000) = 3500 · 182000/5000 + (5000/2) · 42 · 0,25 = 127.400 + 26.250 = 153.650.</p>
+<p>q* = √(2 · 3500 · 182000 / (42 · 0,25)) = <b>11.015</b>. CT* = <b>115.658,98</b>. S = 11015 · 0,25 = 2.754. X₀ = 500 · 2 = 1.000.</p></details>
+
+<h2 id='pert'>3. PERT / CPM</h2>
+<p>Cada nodo (método francés, actividad en el nodo) se dibuja con: actividad, duración D<sub>i</sub>, MI<sub>i</sub> y MF<sub>i</sub> arriba, MI<sub>i</sub>* y MF<sub>i</sub>* abajo.</p>
+<table><tr><th>Paso</th><th>Fórmula</th></tr>
+<tr><td>Ida (temprano)</td><td>MI<sub>i</sub> = máx MF<sub>k</sub> de las precedentes; MF<sub>i</sub> = MI<sub>i</sub> + D<sub>i</sub>. Duración total DT = MF del fin.</td></tr>
+<tr><td>Vuelta (tardío)</td><td><b>MF<sub>i</sub>* = mín MI<sub>k</sub>*</b> de las siguientes; MI<sub>i</sub>* = MF<sub>i</sub>* − D<sub>i</sub>.</td></tr>
+<tr><td>Margen total</td><td>MT<sub>i</sub> = MI<sub>i</sub>* − MI<sub>i</sub> = MF<sub>i</sub>* − MF<sub>i</sub>. Lo que se puede atrasar sin atrasar el proyecto.</td></tr>
+<tr><td>Margen libre</td><td>ML<sub>i</sub> = mín MI<sub>k</sub> (siguientes) − MF<sub>i</sub>. Lo que se puede atrasar sin atrasar el inicio temprano de ninguna siguiente.</td></tr>
+<tr><td>Margen independiente</td><td>MInd<sub>i</sub> = mín MI<sub>k</sub> − máx MF<sub>j</sub>* (precedentes) − D<sub>i</sub> (si da negativo, 0).</td></tr>
+<tr><td>Críticas</td><td>MT = 0. El camino crítico es el más largo del inicio al fin.</td></tr>
+<tr><td>PERT (duración aleatoria, beta)</td><td>E = (a + 4m + b)/6; σ = (b − a)/6; V = σ².</td></tr>
+<tr><td>Si la actividad es normal</td><td>E = la media, V = la varianza dada (no la fórmula beta).</td></tr>
+<tr><td>Proyecto</td><td>DT ~ Normal(Σ E críticas, Σ V críticas). Si hay dos caminos críticos, se toma <b>la mayor varianza</b>.</td></tr>
+<tr><td>Probabilidad y plazo</td><td>P(DT ≤ t) = P(Z ≤ (t − E)/σ). Plazo con confianza p: t = E + z<sub>p</sub>·σ.</td></tr></table>
+<p>Si una actividad se atrasa Δ: si Δ ≤ ML, no afecta a nadie; si ML &lt; Δ ≤ MT, corre las siguientes pero no el fin; si Δ &gt; MT, el proyecto se atrasa Δ − MT.</p>
+
+<div class='enun'><b>IO, 13/11/2021.</b> Precedencias: A –; B, C, D después de A; E después de C y D; F después de B y E; G después de D; H después de F; I después de G; J después de G; K después de F. Medias: A 8, B 2, C 4, D 1, E 3, F 2, G 3, H 6, I ?, J 2, K 3. Desvíos: 1; 1,5; 0,5; 0,3; 1,2; 0,4; 2; 1,4; ?; 0,25; 1,8. De I: a = 3, m = 6, b = 15.</div>
+<details><summary>Resolución</summary>
+<p>I: E = (3 + 24 + 15)/6 = <b>7</b>; σ = 12/6 = <b>2</b>.</p>
+<table><tr><th>Act</th><th>MI</th><th>MF</th><th>MI*</th><th>MF*</th><th>MT</th></tr>
+<tr><td>A</td><td>0</td><td>8</td><td>0</td><td>8</td><td>0</td></tr>
+<tr><td>B</td><td>8</td><td>10</td><td>13</td><td>15</td><td>5</td></tr>
+<tr><td>C</td><td>8</td><td>12</td><td>8</td><td>12</td><td>0</td></tr>
+<tr><td>D</td><td>8</td><td>9</td><td>11</td><td>12</td><td>3</td></tr>
+<tr><td>E</td><td>12</td><td>15</td><td>12</td><td>15</td><td>0</td></tr>
+<tr><td>F</td><td>15</td><td>17</td><td>15</td><td>17</td><td>0</td></tr>
+<tr><td>G</td><td>9</td><td>12</td><td>13</td><td>16</td><td>4</td></tr>
+<tr><td>H</td><td>17</td><td>23</td><td>17</td><td>23</td><td>0</td></tr>
+<tr><td>I</td><td>12</td><td>19</td><td>16</td><td>23</td><td>4</td></tr>
+<tr><td>J</td><td>12</td><td>14</td><td>21</td><td>23</td><td>9</td></tr>
+<tr><td>K</td><td>17</td><td>20</td><td>20</td><td>23</td><td>3</td></tr></table>
+<p>Camino crítico A–C–E–F–H. Duración media (probabilidad 0,5) = <b>23 semanas</b>.</p>
+<p>V = 1 + 0,25 + 1,44 + 0,16 + 1,96 = 4,81 ⇒ σ = <b>2,193</b>.</p>
+<p>Margen total de B = 15 − 10 = <b>5</b>.</p>
+<p>Confianza 0,90: 23 + 1,282 · 2,193 = <b>25,811 semanas</b>. La solución impresa dice 35,811: es un error de tipeo.</p></details>
+<p>Para practicar con el parcial 3 de 2025: F tiene a = 2, m = 6,5, b = 8. E = (2 + 26 + 8)/6 = 6 y σ = 6/6 = 1. Si F pasa a 7 semanas, el proyecto se atrasa 7 − 6 − MT<sub>F</sub> (si es crítica, 1 semana).</p>
+<p><b>Opción múltiple de 2025:</b> MF<sub>i</sub>* se calcula como <b>mín MI<sub>k</sub>*</b> (las siguientes). Con más de un camino crítico, la varianza del proyecto es <b>la mayor entre los caminos críticos</b>.</p>
+<p><b>Dijkstra</b> (camino mínimo, IO 2021): etiqueta permanente 0 al origen. En cada paso, a cada vecino del último nodo permanente se le pone etiqueta temporal = mín(la que tenía, permanente + arco). La menor temporal pasa a permanente. Se repite hasta que el destino es permanente. Se reconstruye el camino hacia atrás. Requiere arcos no negativos.</p>
+
+<h2 id='pd'>4. Programación dinámica</h2>
+<p><b>Elementos:</b> etapas t (las decisiones secuenciales), variable de estado s<sub>t</sub> (lo que necesito saber para decidir: plata disponible, días que quedan, stock), decisión x<sub>t</sub>, transformación s<sub>t+1</sub> = T(s<sub>t</sub>, x<sub>t</sub>), y la recursiva <span class='f'>f<sub>t</sub>(s) = óptimo<sub>x</sub> [C<sub>t</sub>(s, x) + f<sub>t+1</sub>(s′)]</span>. Se resuelve hacia atrás.</p>
+<p><b>Principio de optimalidad de Bellman:</b> toda subpolítica de una política óptima es óptima entre las que van del mismo estado inicial al mismo final. Dicho simple: lo óptimo de acá en adelante no depende de cómo llegué.</p>
+<p><b>Características que tiene que cumplir el problema</b> (sirve también para reemplazo de equipos y producción): se divide en etapas con una decisión cada una; cada etapa tiene estados; la decisión transforma el estado actual en el de la etapa siguiente; dado el estado, la decisión óptima no depende de los estados anteriores; existe una relación recursiva entre etapas. En <b>reemplazo de equipos</b>: etapa = año, estado = edad del equipo, decisión = conservar o reemplazar, costo = mantenimiento (crece con la edad) o compra − valor de reventa + mantenimiento del nuevo. En <b>producción</b>: etapa = mes, estado = stock inicial, decisión = cuánto producir, con capacidad y costo de almacenaje.</p>
+
+<div class='enun'><b>Inversión de US$4.000 en múltiplos de 1.000 (apunte Rosa).</b> Ganancias (miles) por invertir 0, 1, 2, 3, 4: Op. I: 0, 2, 5, 6, 7. Op. II: 0, 1, 3, 6, 7. Op. III: 0, 1, 4, 5, 8.</div>
+<details><summary>Resolución</summary>
+<p>Etapas: opción III, II, I (hacia atrás). Estado s = miles disponibles.</p>
+<p>f₃(s) = III(s): 0, 1, 4, 5, 8.</p>
+<table><tr><th>s</th><th>x₂ = 0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>f₂(s)</th><th>x₂*</th></tr>
+<tr><td>0</td><td>0</td><td></td><td></td><td></td><td></td><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td><td></td><td></td><td></td><td>1</td><td>0 o 1</td></tr>
+<tr><td>2</td><td>4</td><td>2</td><td>3</td><td></td><td></td><td>4</td><td>0</td></tr>
+<tr><td>3</td><td>5</td><td>5</td><td>4</td><td>6</td><td></td><td>6</td><td>3</td></tr>
+<tr><td>4</td><td>8</td><td>6</td><td>7</td><td>7</td><td>7</td><td>8</td><td>0</td></tr></table>
+<p>Etapa 1 con s = 4: x₁ = 0 → 8; 1 → 2 + 6 = 8; <b>2 → 5 + 4 = 9</b>; 3 → 6 + 1 = 7; 4 → 7.</p>
+<p><b>Política óptima: 2.000 en I, 0 en II, 2.000 en III. Ganancia 9.000.</b></p></details>
+
+<div class='enun'><b>Profesional con tres clientes (cayó en 2021 y 2023).</b> Honorarios por 1, 2, 3, 4, 5 días semanales: C1: 100, 250, 400, 525, 600. C2: 120, 250, 375, 500, 625. C3: 150, 300, 400, 550, 650. Al menos un día para cada cliente. Semana de 5 días.</div>
+<details><summary>Resolución</summary>
+<p>Etapas = clientes. Estado = días que quedan. Decisión = días para ese cliente (mínimo 1, dejando al menos 1 por cliente restante).</p>
+<p>f₃(s) = C3(s): s = 1 → 150; 2 → 300; 3 → 400.</p>
+<p>f₂(2) = 120 + 150 = 270. f₂(3) = máx(120 + 300, 250 + 150) = 420 (x₂ = 1). f₂(4) = máx(120 + 400, 250 + 300, 375 + 150) = 550 (x₂ = 2).</p>
+<p>f₁(5) = máx(100 + 550, 250 + 420, 400 + 270) = máx(650, 670, 670) = <b>670</b>.</p>
+<p>Dos políticas óptimas: <b>(2, 1, 2)</b> o <b>(3, 1, 1)</b> días. Decilo así: hay óptimos alternativos.</p></details>
+<p class='small'>El astillero del parcial 3 de 2025 es un problema de producción con PD: etapa = mes, estado = stock al inicio, decisión = cuánto producir en tiempo normal y extra, restricción de 3 en depósito y terminar con al menos 1. La tabla de capacidades no se lee bien en la foto: resolvelo con los datos de la hoja original.</p>
+
+<h2 id='dec'>5. Teoría de la decisión</h2>
+<table><tr><th>Universo</th><th>Qué se conoce</th><th>Qué se usa</th></tr>
+<tr><td>Cierto</td><td>El estado que va a ocurrir</td><td>El mejor resultado de ese estado (a veces PL)</td></tr>
+<tr><td>Aleatorio</td><td>Los estados y sus probabilidades</td><td>Valor esperado, VEIP, Bayes, utilidad</td></tr>
+<tr><td>Incierto</td><td>Los estados, sin probabilidades</td><td>Wald, optimista, Hurwicz, Savage, Laplace</td></tr>
+<tr><td>Hostil</td><td>Un oponente racional que elige en contra</td><td>Teoría de juegos</td></tr></table>
+<h3>Incierto, en beneficios (en costos todo se invierte)</h3>
+<p><b>Wald</b> (pesimista): máx de los mínimos de cada fila. <b>Optimista</b>: máx de los máximos. <b>Hurwicz</b>: α·máx + (1 − α)·mín de cada fila, y el mayor; α es el coeficiente de optimismo. <b>Savage</b>: lamento = mejor de la columna − el valor; se elige el mínimo de los lamentos máximos. <b>Laplace</b>: promedio de cada fila (todos los estados equiprobables), el mayor.</p>
+<h3>Aleatorio</h3>
+<p>VE<sub>i</sub> = Σ<sub>j</sub> p<sub>j</sub> · R<sub>ij</sub>. <b>GIP</b> = Σ<sub>j</sub> p<sub>j</sub> · (mejor resultado de la columna j). <b>VEIP = GIP − mejor VE.</b> Es lo máximo que vale la pena pagar por saber el estado.</p>
+<p><b>Condiciones para usar la esperanza matemática</b> (16-12-2024): estados exhaustivos y mutuamente excluyentes con probabilidades conocidas que sumen 1; la decisión se repite muchas veces (el promedio se realiza a la larga); el decisor es neutral al riesgo (si no, se usa utilidad).</p>
+
+<div class='enun'><b>Final 16-12-2024, caso 2.</b> Insumo para neutralizar residuos: cada tonelada usada aporta $16.000; cada tonelada no usada cuesta $2.000; el faltante pierde el 50% de la utilidad por tonelada. Demanda 50, 60 o 70 t. Variables, función de compensación, matriz, Savage, y VEIP con W = (0,25; 0,35; 0,40).</div>
+<details><summary>Resolución</summary>
+<p>Variables: q = toneladas compradas (alternativa), d = toneladas que se usan (estado). Función de compensación: si q ≥ d, R = 16000·d − 2000·(q − d); si q &lt; d, R = 16000·q − 8000·(d − q).</p>
+<table><tr><th>q \ d</th><th>50</th><th>60</th><th>70</th></tr>
+<tr><td>50</td><td>800.000</td><td>720.000</td><td>640.000</td></tr>
+<tr><td>60</td><td>780.000</td><td>960.000</td><td>880.000</td></tr>
+<tr><td>70</td><td>760.000</td><td>940.000</td><td>1.120.000</td></tr></table>
+<p>Lamentos (máximos de columna 800.000, 960.000, 1.120.000): q = 50: 0, 240.000, 480.000 → máx 480.000. q = 60: 20.000, 0, 240.000 → 240.000. q = 70: 40.000, 20.000, 0 → 40.000. <b>Savage: comprar 70 t.</b></p>
+<p>VE: q = 50: 708.000; q = 60: 883.000; q = 70: <b>967.000</b>. GIP = 0,25 · 800.000 + 0,35 · 960.000 + 0,40 · 1.120.000 = 984.000. <b>VEIP = 17.000.</b></p>
+<p class='small'>Tomé el faltante como 50% de 16.000 = 8.000 por tonelada. Si la cátedra lo interpreta distinto, cambian los números pero no el método.</p></details>
+
+<div class='enun'><b>Vasos ecológicos (parcial 14/09/23), Wald.</b> Demanda semanal 300, 500 o 700. Precio $800. Costo $500 por vaso (manija 300 + botella 200). Si falta, entrega vasos especiales que costaron $850. Si sobra, los vende a $350.</div>
+<details><summary>Resolución</summary>
+<p>R = 800·d − 500·q − 850·(d − q) si d &gt; q; R = 800·d − 500·q + 350·(q − d) si q ≥ d.</p>
+<table><tr><th>Producir \ demanda</th><th>300</th><th>500</th><th>700</th><th>mín</th></tr>
+<tr><td>300</td><td>90.000</td><td>80.000</td><td>70.000</td><td><b>70.000</b></td></tr>
+<tr><td>500</td><td>60.000</td><td>150.000</td><td>140.000</td><td>60.000</td></tr>
+<tr><td>700</td><td>30.000</td><td>120.000</td><td>210.000</td><td>30.000</td></tr></table>
+<p><b>Wald: producir 300.</b></p></details>
+
+<div class='enun'><b>Parcial 1 (17/09/2024), valor esperado.</b> Beneficios: EA1: 1000, 100, 10. EA2: 20, 1100, 100. EA3: 100, 30, 1200. Probabilidades 20%, 35%, 45%.</div>
+<details><summary>Resolución</summary>
+<p>VE1 = 239,5; VE2 = 434; VE3 = <b>570,5</b> → se elige EA3. GIP = 0,2·1000 + 0,35·1100 + 0,45·1200 = 1.125. VEIP = 1.125 − 570,5 = <b>554,5</b>.</p></details>
+
+<h3>Bayes</h3>
+<p>Se usa cuando se puede comprar información imperfecta (una prueba, un estudio) que cambia las probabilidades de los estados. La posterior es la probabilidad del estado sabiendo lo que dijo la prueba:</p>
+<p class='f'>P(E<sub>j</sub> | I) = P(E<sub>j</sub>) · P(I | E<sub>j</sub>) / Σ<sub>k</sub> P(E<sub>k</sub>) · P(I | E<sub>k</sub>)</p>
+<p>Tabla: priori, condicional (verosimilitud), conjunta = priori · condicional, conjunta total = suma de las conjuntas, posterior = conjunta / total. Árbol: decisión de comprar o no la prueba → resultado de la prueba (con la conjunta total) → decisión → estados (con la posterior). <b>VEIM = VE bruto con información − VE sin información.</b> Conviene si VEIM &gt; costo de la prueba.</p>
+<p>El ejercicio del control de calidad (aceptar o rechazar, 20% de defectuosos, prueba de 98% y 99%) está terminado en <a href='MyS-parcial2.html#decision'>la otra guía</a>: VE sin prueba 44; con prueba 77,84 bruto y 72,84 neto; conviene.</p>
+<h3>Utilidad</h3>
+<p>Se asigna U = 0 al peor resultado y U = 10 al mejor. Para cada valor intermedio x se pregunta al decisor con qué probabilidad p de ganar el mejor (y 1 − p el peor) le da lo mismo que recibir x seguro. Esa es la <b>probabilidad de indiferencia</b>, y U(x) = p · 10 + (1 − p) · 0 = 10p. Después se calcula el <b>VEU</b> de cada alternativa con las utilidades en vez de la plata. Si U es cóncava el decisor es averso al riesgo; si es lineal, neutral; si es convexa, propenso.</p>
+
+<h3>Juegos (universo hostil)</h3>
+<p>Características: dos jugadores racionales e inteligentes, cada uno conoce las alternativas del otro, no se comunican, lo que gana uno lo pierde el otro (<b>suma cero</b>). A maximiza (filas), B minimiza (columnas).</p>
+<ol><li><b>Punto de silla:</b> maximin de filas (máx de los mínimos) = minimax de columnas (mín de los máximos). Ese valor es V y las estrategias son puras.</li>
+<li><b>Dominancia:</b> una fila se elimina si otra es mayor o igual en todas las columnas. Una columna se elimina si otra es menor o igual en todas las filas.</li>
+<li><b>Sin punto de silla:</b> estrategias mixtas. En 2×2 con matriz (a b; c d): p₁ = (d − c)/(a + d − b − c), V = (ad − bc)/(a + d − b − c), q₁ = (d − b)/(a + d − b − c).</li>
+<li><b>Más grande:</b> PL. Jugador A: Máx V, sujeto a Σ<sub>i</sub> a<sub>ij</sub> p<sub>i</sub> ≥ V para cada columna j, Σ p<sub>i</sub> = 1, p ≥ 0. Jugador B: Mín V, sujeto a Σ<sub>j</sub> a<sub>ij</sub> q<sub>j</sub> ≤ V para cada fila i, Σ q<sub>j</sub> = 1, q ≥ 0.</li></ol>
+<div class='enun'><b>Parcial 1, juego.</b> A: (1000, 100, 10), (20, 1100, 100), (100, 30, 1200).</div>
+<details><summary>Resolución</summary>
+<p>Mínimos de fila: 10, 20, 30 → maximin 30. Máximos de columna: 1000, 1100, 1200 → minimax 1000. No coinciden: <b>no hay estrategia pura</b>. No hay dominancia.</p>
+<p>PL de A: Máx V s.a. 1000p₁ + 20p₂ + 100p₃ ≥ V; 100p₁ + 1100p₂ + 30p₃ ≥ V; 10p₁ + 100p₂ + 1200p₃ ≥ V; p₁ + p₂ + p₃ = 1.</p>
+<p>Solución: p ≈ (0,3672; 0,3259; 0,3068), q ≈ (0,3680; 0,3338; 0,2980), <b>V ≈ 404,45</b>.</p>
+<p>Cómo se explica una solución como p = (0,2; 0,3; 0,5), V = 5: A juega su estrategia 1 el 20% de las veces, la 2 el 30% y la 3 el 50%, al azar en cada jugada; a la larga gana 5 por jugada, haga lo que haga B. Si los V de A y B coinciden, está bien resuelto.</p></details>
+
+<h2 id='ahp'>6. Decisión multicriterio (jerarquía analítica)</h2>
+<ol><li>Árbol: objetivo, criterios, alternativas.</li>
+<li>Matriz criterios vs. criterios con la escala de Saaty (1 igual, 3 moderada, 5 fuerte, 7 muy fuerte, 9 extrema; 2, 4, 6, 8 intermedios). Diagonal 1. Abajo de la diagonal van los recíprocos.</li>
+<li>Normalizar: cada elemento dividido la suma de su columna. El <b>vector promedio</b> (promedio de cada fila de la normalizada) son los pesos de los criterios. Significado: el peso relativo y la jerarquía de cada criterio en la decisión.</li>
+<li><b>Consistencia:</b> multiplicar la matriz original por el vector de pesos; dividir cada componente por su peso; promediar: eso es λ<sub>máx</sub>. IC = (λ<sub>máx</sub> − n)/(n − 1). RC = IC / IA, con IA(2) = 0, IA(3) = 0,58, IA(4) = 0,90. Es consistente si <b>RC ≤ 0,10</b>. Si no, hay que volver a preguntarle al decisor.</li>
+<li>Lo mismo para alternativas vs. alternativas desde cada criterio (si el criterio es “malo”, como aplazos o costo, la preferencia es al revés).</li>
+<li>Matriz final: alternativas (filas) × criterios (columnas) con los vectores de cada criterio. Puntaje = Σ peso del criterio · valor de la alternativa. Gana el mayor.</li></ol>
+<p><b>Criterios:</b> exhaustivos (todo lo que importa), coherentes con las preferencias globales, no redundantes (no contar dos veces lo mismo). Se recomiendan pocos (no más de 7). <b>Alternativas:</b> diferentes, exhaustivas y excluyentes.</p>
+<div class='enun'><b>Semáforos de Villa María.</b> Riesgo de disolución es fuertemente más importante que el costo y moderadamente más importante que la flota. La flota es entre igual y moderadamente más importante que el costo. Pesos y consistencia.</div>
+<details><summary>Resolución</summary>
+<table><tr><th></th><th>Riesgo</th><th>Costo</th><th>Flota</th></tr>
+<tr><td>Riesgo</td><td>1</td><td>5</td><td>3</td></tr>
+<tr><td>Costo</td><td>1/5</td><td>1</td><td>1/2</td></tr>
+<tr><td>Flota</td><td>1/3</td><td>2</td><td>1</td></tr>
+<tr><td>Suma</td><td>1,5333</td><td>8</td><td>4,5</td></tr></table>
+<p>Normalizada: Riesgo 0,6522 · 0,6250 · 0,6667 → <b>0,6479</b>. Costo 0,1304 · 0,1250 · 0,1111 → <b>0,1221</b>. Flota 0,2173 · 0,2500 · 0,2222 → <b>0,2298</b>.</p>
+<p>A·w = (1,9486; 0,3667; 0,6902). Divididos por w: 3,0076; 3,0010; 3,0024. λ<sub>máx</sub> = 3,0037. IC = 0,0018. RC = 0,0018/0,58 = <b>0,0031 ≤ 0,10: consistente.</b></p>
+<p>Con las matrices de las dos empresas por criterio se arma la matriz final y se elige la de mayor Σ peso · valor.</p></details>
+
+<h2 id='sim'>7. Simulación</h2>
+<p><b>Qué es:</b> construir un modelo que reproduce lo esencial de un sistema para experimentar con él y apoyar decisiones. Sirve cuando el sistema es complejo, caro, peligroso o todavía no existe. No da la solución óptima: da estimaciones del comportamiento.</p>
+<p><b>Ventajas:</b> experimentar barato y sin riesgo; ver efectos de cambios; entender sistemas complejos; anticipar problemas. <b>Desventajas:</b> armar el modelo cuesta y lleva tiempo; da estimaciones, no valores exactos; resultados falsos si el modelo omite relaciones; difícil saber la precisión.</p>
+<p><b>Etapas del proceso</b> (16-12-2024): 1) definir el problema y los objetivos; 2) recolectar y analizar datos (ajustar distribuciones, con Kolmogorov-Smirnov o χ²); 3) construir el modelo; 4) verificarlo (hace lo que pensé) y validarlo (se parece al sistema real); 5) diseñar los experimentos (escenarios, corridas, período de calentamiento); 6) correr; 7) analizar los resultados (intervalos de confianza); 8) documentar e implementar.</p>
+<p><b>Discreta vs. continua:</b> en la discreta el estado cambia en instantes puntuales por eventos (una llegada, una salida). En la continua cambia todo el tiempo y suele necesitar ecuaciones diferenciales (dinámica de sistemas).</p>
+<h3>Números aleatorios y cómo generar variables</h3>
+<p><b>Pseudoaleatorios:</b> los genera un algoritmo determinista; la secuencia imita el azar y se repite al terminar el período. Métodos vistos: <b>cuadrados medios</b> (elevar al cuadrado y tomar las cifras del medio) y <b>congruencial</b>: X<sub>n+1</sub> = (a·X<sub>n</sub> + c) mod m, R = X/m.</p>
+<table><tr><th>Distribución</th><th>Transformada inversa</th></tr>
+<tr><td>Discreta (tabla)</td><td>Probabilidad acumulada y rangos: si R cae en [F(x<sub>k−1</sub>), F(x<sub>k</sub>)), el valor es x<sub>k</sub>.</td></tr>
+<tr><td>Uniforme [a, b]</td><td>x = a + (b − a)·R</td></tr>
+<tr><td>Exponencial de media μ</td><td>x = −μ · ln(R) (o −μ ln(1 − R), es lo mismo en distribución). Se usa para tiempos entre llegadas (Poisson) y tiempos de servicio sin memoria. La gráfica: densidad que arranca alta en 0 y cae.</td></tr>
+<tr><td>Normal (μ, σ)</td><td>z = valor de la tabla normal estándar con F(z) = R; x = μ + σ·z. Alternativa sin tabla: z = (R₁ + … + R₁₂) − 6.</td></tr></table>
+<p><b>Montecarlo:</b> reproducir un proceso aleatorio con valores sacados de una distribución conocida. Pasos: definir la variable y su distribución; armar acumuladas y rangos; generar R; asignar valores; aplicar la lógica del problema; calcular las medidas; repetir.</p>
+
+<div class='enun'><b>Impresoras 3D.</b> Demanda semestral 500 (0,50), 600 (0,25), 700 (0,15), 800 (0,10). Se compra lo que se demandó el semestre anterior; la última demanda fue 800. Lo que sobra se liquida al costo. R: 0,44 · 0,66 · 0,33 · 0,11.</div>
+<details><summary>Resolución</summary>
+<p>Rangos: [0; 0,50) → 500; [0,50; 0,75) → 600; [0,75; 0,90) → 700; [0,90; 1) → 800.</p>
+<table><tr><th>Semestre</th><th>R</th><th>Demanda</th><th>Compra</th><th>Vende a precio</th><th>Al costo</th><th>Demanda no atendida</th></tr>
+<tr><td>1</td><td>0,44</td><td>500</td><td>800</td><td>500</td><td>300</td><td>0</td></tr>
+<tr><td>2</td><td>0,66</td><td>600</td><td>500</td><td>500</td><td>0</td><td>100</td></tr>
+<tr><td>3</td><td>0,33</td><td>500</td><td>600</td><td>500</td><td>100</td><td>0</td></tr>
+<tr><td>4</td><td>0,11</td><td>500</td><td>500</td><td>500</td><td>0</td><td>0</td></tr></table>
+<p><b>2.000 a precio normal y 400 al costo.</b></p></details>
+
+<div class='enun'><b>Ruletas.</b> R1 da 1 y 3 con 20%, 2 y 4 con 30%. R2 es uniforme entre 1 y 4. Si R1 &gt; R2 se ganan 10 veces lo apostado. Apuestas 120, 500, 600, 1000. Aleatorios (R1, R2): (0,33; 0,54), (0,60; 0,25), (0,91; 0,87), (0,46; 0,95).</div>
+<details><summary>Resolución</summary>
+<p>R1: [0; 0,2) → 1; [0,2; 0,5) → 2; [0,5; 0,7) → 3; [0,7; 1) → 4. R2 = 1 + 3R.</p>
+<table><tr><th>Jugada</th><th>Apuesta</th><th>R1</th><th>R2</th><th>Gana</th></tr>
+<tr><td>1</td><td>120</td><td>2</td><td>2,62</td><td>0</td></tr>
+<tr><td>2</td><td>500</td><td>3</td><td>1,75</td><td>5.000</td></tr>
+<tr><td>3</td><td>600</td><td>4</td><td>3,61</td><td>6.000</td></tr>
+<tr><td>4</td><td>1000</td><td>2</td><td>3,85</td><td>0</td></tr></table>
+<p>Apostado 2.220, cobrado 11.000: <b>neto +8.780</b> (tomando que se cobran 10 veces la apuesta y la apuesta no se devuelve; aclaralo en la hoja).</p></details>
+
+<div class='enun'><b>Vasos, Montecarlo.</b> Demanda 100 (0,40), 200 (0,25), 300 (0,35). Se producen 150 por semana. Sobrante se recupera a $150 por unidad; faltante cuesta $90 por unidad. R: 0,65 · 0,93 · 0,30 · 0,52 · 0,11.</div>
+<details><summary>Resolución</summary>
+<p>Rangos [0; 0,40) → 100; [0,40; 0,65) → 200; [0,65; 1) → 300. Ojo: 0,65 cae justo en el borde; con intervalos cerrados a izquierda es 300. Escribí qué convención usás.</p>
+<p>Demandas: 300, 300, 100, 200, 100. Faltantes: 150, 150, 0, 50, 0 → costo 350 · 90 = <b>$31.500</b>. Sobrantes: 0, 0, 50, 0, 50 → recupero 100 · 150 = <b>$15.000</b>.</p></details>
+
+<h3>Colas</h3>
+<p>Clasificación: simple canal y simple fase (una fila, un servidor); multicanal (varios servidores en paralelo); multifase (etapas en serie). Variables de un modelo de eventos discretos: HS (hora de simulación), TPLL (tiempo programado de la próxima llegada), TPS (próxima salida), ES (estado del servidor), LC (largo de la cola). Regla: inicio de servicio = máx(llegada, fin del anterior); espera = inicio − llegada; permanencia = fin − llegada.</p>
+<div class='enun'><b>Camiones en el centro de distribución.</b> Llegadas Poisson con intervalo medio 1,2 h. Un autoelevador. Descarga: 1,25 h (0,05), 1,50 (0,15), 1,75 (0,20), 2,00 (0,30), 2,25 (0,30). Aleatorios de llegada: 10 90 20 90 10 20 80 20. De descarga: 97 48 61 29 89 13 50 60. Cola máxima, permanencia promedio y camiones que ingresan en 6,5 h.</div>
+<details><summary>Resolución</summary>
+<p>Entre llegadas t = −1,2 ln(R): 2,763; 0,126; 1,931; 0,126; 2,763… Llegadas: 2,763; 2,890; 4,821; 4,947; 7,710. <b>Ingresan 4 camiones en 6,5 h.</b></p>
+<p>Descarga, acumuladas 0,05; 0,20; 0,40; 0,70; 1: 0,97 → 2,25; 0,48 → 2,00; 0,61 → 2,00; 0,29 → 1,75.</p>
+<table><tr><th>Camión</th><th>Llega</th><th>Inicio</th><th>Fin</th><th>Espera</th><th>Permanencia</th></tr>
+<tr><td>1</td><td>2,763</td><td>2,763</td><td>5,013</td><td>0</td><td>2,250</td></tr>
+<tr><td>2</td><td>2,890</td><td>5,013</td><td>7,013</td><td>2,123</td><td>4,123</td></tr>
+<tr><td>3</td><td>4,821</td><td>7,013</td><td>9,013</td><td>2,192</td><td>4,192</td></tr>
+<tr><td>4</td><td>4,947</td><td>9,013</td><td>10,763</td><td>4,066</td><td>5,816</td></tr></table>
+<p><b>Cola máxima 3</b> (a las 4,947 esperan 2, 3 y 4). <b>Permanencia promedio 4,095 h.</b></p></details>
+<p>La cola del autolavado, el stock de la ferretería y Kolmogorov-Smirnov del parcial del 19/06/2026 están corridos en <a href='MyS-parcial2.html'>MyS-parcial2.html</a>.</p>
+
+<h3>SIMUL8</h3>
+<table><tr><th>Objeto</th><th>Parámetros básicos</th><th>Representa</th></tr>
+<tr><td>Work Entry Point</td><td>Distribución de tiempo entre llegadas, lote de llegada, routing out</td><td>Llegada de clientes, pedidos, piezas</td></tr>
+<tr><td>Storage Area (buffer, cola)</td><td>Capacidad, shelf life (tiempo máximo antes de abandonar), tiempo mínimo de espera, stock inicial</td><td>Fila, lista de espera, depósito</td></tr>
+<tr><td>Work Center (actividad)</td><td>Timing (distribución del tiempo de proceso), recursos que necesita, eficiencia o disponibilidad, routing in y out (porcentajes, prioridad), replicación</td><td>Caja, máquina, puesto de atención</td></tr>
+<tr><td>Resource</td><td>Cantidad disponible, disponibilidad, tiempo de traslado</td><td>Operarios, autoelevadores, administrativos</td></tr>
+<tr><td>Work Exit Point</td><td>Resultados: tiempo en el sistema</td><td>Salida, clientes perdidos</td></tr>
+<tr><td>Clock</td><td>Hora de inicio, días y horas de trabajo, duración de la corrida, warm-up</td><td>El calendario de la simulación</td></tr></table>
+<p><b>Warm-up:</b> período inicial en que no se registran resultados porque el sistema arranca vacío y todavía no está en régimen. Si no se tiene en cuenta, las esperas y las colas salen subestimadas. <b>Trials:</b> varias corridas con los mismos parámetros y distinta semilla, para dar resultados con intervalo de confianza. El intervalo del 95% para el promedio dice dónde está la media real; el de valores individuales es más ancho y dice dónde cae una observación cualquiera.</p>
+<div class='enun'><b>Embudo de ventas (diciembre 2024).</b> Leads cada 5 min (Poisson). Un setter, normal (13; 2), 30% pasa al closer. 3 closers, exponencial de media 50, 30% pasa a facturación. Disponibilidad 93%. Si espera más de 2,3 días al closer se pierde. La agenda admite 90. Facturación uniforme (3; 20) con un recurso de administración.</div>
+<details><summary>Esquema</summary>
+<p>Entry “Leads” (exponencial media 5) → Storage “Lista de espera” → Work Center “Setter” (Normal 13; 2, eficiencia 93%; routing out por porcentaje: 30% a la agenda, 70% a Exit “Perdidos setter”) → Storage “Agenda closer” (capacidad 90, shelf life 2,3 días con salida a Exit “Perdidos por espera”) → Work Center “Closer” (replicado 3 o con 3 recursos, exponencial 50, eficiencia 93%; 30% a facturación, 70% a Exit “Perdidos closer”) → Storage “Cola facturación” → Work Center “Facturación” (uniforme 3; 20, recurso Administración ×1) → Exit “Clientes”. Clock con el horario de trabajo y un warm-up.</p></details>
+
+<h3>Dinámica de sistemas</h3>
+<p>Diagrama causal: flechas con signo; lazo positivo refuerza, lazo negativo equilibra. Forrester: <b>nivel</b> (rectángulo, acumula: población, stock, capital), <b>flujo</b> (válvula, cambia el nivel: contagios por día), <b>auxiliar</b> (círculo, cálculo intermedio o constante: porcentaje de contagio). Cadena de Markov: la probabilidad del próximo estado depende solo del estado inmediato anterior.</p>
+
+<h2 id='teo'>8. Respuestas modelo para el teórico</h2>
+<p>Tapá la respuesta, decila en voz alta, abrí y compará.</p>
+<details><summary>¿Cómo se incorporan restricciones lógicas con binarias? Tres ejemplos.</summary><p>Con variables y ∈ {0,1} que indican si algo se hace. Costo fijo: x ≤ M·y y la FO resta F·y. Excluyentes: y₁ + y₂ ≤ 1. Contingentes: y<sub>A</sub> ≤ y<sub>B</sub>. Tamaño de lote: L·y ≤ x ≤ M·y. k de n: Σy = k.</p></details>
+<details><summary>Describa el problema de transporte (o asignación) y cómo se resuelve con PL.</summary><p>Ver la sección 1: variables x<sub>ij</sub>, FO de costo, restricciones de oferta y de demanda, balanceo con ficticios. En asignación, binarias y todo igual a 1.</p></details>
+<details><summary>Significado del costo reducido.</summary><p>En una variable no básica (vale 0), cuánto empeora la FO por cada unidad que se la obligue a tomar; equivalentemente, cuánto debe mejorar su coeficiente para que entre a la solución. Las básicas tienen costo reducido 0.</p></details>
+<details><summary>¿Cómo se obtiene el intervalo del lado derecho de una restricción limitante?</summary><p>Es el rango en que la base óptima no cambia y el precio sombra sigue valiendo: [b − permisible reducir, b + permisible aumentar]. Se obtiene moviendo la recta de la restricción paralela a sí misma hasta que el vértice óptimo deja de ser intersección de las mismas restricciones (gráficamente) o con las columnas de la tabla final (λ<sub>ij</sub>). Dentro del rango, ΔZ = Δb · y<sub>i</sub>.</p></details>
+<details><summary>Características del modelo de PL.</summary><p>Un objetivo lineal, restricciones lineales, variables no negativas. Supuestos: proporcionalidad, aditividad, divisibilidad, certidumbre. La región factible es convexa y el óptimo está en un vértice.</p></details>
+<details><summary>Desarrolle el reaprovisionamiento uniforme. ¿Cómo se relaciona q* con S?</summary><p>Ver la sección 2. S = q(1 − h/a): el stock máximo es menor que el lote porque mientras se produce también se consume.</p></details>
+<details><summary>Significado del nivel de reorden.</summary><p>El stock al que hay que emitir el pedido para que llegue justo cuando se agota. X₀ = h·L si el plazo es menor que el ciclo.</p></details>
+<details><summary>Márgenes en PERT/CPM.</summary><p>Total: MI* − MI, lo que se puede atrasar sin atrasar el proyecto. Libre: mín MI siguientes − MF, sin atrasar a las siguientes. Independiente: el que queda aunque las anteriores terminen lo más tarde y las siguientes empiecen lo más temprano. Las críticas tienen margen total 0.</p></details>
+<details><summary>Pasos del análisis de consistencia.</summary><p>A·w, dividir por w, promediar (λ<sub>máx</sub>), IC = (λ − n)/(n − 1), RC = IC/IA, aceptar si RC ≤ 0,1.</p></details>
+<details><summary>¿Cómo se generan valores de una normal?</summary><p>Con R uniforme, buscar en la tabla el z con F(z) = R y hacer x = μ + σz. O sumar 12 aleatorios y restar 6 para obtener z.</p></details>
+<details><summary>Valor de un juego sin punto de equilibrio.</summary><p>Se reduce por dominancia y se buscan estrategias mixtas que dejen al rival indiferente. En 2×2 con las fórmulas; en general con dos PL (uno por jugador). El V de los dos coincide.</p></details>
+<details><summary>Explique Hurwicz para beneficios.</summary><p>Para cada alternativa, α·mejor + (1 − α)·peor resultado, con α entre 0 y 1 como grado de optimismo. Se elige el mayor. α = 0 es Wald; α = 1 es el optimista.</p></details>
+<details><summary>¿Cuándo se aplica Bayes? ¿Qué es la probabilidad posterior?</summary><p>Cuando se puede obtener información adicional imperfecta sobre los estados. La posterior es la probabilidad de un estado condicionada al resultado de la información; se calcula priori · verosimilitud / conjunta total.</p></details>
+
+<h2>Cinco días, del 19 al 23</h2>
+<table><tr><th>Día</th><th>Hacer</th></tr>
+<tr><td>19 nov</td><td>Aureliano en hoja en blanco. Las seis binarias de memoria. Técnicos y clientes. Las cinco preguntas de sensibilidad.</td></tr>
+<tr><td>20</td><td>Escribí los cuatro modelos de inventario de memoria. Materia prima y vino. PERT del 13/11/2021 completo con la tabla.</td></tr>
+<tr><td>21</td><td>PD: inversión y profesional. Decisión: residuos (Savage + VEIP), vasos (Wald), Bayes del control de calidad, juego 2×2 inventado.</td></tr>
+<tr><td>22</td><td>Multicriterio de los semáforos. Camiones e impresoras. Repasá MyS-parcial2. Leé en voz alta la sección 8.</td></tr>
+<tr><td>23</td><td>Simulacro: materia prima + Aureliano + las cinco teóricas de ese final, 90 minutos. Después el del 16-12-2024.</td></tr></table>
+<p>Si el 24 no sale: 15 de diciembre, 2 y 16 de febrero.</p>
+</main></body></html>

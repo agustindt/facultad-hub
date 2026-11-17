@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Redes II · Guía de estudio · ACL, OSPF, RIP, DNS y DHCP</title>
+<style>
+  :root {
+    --ink: #1c1712;
+    --muted: #5c5348;
+    --line: #e4d9c8;
+    --paper: #fffdf9;
+    --bg: #f4efe7;
+    --accent: #8d3b18;
+    --accent-soft: #f6e6dc;
+    --green: #1c5c3a;
+    --green-soft: #e5f2ea;
+    --red: #8d2b2b;
+    --red-soft: #f8e6e6;
+    --gold: #8a5a10;
+    --gold-soft: #f8f0dc;
+    --blue: #1e3f66;
+    --blue-soft: #e6eef6;
+    --serif: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    --sans: "Avenir Next", "Segoe UI", sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 15.5px;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 28px 22px 64px; }
+  header.cover {
+    background: var(--ink);
+    color: #f6f1e8;
+    padding: 28px 26px 24px;
+    border-radius: 14px;
+    margin-bottom: 22px;
+  }
+  header.cover p.kicker {
+    font-family: var(--sans);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #e4b397;
+    margin: 0 0 8px;
+  }
+  header.cover h1 {
+    font-size: 32px;
+    line-height: 1.12;
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+  header.cover .sub { margin: 0; color: #e7dccb; font-size: 16px; }
+  h2 {
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 1.35em 0 .35em;
+    break-after: avoid;
+  }
+  h3 {
+    font-size: 16.5px;
+    margin: 1.05em 0 .25em;
+    break-after: avoid;
+  }
+  p { margin: .4em 0; }
+  ul, ol { margin: .3em 0 .6em; padding-left: 1.2em; }
+  li { margin: .18em 0; }
+  strong { font-weight: 600; }
+  a { color: var(--accent); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .5em 0 .8em;
+    font-size: 13.5px;
+    break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 5px 7px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eadf;
+    font-family: var(--sans);
+    font-size: 11.5px;
+    letter-spacing: .03em;
+    font-weight: 600;
+  }
+  code, pre { font-family: var(--mono); }
+  code {
+    font-size: .86em;
+    background: #f3eadf;
+    padding: .05em .28em;
+    border-radius: 4px;
+  }
+  pre {
+    background: #241e19;
+    color: #f6f1e8;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 11.6px;
+    line-height: 1.4;
+    overflow: hidden;
+    white-space: pre-wrap;
+    margin: .4em 0 .7em;
+    break-inside: avoid;
+  }
+  pre .c { color: #c8b49a; }
+  .note, .ok, .bad, .rule {
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: .55em 0 .75em;
+    break-inside: avoid;
+  }
+  .note { background: var(--gold-soft); }
+  .ok { background: var(--green-soft); }
+  .bad { background: var(--red-soft); }
+  .rule { background: var(--accent-soft); }
+  .note strong, .ok strong, .bad strong, .rule strong { font-family: var(--sans); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: .4em 0 .8em;
+  }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 10px 6px;
+    background: var(--paper);
+    break-inside: avoid;
+  }
+  .card h3 { margin: 0 0 4px; font-size: 15px; }
+  .card p, .card li { font-size: 13.5px; }
+  .card ul { margin: 0; }
+  .flow {
+    font-family: var(--sans);
+    font-size: 13px;
+    background: var(--blue-soft);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: .4em 0 .8em;
+    break-inside: avoid;
+  }
+  .q {
+    border-top: 1px solid var(--line);
+    padding: 7px 0 2px;
+    break-inside: avoid;
+  }
+  .q .ans {
+    background: var(--green-soft);
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin: 4px 0 8px;
+  }
+  h2 { break-before: auto; }
+  .small { color: var(--muted); font-size: 13px; }
+  .sans { font-family: var(--sans); }
+  @page {
+    size: A4;
+    margin: 14mm 13mm 14mm 13mm;
+    @bottom-right {
+      content: counter(page);
+      font-family: "Avenir Next", sans-serif;
+      font-size: 10px;
+      color: #5c5348;
+    }
+    @top-left {
+      content: "Redes II  ·  guía para el práctico";
+      font-family: "Avenir Next", sans-serif;
+      font-size: 10px;
+      color: #5c5348;
+    }
+  }
+  @media print {
+    body { background: white; font-size: 12.4px; }
+    .wrap { max-width: none; padding: 0; }
+    header.cover { border-radius: 0; }
+    h2 { font-size: 18px; }
+    pre { font-size: 10.2px; }
+    table { font-size: 11.5px; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <p class="kicker">Redes II · práctico · 25 de octubre de 2026</p>
+  <h1>ACL, OSPF, RIP, DNS y DHCP</h1>
+  <p class="sub">Guía para entender la Actividad 11 y rendir el práctico. Los comandos van a estar en un anexo: acá está para qué sirve cada uno y cómo se comprueba.</p>
+</header>
+
+<h2>Qué dijo el profe</h2>
+<p>El práctico es en el horario de práctico. Rinden todos. Quienes hicieron la presentación de la segunda parte de Redes responden menos temas. Los comandos van a estar en un anexo, así que no hace falta recitar la sintaxis de memoria: hay que saber <strong>cuál comando</strong>, <strong>en qué equipo</strong> y <strong>qué resultado</strong> demuestra que quedó bien.</p>
+<p>Temas: configuración de ACL, ACL extendidas, ruteo dinámico OSPF y RIP, DNS y DHCP.</p>
+<p>La Actividad 11 es el caso concreto de esos cuatro temas juntos: cuatro sedes (Córdoba, Corrientes, Mendoza y Santa Cruz), un protocolo dinámico en los cuatro routers, DNS en Santa Cruz, DHCP en Corrientes, y cinco políticas con ACL extendidas al mismo tiempo.</p>
+
+<div class="rule">
+  <strong>La idea de todo el práctico</strong>
+  <p>Primero tiene que haber camino (OSPF o RIP). Después un nombre tiene que volverse una IP (DNS) y una PC tiene que recibir sola su configuración (DHCP). Al final una ACL corta <em>un</em> servicio entre <em>dos</em> equipos, y todo lo demás sigue funcionando. Poder hacer ping no significa poder abrir la página. Poder abrir la página por IP no significa que el nombre resuelva.</p>
+</div>
+
+<h2>La red de la actividad</h2>
+<p>Las IP de las LAN ya están definidas. La consigna pide no modificarlas. En el archivo <em>RED ACTIVIDAD 11.pkt</em> los routers son <strong>2621XM</strong> (las interfaces se llaman <code>FastEthernet</code>, no GigabitEthernet) y cada sede tiene un switch <strong>2950-24</strong> donde se conectan las PC y los servidores con cable derecho. La ACL se aplica en el <strong>router</strong>, en la interfaz que mira al switch. El 2950 no es el lugar de estas reglas.</p>
+
+<table>
+  <thead>
+    <tr><th>Sede</th><th>LAN</th><th>Gateway</th><th>Servidores</th><th>PC</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Córdoba</td><td>20.80.10.0/24</td><td>20.80.10.100</td><td>HTTP 20.80.10.50<br>otro servidor 20.80.10.10</td><td>.1 .2 .3</td></tr>
+    <tr><td>Corrientes</td><td>20.80.20.0/24</td><td>20.80.20.100</td><td>HTTP y DHCP 20.80.20.101</td><td>las da DHCP</td></tr>
+    <tr><td>Mendoza</td><td>20.80.90.0/24</td><td>20.80.90.100</td><td>HTTP 20.80.90.4</td><td>.1 .2 .3</td></tr>
+    <tr><td>Santa Cruz</td><td>20.80.30.0/24</td><td>20.80.30.100</td><td>DNS 20.80.30.10<br>HTTP 20.80.30.50</td><td>.1 .2 .3</td></tr>
+  </tbody>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h3>Nombres DNS</h3>
+    <ul>
+      <li><code>www.servercordoba.com.ar</code> → 20.80.10.50</li>
+      <li><code>www.servermendoza.com.ar</code> → 20.80.90.4</li>
+      <li><code>www.serversantacruz.com.ar</code> → 20.80.30.50</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Puertos que hay que distinguir</h3>
+    <ul>
+      <li>Ping: ICMP. No tiene puerto.</li>
+      <li>HTTP: TCP destino 80.</li>
+      <li>DNS: UDP destino 53 y también TCP destino 53.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Los enlaces WAN</strong>
+  <p>Entre routers hay redes /30 que ya están cargadas en el .pkt. No las inventes y no las cambies. En cada router:</p>
+  <pre>enable
+show ip interface brief</pre>
+  <p>Anotá cada interfaz que tenga IP: esa es la lista que el protocolo dinámico tiene que anunciar. La máscara <code>255.255.255.252</code> es una /30. La máscara <code>255.255.255.0</code> es la LAN.</p>
+</div>
+
+<h2 class="section">Orden de trabajo</h2>
+<p>Si aplicás las ACL antes de probar la red, un ping que falla puede ser ruteo roto o una regla. Por eso el orden es este:</p>
+<ol>
+  <li>En los cuatro routers, <code>show ip interface brief</code>. Copiá LAN y WAN. No cambies ninguna IP.</li>
+  <li>Configurá <strong>un solo</strong> protocolo, el que indique el docente: OSPF o RIP v2, en los cuatro routers.</li>
+  <li>Desde una PC de cada sede, ping a una PC de otra sede y a los servidores HTTP. Anotá que funciona. Esto es la línea de base.</li>
+  <li>En el servidor DNS de Santa Cruz (20.80.30.10), prendé DNS y cargá los tres registros A. En las PC de prueba, DNS Server = 20.80.30.10.</li>
+  <li>Abrí las tres páginas por nombre y por IP.</li>
+  <li>DHCP en el servidor de Corrientes. Pasá PC1, PC2 y PC3 a DHCP. Anotá la IP que recibió cada una, con máscara, gateway y DNS.</li>
+  <li>Desde una PC de Corrientes, abrí <code>http://www.servercordoba.com.ar</code>.</li>
+  <li>Recién ahí escribí las ACL, con las IP que el DHCP entregó de verdad.</li>
+  <li>Corré la tabla de pruebas del final, con las cinco políticas activas a la vez.</li>
+</ol>
+
+<h2 class="section">OSPF</h2>
+<p>OSPF es un protocolo de estado de enlace. Cada router arma un mapa y elige el camino más corto. Para que dos routers se hablen, OSPF tiene que estar prendido en la interfaz que los une, los dos tienen que estar en la <strong>misma área</strong>, y las IP del enlace tienen que ser de la misma red. El número de proceso (<code>router ospf 1</code>) es local: puede ser 1 en todos. El área, en este práctico, es la 0 en todos.</p>
+<p>El comando <code>network</code> de OSPF no anuncia “una red de clase”. Prende OSPF en las interfaces cuya IP cae en ese rango, y anuncia esa red. Por eso hay que incluir la LAN <strong>y cada enlace WAN</strong>. Si falta el WAN, el vecino no aparece.</p>
+
+<h3>De una IP del router a la línea network</h3>
+<table>
+  <thead>
+    <tr><th>Lo que ves</th><th>Qué escribís en OSPF</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>20.80.10.100 máscara 255.255.255.0</td><td><code>network 20.80.10.0 0.0.0.255 area 0</code></td></tr>
+    <tr><td>una /30: máscara 255.255.255.252</td><td><code>network &lt;red&gt; 0.0.0.3 area 0</code></td></tr>
+  </tbody>
+</table>
+<p>El wildcard es la máscara dada vuelta: 255.255.255.0 se vuelve 0.0.0.255. En una /30 el último octeto viaja de a 4: 0-3, 4-7, 8-11… La red es el primer número del bloque. Si la interfaz es .1 o .2, la red termina en .0. Si es .5 o .6, termina en .4. El wildcard siempre es <code>0.0.0.3</code>.</p>
+
+<pre><span class="c">! en cada router, con SUS redes, las que salieron en show ip interface brief</span>
+configure terminal
+router ospf 1
+ network 20.80.10.0 0.0.0.255 area 0
+ network 20.80.1.0 0.0.0.3 area 0
+end</pre>
+<p class="small">El segundo <code>network</code> es un ejemplo de WAN. Reemplazalo por cada /30 que tenga ese router. Córdoba anuncia 20.80.10.0/24, Corrientes 20.80.20.0/24, Mendoza 20.80.90.0/24, Santa Cruz 20.80.30.0/24, y cada uno sus enlaces.</p>
+
+<pre><span class="c">! comprobación</span>
+show ip ospf neighbor
+show ip route
+show ip protocols</pre>
+<p>En <code>show ip ospf neighbor</code> tiene que aparecer cada router vecino, en estado FULL. En la tabla de ruteo, las redes de las otras sedes aparecen con código <strong>O</strong>. Después el ping entre sedes.</p>
+
+<div class="bad">
+  <strong>Si el vecino no aparece</strong>
+  <p>OSPF no está habilitado en la interfaz del enlace, el área no coincide, o el wildcard no cubre la IP de esa interfaz. <code>show ip protocols</code> muestra qué redes quedaron adentro del proceso. <code>show ip ospf interface</code> muestra en qué interfaces OSPF está corriendo.</p>
+</div>
+
+<div class="note">
+  <strong>Opcional</strong>
+  <p><code>router-id 1.1.1.1</code> (distinto en cada router) solo hace falta si el anexo lo trae. <code>passive-interface</code> en la LAN evita hellos hacia las PC; si lo ponés en la interfaz WAN, el vecino no se forma. Si el anexo no lo pide, no lo configures.</p>
+</div>
+
+<h2>RIP versión 2</h2>
+<p>RIP es un protocolo de vector distancia. Cada 30 segundos manda su tabla a los vecinos. La versión 2 manda la máscara, así que entiende subredes. La versión 1 no: por eso el práctico pide v2.</p>
+<p>Acá el comando <code>network</code> es de clase, no de subred. No se escribe la /24. Se escribe la red de clase que contiene a la interfaz, y RIP prende en todas las interfaces de esa clase.</p>
+
+<table>
+  <thead>
+    <tr><th>Clase</th><th>Primer octeto</th><th>Qué se escribe</th><th>Ejemplo de este práctico</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>A</td><td>1–126</td><td><code>network 20.0.0.0</code></td><td>todas las LAN 20.80.x.x</td></tr>
+    <tr><td>A</td><td>1–126</td><td><code>network 10.0.0.0</code></td><td>solo si algún WAN es 10.x</td></tr>
+    <tr><td>B</td><td>128–191</td><td><code>network 172.16.0.0</code></td><td>si apareciera un 172.16</td></tr>
+    <tr><td>C</td><td>192–223</td><td><code>network 192.168.1.0</code></td><td>el tercer octeto sí entra</td></tr>
+  </tbody>
+</table>
+
+<pre>configure terminal
+router rip
+ version 2
+ no auto-summary
+ network 20.0.0.0
+end
+
+show ip route
+show ip protocols</pre>
+<p>Si <code>show ip interface brief</code> muestra algún enlace que no empieza con 20, agregá la línea <code>network</code> de esa otra clase. Con las cuatro LAN en 20.80 y los WAN también en 20, alcanza <code>network 20.0.0.0</code>.</p>
+
+<div class="rule">
+  <strong>Por qué no auto-summary</strong>
+  <p>Sin esa línea, RIP resume al borde de la clase. Si el enlace entre routers no es de la red 20.0.0.0, cada router anuncia 20.0.0.0/8 entero. Los cuatro anuncian lo mismo y el tráfico se pierde. <code>no auto-summary</code> hace que viaje la subred real: 20.80.10.0/24, 20.80.20.0/24, y el resto. En la tabla de ruteo las redes ajenas llevan código <strong>R</strong>.</p>
+</div>
+
+<p>OSPF y RIP no se configuran juntos en este práctico. El docente dice cuál de los dos. La comprobación humana es la misma: ping de una PC de cada LAN hacia otra sede, antes de tocar las ACL.</p>
+
+<table>
+  <thead>
+    <tr><th></th><th>OSPF</th><th>RIP v2</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Qué anuncia el <code>network</code></td><td>la subred, con wildcard</td><td>la red de clase, sin máscara</td></tr>
+    <tr><td>Área</td><td>area 0 en todos</td><td>no tiene área</td></tr>
+    <tr><td>Línea que no puede faltar</td><td>cada LAN y cada WAN</td><td><code>version 2</code> y <code>no auto-summary</code></td></tr>
+    <tr><td>Ruta en <code>show ip route</code></td><td>O</td><td>R</td></tr>
+    <tr><td>Vecinos</td><td><code>show ip ospf neighbor</code></td><td><code>show ip protocols</code></td></tr>
+  </tbody>
+</table>
+
+<h2 class="section">DNS</h2>
+<p>La PC no abre “www.servercordoba.com.ar” hasta que alguien le dice que eso es 20.80.10.50. Ese alguien, en esta actividad, es el servidor de Santa Cruz 20.80.30.10. La consulta normal viaja en UDP al puerto 53. Si la respuesta es grande, el cliente puede pasar a TCP 53. Por eso una ACL que quiere bloquear DNS tiene que cortar los dos.</p>
+<p>En Packet Tracer, sobre el servidor <em>SERVER DNS SANTA CRUZ</em>:</p>
+<ol>
+  <li>Clic en el servidor → pestaña <strong>Services</strong> → <strong>DNS</strong>.</li>
+  <li>Pasá el servicio a <strong>On</strong>.</li>
+  <li>Agregá tres registros tipo <strong>A</strong> con los nombres y las IP de la tabla. El nombre va completo, con <code>.com.ar</code>.</li>
+</ol>
+<p>En cada PC de prueba: Desktop → IP Configuration → DNS Server = <code>20.80.30.10</code>. Las PC de Corrientes no se tocan a mano: el DHCP les va a entregar ese DNS.</p>
+<p>Comprobación, en este orden:</p>
+<ol>
+  <li>Ping a la IP del servidor web, por ejemplo <code>ping 20.80.10.50</code>. Si falla, el problema es ruteo, todavía no DNS.</li>
+  <li>Ping al nombre, <code>ping www.servercordoba.com.ar</code>. Si la IP contesta y el nombre no, el problema es DNS.</li>
+  <li>Navegador web de la PC: <code>http://www.servercordoba.com.ar</code> y también <code>http://20.80.10.50</code>.</li>
+</ol>
+<p>Los tres servidores web (Córdoba .50, Mendoza .4, Santa Cruz .50) tienen que tener el servicio HTTP en On. Si el nombre resuelve y el navegador no abre, el servicio HTTP está apagado o una ACL ya lo está cortando.</p>
+
+<h2>DHCP</h2>
+<p>DHCP le entrega a la PC, sin que nadie tipee la IP: dirección, máscara, gateway y DNS. El servidor de esta actividad es el de Corrientes, 20.80.20.101, en la misma LAN que las PC. Como está en la misma red, el router no necesita <code>ip helper-address</code>. El pedido no tiene que cruzar a otra sede.</p>
+<p>En el servidor, Services → DHCP → On. Un pool posible, que no pisa el gateway ni al propio servidor:</p>
+<table>
+  <tbody>
+    <tr><th>Pool</th><td>CORRIENTES</td></tr>
+    <tr><th>Default Gateway</th><td>20.80.20.100</td></tr>
+    <tr><th>DNS Server</th><td>20.80.30.10</td></tr>
+    <tr><th>Start IP</th><td>20.80.20.1</td></tr>
+    <tr><th>Subnet Mask</th><td>255.255.255.0</td></tr>
+    <tr><th>Maximum Users</th><td>20 (entrega .1 a .20; .100 y .101 quedan afuera)</td></tr>
+  </tbody>
+</table>
+<p>En PC1, PC2 y PC3 de Corrientes: Desktop → IP Configuration → DHCP. Hacelo en ese orden y después <code>ipconfig</code> en cada una. Si el pool empieza en .1, suelen quedar .1, .2 y .3. <strong>La ACL usa la IP que muestra ipconfig</strong>, no la del dibujo si llegaran a diferir.</p>
+<p>Desde el navegador de una de esas PC tiene que abrir <code>http://www.servercordoba.com.ar</code>. Eso prueba de una sola vez DHCP (tiene IP y DNS), el ruteo, el DNS de Santa Cruz y el HTTP de Córdoba.</p>
+
+<div class="note">
+  <strong>Si el anexo pide DHCP en el router, en vez del servidor</strong>
+  <p>La actividad 11 lo pide en el servidor. Si el práctico lo pide por CLI, es esto, y en la PC igual se elige DHCP:</p>
+<pre>ip dhcp excluded-address 20.80.20.100
+ip dhcp excluded-address 20.80.20.101
+ip dhcp pool CORRIENTES
+ network 20.80.20.0 255.255.255.0
+ default-router 20.80.20.100
+ dns-server 20.80.30.10</pre>
+  <p><code>show ip dhcp binding</code> muestra qué IP recibió cada MAC. Si el servidor DHCP estuviera en otra red, en la interfaz LAN del router de las PC iría <code>ip helper-address 20.80.20.101</code>. En esta actividad no hace falta.</p>
+</div>
+
+<h2 class="section">ACL</h2>
+<p>Una ACL es una lista ordenada. El router mira el paquete contra la primera línea, después la segunda, y se queda con la primera que coincide. Al final de toda ACL IPv4 hay un <code>deny</code> implícito: lo que no coincidió con ninguna línea se tira. Por eso, cuando la consigna dice “el resto del tráfico sigue permitido”, la última línea visible tiene que ser <code>permit ip any any</code>.</p>
+
+<table>
+  <thead>
+    <tr><th></th><th>ACL estándar</th><th>ACL extendida</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Números</td><td>1–99 y 1300–1999</td><td>100–199 y 2000–2699</td></tr>
+    <tr><td>Qué puede mirar</td><td>solo la IP de origen</td><td>origen, destino, protocolo y puerto</td></tr>
+    <tr><td>Dónde conviene</td><td>cerca del destino</td><td>cerca del origen</td></tr>
+    <tr><td>Ejemplo</td><td><code>access-list 1 deny host 20.80.20.1</code></td><td><code>deny tcp host 20.80.20.2 host 20.80.30.50 eq 80</code></td></tr>
+  </tbody>
+</table>
+<p>La actividad pide extendidas, porque cada política nombra origen, destino y servicio. Una estándar que niega a PC1 le corta todo a PC1, y la consigna pide que el resto siga andando.</p>
+
+<h3>Wildcard, sentido, y una sola lista por sentido</h3>
+<p>En la ACL se escribe wildcard, no máscara. Un host es <code>host 20.80.10.1</code> (equivale a wildcard 0.0.0.0). Una /24 es <code>20.80.10.0 0.0.0.255</code>.</p>
+<div class="flow">
+  PC de la LAN → entra al router por la interfaz LAN → eso es <strong>in</strong><br>
+  el router manda el paquete hacia la LAN → eso es <strong>out</strong>
+</div>
+<p>En cada interfaz entra una ACL de entrada y una de salida. Si pegás una segunda ACL en el mismo sentido, la segunda reemplaza a la primera. Por eso las políticas que caen en la misma interfaz y el mismo sentido van en <strong>una sola lista</strong>, y el <code>permit ip any any</code> va una sola vez, al final.</p>
+<p><code>eq 80</code> en una extendida es el puerto de destino. ICMP no lleva puerto: se niega con <code>deny icmp</code>, nunca con <code>deny tcp</code>.</p>
+
+<pre><span class="c">! ver la lista y los contadores de coincidencias</span>
+show access-lists
+<span class="c">! ver si quedó aplicada, y en qué sentido</span>
+show ip interface FastEthernet0/0
+show running-config</pre>
+<p>Si el ping que querías bloquear sigue andando y el contador de la línea <code>deny</code> queda en 0, el paquete no está pasando por esa interfaz en ese sentido. La regla existe, pero está en el lugar equivocado.</p>
+
+<h2 class="section">Las cinco políticas</h2>
+<p>Las cinco quedan activas juntas. En los ejemplos de abajo, PC1 de Corrientes es 20.80.20.1 y PC2 es 20.80.20.2. Si <code>ipconfig</code> muestra otras, esas son las que van en el <code>host</code>. El nombre de la interfaz es el de <code>show ip interface brief</code>: la LAN es la que tiene la IP .100 de esa sede. En el .pkt esa interfaz es un FastEthernet.</p>
+
+<div class="ok">
+  <strong>Dónde termina cada una</strong>
+  <p>Corrientes, interfaz LAN, <strong>in</strong>: políticas 1 y 2, en la misma ACL.<br>
+  Corrientes, interfaz LAN, <strong>out</strong>: política 5.<br>
+  Córdoba, interfaz LAN, <strong>in</strong>: política 3.<br>
+  Santa Cruz, interfaz LAN, <strong>in</strong>: política 4.<br>
+  Mendoza no lleva ACL para estas cinco.</p>
+</div>
+
+<h3>1 · PC1 Corrientes no puede hacer ping a PC1 Mendoza</h3>
+<p>ICMP, de un host a otro host. Se filtra al salir de la PC, cuando el paquete entra al router de Corrientes. Así no cruza toda la WAN para morir en Mendoza.</p>
+<pre>deny icmp host 20.80.20.1 host 20.80.90.1</pre>
+<p>Prueba de bloqueo: desde PC1 Corrientes, <code>ping 20.80.90.1</code> falla. Prueba de que no sobró: desde esa misma PC, ping a PC2 de Mendoza (20.80.90.2) funciona, y desde PC2 de Corrientes el ping a 20.80.90.1 también funciona.</p>
+
+<h3>2 · PC2 Corrientes no puede abrir el HTTP de Santa Cruz</h3>
+<p>TCP puerto 80 hacia 20.80.30.50. El ping a ese servidor tiene que seguir vivo, así que no se niega IP entero ni ICMP.</p>
+<pre>deny tcp host 20.80.20.2 host 20.80.30.50 eq 80</pre>
+<p>Misma ACL que la política 1, porque es la misma interfaz y el mismo sentido. Prueba de bloqueo: el navegador de PC2 no abre <code>http://20.80.30.50</code> ni el nombre de Santa Cruz. Prueba de permiso: <code>ping 20.80.30.50</code> desde PC2 funciona, y PC1 de Corrientes sí abre esa página.</p>
+
+<h3>3 · PC1 Córdoba no puede consultar el DNS de Santa Cruz</h3>
+<p>Hay que negar UDP 53 y TCP 53 hacia 20.80.30.10. El HTTP de Santa Cruz es otra IP (20.80.30.50) y el ping es otro protocolo: los dos tienen que seguir.</p>
+<pre>deny udp host 20.80.10.1 host 20.80.30.10 eq 53
+deny tcp host 20.80.10.1 host 20.80.30.10 eq 53</pre>
+<p>Prueba de bloqueo: en PC1 Córdoba, <code>ping www.serversantacruz.com.ar</code> no resuelve. Prueba de permiso: <code>ping 20.80.30.10</code> funciona y el navegador abre <code>http://20.80.30.50</code>. PC2 de Córdoba, que no está en la regla, sigue resolviendo el nombre.</p>
+
+<h3>4 · PC1 Santa Cruz no puede hacer ping a los servidores de las otras sedes</h3>
+<p>Solo ICMP, solo desde 20.80.30.1, solo hacia los servidores. Un <code>deny icmp</code> a toda la LAN de Córdoba también le cortaría el ping a las PC, y la consigna habla de servidores.</p>
+<pre>deny icmp host 20.80.30.1 host 20.80.10.50
+deny icmp host 20.80.30.1 host 20.80.10.10
+deny icmp host 20.80.30.1 host 20.80.20.101
+deny icmp host 20.80.30.1 host 20.80.90.4</pre>
+<p>Prueba de bloqueo: ping de PC1 Santa Cruz a esas cuatro IP falla. Prueba de permiso: desde esa PC, el navegador abre el HTTP de Córdoba por IP, y el ping a una PC de Córdoba (20.80.10.1) funciona. PC2 de Santa Cruz sigue pudiendo hacer ping a los servidores.</p>
+
+<h3>5 · Ninguna PC de otra LAN puede hacer ping al servidor de Corrientes</h3>
+<p>El servidor 20.80.20.101 está en la misma red que las PC de Corrientes. El ping de una PC local al servidor lo resuelve el switch: no entra al router, y ninguna ACL del router lo ve. El ping que viene de Córdoba, Mendoza o Santa Cruz llega por un enlace WAN y <strong>sale</strong> por la interfaz LAN hacia el servidor. Por eso la ACL va <strong>out</strong> en esa interfaz.</p>
+<pre>deny icmp any host 20.80.20.101
+permit ip any any</pre>
+<p>Con <code>any</code> alcanza: las PC de Corrientes no atraviesan esa interfaz para llegar a su propio servidor. Prueba de bloqueo: desde una PC de Mendoza, <code>ping 20.80.20.101</code> falla y el contador del deny sube. Prueba de permiso: desde PC1 de Corrientes, ese mismo ping funciona.</p>
+<p>Poner esta regla <strong>in</strong> en la LAN no sirve: el tráfico de las otras sedes no entra por ahí. Habría que repetirla en cada interfaz WAN, de entrada. Una sola lista de salida en la LAN los cubre a todos.</p>
+
+<h3>Configuración completa</h3>
+<p>Reemplazá <code>FastEthernet0/0</code> si <code>show ip interface brief</code> muestra otro nombre para la IP .100. Reemplazá .1 y .2 de Corrientes si el DHCP entregó otras.</p>
+<pre><span class="c">! ----- router de Corrientes. LAN = la interfaz con 20.80.20.100 -----</span>
+configure terminal
+ip access-list extended CTES-IN
+ deny icmp host 20.80.20.1 host 20.80.90.1
+ deny tcp host 20.80.20.2 host 20.80.30.50 eq 80
+ permit ip any any
+ip access-list extended CTES-OUT
+ deny icmp any host 20.80.20.101
+ permit ip any any
+interface FastEthernet0/0
+ ip access-group CTES-IN in
+ ip access-group CTES-OUT out
+end
+
+<span class="c">! ----- router de Córdoba. LAN = la interfaz con 20.80.10.100 -----</span>
+configure terminal
+ip access-list extended CBA-IN
+ deny udp host 20.80.10.1 host 20.80.30.10 eq 53
+ deny tcp host 20.80.10.1 host 20.80.30.10 eq 53
+ permit ip any any
+interface FastEthernet0/0
+ ip access-group CBA-IN in
+end
+
+<span class="c">! ----- router de Santa Cruz. LAN = la interfaz con 20.80.30.100 -----</span>
+configure terminal
+ip access-list extended SCZ-IN
+ deny icmp host 20.80.30.1 host 20.80.10.50
+ deny icmp host 20.80.30.1 host 20.80.10.10
+ deny icmp host 20.80.30.1 host 20.80.20.101
+ deny icmp host 20.80.30.1 host 20.80.90.4
+ permit ip any any
+interface FastEthernet0/0
+ ip access-group SCZ-IN in
+end</pre>
+
+<p>Si el anexo usa listas numeradas, es la misma lógica. La extendida numerada se escribe en modo global, sin entrar a <code>ip access-list</code>:</p>
+<pre>access-list 100 deny icmp host 20.80.20.1 host 20.80.90.1
+access-list 100 deny tcp host 20.80.20.2 host 20.80.30.50 eq 80
+access-list 100 permit ip any any
+interface FastEthernet0/0
+ ip access-group 100 in</pre>
+<p>Cada número es una lista distinta. 100 y 101 pueden convivir en la misma interfaz si una va <code>in</code> y la otra <code>out</code>.</p>
+
+<div class="bad">
+  <strong>Errores que hacen fallar la comprobación</strong>
+  <ul>
+    <li>Olvidar <code>permit ip any any</code>. El deny implícito apaga el resto de la sede.</li>
+    <li>Negar <code>ip</code> cuando la consigna pide negar solo ping o solo HTTP.</li>
+    <li>Negar DNS solo en UDP y dejar TCP 53. La consigna pide los dos.</li>
+    <li>Escribir la máscara 255.255.255.0 dentro de la ACL, en vez del wildcard 0.0.0.255.</li>
+    <li>Aplicar la segunda ACL en el mismo sentido y borrar la primera sin darse cuenta.</li>
+    <li>Armar la regla de PC1 Corrientes con la IP del dibujo después de que el DHCP le dio otra.</li>
+    <li>Poner la política 5 de entrada en la LAN, o poner cualquier ACL en el switch 2950.</li>
+  </ul>
+</div>
+
+<h2 class="section">Tabla de comprobación final</h2>
+<p>Con las cinco ACL activas. Anotá al lado lo que viste.</p>
+<table>
+  <thead>
+    <tr><th>Prueba</th><th>Tiene que pasar</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>PC1 Corrientes → ping PC1 Mendoza (20.80.90.1)</td><td>bloqueado</td></tr>
+    <tr><td>PC2 Corrientes → HTTP de Santa Cruz</td><td>bloqueado</td></tr>
+    <tr><td>PC2 Corrientes → ping 20.80.30.50</td><td>permitido</td></tr>
+    <tr><td>PC1 Córdoba → www.serversantacruz.com.ar</td><td>no resuelve</td></tr>
+    <tr><td>PC1 Córdoba → http://20.80.30.50</td><td>permitido</td></tr>
+    <tr><td>PC1 Córdoba → ping 20.80.30.10</td><td>permitido</td></tr>
+    <tr><td>PC1 Santa Cruz → ping a los servidores de las otras tres sedes</td><td>bloqueado</td></tr>
+    <tr><td>PC de Mendoza → ping 20.80.20.101</td><td>bloqueado</td></tr>
+    <tr><td>PC de Corrientes → ping 20.80.20.101</td><td>permitido</td></tr>
+    <tr><td>PC de Corrientes → HTTP de Córdoba por nombre</td><td>permitido</td></tr>
+  </tbody>
+</table>
+
+<h2>Preguntas de la actividad, respondidas</h2>
+
+<div class="q">
+  <p><strong>¿Por qué hay que probar la conectividad antes de las ACL?</strong></p>
+  <p class="ans">Para tener una línea de base. Si el ping falla después, se puede atribuir a la regla. Si nunca funcionó, el fallo puede ser una red que OSPF o RIP no anunció, y la ACL no tiene la culpa.</p>
+</div>
+<div class="q">
+  <p><strong>¿Qué diferencia hay entre bloquear ping y bloquear HTTP?</strong></p>
+  <p class="ans">El ping es ICMP, sin puerto. HTTP es TCP con destino 80. Una línea <code>deny icmp</code> deja el puerto 80 abierto. Una línea <code>deny tcp ... eq 80</code> deja el ping vivo. Son protocolos distintos y hacen falta reglas distintas.</p>
+</div>
+<div class="q">
+  <p><strong>¿Por qué PC1 de Córdoba entra a Santa Cruz por IP y no por nombre, si se bloquea el DNS?</strong></p>
+  <p class="ans">El nombre obliga a la PC a consultar 20.80.30.10 en el puerto 53. Esa consulta está negada, así que no obtiene 20.80.30.50. Si ya se escribe la IP, no hay consulta DNS: el HTTP hacia .50 sigue permitido por el <code>permit ip any any</code>.</p>
+</div>
+<div class="q">
+  <p><strong>¿Por qué conviene agrupar reglas en una sola ACL cuando van a la misma interfaz y el mismo sentido?</strong></p>
+  <p class="ans">Porque en una interfaz hay un solo lugar de entrada y uno de salida. La segunda ACL del mismo sentido reemplaza a la anterior. Además el <code>permit ip any any</code> tiene que quedar una sola vez, después de todos los deny. Las políticas 1 y 2 van juntas por eso.</p>
+</div>
+<div class="q">
+  <p><strong>¿Qué pasa si una PC con DHCP cambia de IP después de crear la regla?</strong></p>
+  <p class="ans">La ACL sigue mirando la IP vieja. La PC, con la IP nueva, deja de coincidir y el tráfico que debía bloquearse pasa. Hay que volver a mirar <code>ipconfig</code> y corregir el <code>host</code> de la regla. Por eso en la práctica no se renueva el DHCP a mitad de las pruebas.</p>
+</div>
+<div class="q">
+  <p><strong>¿Cómo se demuestra que la restricción al servidor de Corrientes no afecta a su propia LAN?</strong></p>
+  <p class="ans">Una PC de Corrientes hace ping a 20.80.20.101 y contesta, porque ese tráfico no pasa por el router. Una PC de Mendoza hace el mismo ping y falla, y en <code>show access-lists</code> sube el contador del deny. Las dos pruebas juntas muestran que la regla corta a las otras LAN y deja quieta a la local.</p>
+</div>
+
+<h2 class="section">Para decirlo en voz alta</h2>
+<p>Cada bloque se puede decir en menos de medio minuto.</p>
+<div class="card">
+  <h3>OSPF</h3>
+  <p>Prendo OSPF en los cuatro routers, área 0. Con <code>network</code> y wildcard cubro cada LAN y cada enlace WAN, porque si el enlace no entra al proceso no hay vecino. Lo compruebo con <code>show ip ospf neighbor</code> y con rutas O en <code>show ip route</code>, y después con un ping entre sedes.</p>
+</div>
+<div class="card">
+  <h3>RIP</h3>
+  <p>Uso la versión 2 y saco el auto-summary, para que anuncien las subredes y no el bloque 20.0.0.0/8. El <code>network</code> es de clase: <code>network 20.0.0.0</code> alcanza para todo lo que sea 20.x. Las rutas ajenas aparecen con R.</p>
+</div>
+<div class="card">
+  <h3>DNS y DHCP</h3>
+  <p>El DNS de Santa Cruz traduce los tres nombres a las IP de los servidores web, y las PC lo usan como servidor DNS. El DHCP de Corrientes, que está en la misma LAN, reparte IP, máscara, gateway .100 y ese DNS. Por eso desde Corrientes se abre la página de Córdoba por nombre sin configurar la PC a mano.</p>
+</div>
+<div class="card">
+  <h3>ACL</h3>
+  <p>Son extendidas, cerca del origen, una por interfaz y por sentido, con <code>permit ip any any</code> al final. Niego el protocolo justo: ICMP para el ping, TCP 80 para la web, UDP y TCP 53 para el DNS. La del servidor de Corrientes va de salida en la LAN, porque el ping local nunca entra al router y el de las otras sedes sale por ahí.</p>
+</div>
+
+<h2>Preguntas para ensayar</h2>
+<p>Tapá la franja verde y respondé antes de mirar.</p>
+
+<div class="q">
+  <p>1. La interfaz es 20.80.90.100/24. ¿Qué línea va en OSPF y cuál en RIP?</p>
+  <p class="ans">OSPF: <code>network 20.80.90.0 0.0.0.255 area 0</code>. RIP: <code>network 20.0.0.0</code>, junto con <code>version 2</code> y <code>no auto-summary</code>.</p>
+</div>
+<div class="q">
+  <p>2. <code>show ip ospf neighbor</code> no muestra a nadie. ¿Qué falta casi siempre?</p>
+  <p class="ans">El <code>network</code> del enlace WAN, o un wildcard que no cubre la IP de esa interfaz. Sin OSPF en los dos extremos del enlace no hay vecino, aunque las LAN estén anunciadas.</p>
+</div>
+<div class="q">
+  <p>3. Las cuatro LAN son 20.80 y el enlace entre dos routers es 10.0.0.0/30. ¿Qué pasa si RIP tiene auto-summary?</p>
+  <p class="ans">Cada router anuncia 20.0.0.0/8 hacia la red 10. Las subredes desaparecen y las sedes dejan de alcanzarse. <code>no auto-summary</code> manda 20.80.10.0/24, 20.80.20.0/24 y las demás, y hace falta también <code>network 10.0.0.0</code>.</p>
+</div>
+<div class="q">
+  <p>4. ¿Por qué la política del ping de PC1 Corrientes no se resuelve con una ACL estándar?</p>
+  <p class="ans">La estándar solo mira el origen. Negar a PC1 le prohíbe hablar con toda la red. La consigna pide cortar un solo destino y dejar el resto del tráfico de esa PC.</p>
+</div>
+<div class="q">
+  <p>5. Aplicaste CTES-IN y después otra ACL también <code>in</code> en la misma interfaz. ¿Qué quedó activo?</p>
+  <p class="ans">Solo la segunda. Hay un único access-group de entrada por interfaz. Las políticas 1 y 2 tienen que estar dentro de la misma lista.</p>
+</div>
+<div class="q">
+  <p>6. PC1 Córdoba hace ping a 20.80.30.50 y abre esa IP en el navegador, pero el nombre no resuelve. ¿Qué línea está cumpliendo?</p>
+  <p class="ans">El deny de UDP/TCP 53 hacia 20.80.30.10. El ping y el HTTP no coinciden con esas líneas y los deja pasar el <code>permit ip any any</code>.</p>
+</div>
+<div class="q">
+  <p>7. El DHCP le renovó la IP a PC2 Corrientes y ahora es 20.80.20.15. La página de Santa Cruz, que debía estar bloqueada, abre. ¿Por qué?</p>
+  <p class="ans">La regla sigue diciendo <code>host 20.80.20.2</code>. El paquete sale con .15, no coincide, y cae en el permit. Hay que cambiar el host de la ACL por 20.80.20.15.</p>
+</div>
+<div class="q">
+  <p>8. ¿En qué interfaz y sentido va “nadie de afuera hace ping al servidor de Corrientes”, y por qué las PC locales sí pueden?</p>
+  <p class="ans">Interfaz LAN del router de Corrientes, sentido out. El ping local va por el switch, en la misma red 20.80.20.0/24, y no atraviesa el router. El ping remoto sale hacia la LAN por esa interfaz y ahí coincide con <code>deny icmp any host 20.80.20.101</code>.</p>
+</div>
+
+<h2 class="section">Machete para cuando te den el anexo</h2>
+<p>El anexo trae la sintaxis. Esta tabla es para elegir.</p>
+<table>
+  <thead>
+    <tr><th>Querés saber</th><th>Comando</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Qué interfaces tienen IP y si están up</td><td><code>show ip interface brief</code></td></tr>
+    <tr><td>Si hay camino, y con qué protocolo</td><td><code>show ip route</code></td></tr>
+    <tr><td>Qué está anunciando el router</td><td><code>show ip protocols</code></td></tr>
+    <tr><td>Si OSPF tiene vecinos</td><td><code>show ip ospf neighbor</code></td></tr>
+    <tr><td>En qué interfaces corre OSPF</td><td><code>show ip ospf interface</code></td></tr>
+    <tr><td>El camino hasta una IP</td><td><code>traceroute</code> y <code>ping</code></td></tr>
+    <tr><td>Las reglas y cuántos paquetes coincidieron</td><td><code>show access-lists</code></td></tr>
+    <tr><td>Qué ACL está aplicada y en qué sentido</td><td><code>show ip interface FastEthernet0/0</code></td></tr>
+    <tr><td>La configuración que quedó</td><td><code>show running-config</code></td></tr>
+    <tr><td>Qué IP entregó el DHCP del router</td><td><code>show ip dhcp binding</code></td></tr>
+    <tr><td>IP, máscara, gateway y DNS de una PC</td><td><code>ipconfig</code> en la PC</td></tr>
+  </tbody>
+</table>
+
+<pre><span class="c">! modos: primero enable, después configure terminal
+! salir de la interfaz o del router: exit
+! salir de todo y ejecutar el show: end</span>
+
+router ospf 1
+ network RED WILDCARD area 0
+
+router rip
+ version 2
+ no auto-summary
+ network RED-DE-CLASE
+
+ip access-list extended NOMBRE
+ deny PROTOCOLO ORIGEN DESTINO
+ permit ip any any
+interface INTERFAZ-LAN
+ ip access-group NOMBRE in
+ ip access-group NOMBRE out</pre>
+
+<p class="small">Actividad 11, topología RED ACTIVIDAD 11.pkt. Las IP de LAN, los servidores y las cinco políticas salen de la consigna. Las /30 de los enlaces se copian del archivo con <code>show ip interface brief</code> el día del práctico.</p>
+
+</div>
+</body>
+</html>

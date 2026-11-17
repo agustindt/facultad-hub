@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Redes II · Dónde va cada comando</title>
+<style>
+  :root {
+    --ink: #1c1712;
+    --line: #e0d5c4;
+    --green: #e7f4ec;
+    --green-ink: #145233;
+    --gold: #f8f0dc;
+    --red: #f8e6e6;
+    --serif: "Iowan Old Style", Palatino, Georgia, serif;
+    --sans: "Avenir Next", "Segoe UI", sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #f4efe7; color: var(--ink);
+    font-family: var(--serif); font-size: 16px; line-height: 1.4;
+  }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 22px 20px 40px; }
+  h1 { font-size: 30px; line-height: 1.1; margin: 0 0 8px; font-weight: 600; }
+  h2 { font-size: 20px; margin: 1.1em 0 .35em; font-weight: 600; break-after: avoid; }
+  p { margin: .35em 0; }
+  .lead { font-size: 18px; margin-top: 0; }
+  .nets {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 14px;
+  }
+  .net {
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; background: white;
+    break-inside: avoid;
+  }
+  .net b { display: block; font-family: var(--sans); font-size: 13px; letter-spacing: .04em; }
+  .net span { font-family: var(--mono); font-size: 15px; }
+  .rule {
+    background: #1c1712; color: #f6f1e8; border-radius: 12px; padding: 14px 16px; margin: 8px 0 12px;
+  }
+  .rule p { margin: .3em 0; }
+  .rule strong { color: #f0c7ae; }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.45;
+    background: #241e19; color: #f6f1e8; border-radius: 8px;
+    padding: 10px 12px; margin: 6px 0 8px; white-space: pre-wrap;
+    break-inside: avoid;
+  }
+  .slot { break-inside: avoid; margin: 0 0 12px; }
+  .slot .tag {
+    font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: .04em;
+    text-transform: uppercase; margin: 0 0 2px;
+  }
+  .place {
+    background: var(--green); color: var(--green-ink);
+    border-radius: 10px; padding: 8px 12px; margin: 0 0 6px;
+    font-family: var(--sans); font-size: 15px;
+  }
+  .place b { font-size: 17px; }
+  .warn { background: var(--gold); border-radius: 10px; padding: 8px 12px; break-inside: avoid; }
+  .bad { background: var(--red); border-radius: 10px; padding: 8px 12px; break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f3eadf; font-family: var(--sans); font-size: 12px; }
+  code { font-family: var(--mono); font-size: .9em; }
+  .card {
+    display: grid; grid-template-columns: 1.3fr .7fr; gap: 8px;
+    margin: 0 0 8px; break-inside: avoid;
+  }
+  .card pre { margin: 0; }
+  .card .place { margin: 0; display: flex; flex-direction: column; justify-content: center; }
+  @page {
+    size: A4;
+    margin: 12mm;
+    @bottom-right {
+      content: counter(page);
+      font-family: "Avenir Next", sans-serif; font-size: 10px; color: #5c5348;
+    }
+  }
+  @media print {
+    body { background: white; font-size: 14.5px; }
+    .wrap { max-width: none; padding: 0; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Te dan el comando. Vos decís dónde.</h1>
+<p class="lead">En la hoja no se inventa el comando: ya viene escrito. Hay que poner tres cosas: <strong>qué router</strong>, <strong>qué interfaz</strong> y si es <strong>in</strong> o <strong>out</strong>.</p>
+
+<div class="nets">
+  <div class="net"><b>CÓRDOBA</b><span>20.80.10.___</span><br>router .100 · PC .1 .2 .3 · web .50</div>
+  <div class="net"><b>CORRIENTES</b><span>20.80.20.___</span><br>router .100 · PC por DHCP · servidor .101</div>
+  <div class="net"><b>MENDOZA</b><span>20.80.90.___</span><br>router .100 · PC .1 .2 .3 · web .4</div>
+  <div class="net"><b>SANTA CRUZ</b><span>20.80.30.___</span><br>router .100 · PC .1 .2 .3 · DNS .10 · web .50</div>
+</div>
+
+<div class="rule">
+  <p>Leé la <strong>primera IP</strong> del comando. Esa es la PC que manda el paquete.</p>
+  <p>El comando va en el <strong>router de esa PC</strong>, en la interfaz de la LAN (la del .100), sentido <strong>in</strong>.</p>
+  <p>Si en vez de una IP dice <strong>any</strong>, va en el router de la <strong>segunda IP</strong>, misma interfaz, sentido <strong>out</strong>.</p>
+  <p>Los comandos del mismo router y el mismo sentido van en la misma lista. El último es <strong>permit ip any any</strong>.</p>
+</div>
+
+<h2>Bloquear el DNS de cada PC</h2>
+<p>El DNS es <code>20.80.30.10</code>, puerto 53. Cada PC trae dos comandos: uno <code>udp</code> y uno <code>tcp</code>. Los dos van al mismo lugar. La primera IP te dice el router.</p>
+
+<div class="slot">
+  <p class="tag">Lista, en el router de Córdoba</p>
+  <div class="place"><b>Córdoba</b> · interfaz LAN (20.80.10.100) · <b>in</b></div>
+<pre>ip access-list extended DNS-CBA
+ deny udp host 20.80.10.1 host 20.80.30.10 eq 53
+ deny tcp host 20.80.10.1 host 20.80.30.10 eq 53
+ deny udp host 20.80.10.2 host 20.80.30.10 eq 53
+ deny tcp host 20.80.10.2 host 20.80.30.10 eq 53
+ deny udp host 20.80.10.3 host 20.80.30.10 eq 53
+ deny tcp host 20.80.10.3 host 20.80.30.10 eq 53
+ permit ip any any
+interface FastEthernet0/0
+ ip access-group DNS-CBA in</pre>
+</div>
+
+<div class="slot">
+  <p class="tag">La misma lista, cambiando la sede</p>
+  <div class="place"><b>Corrientes</b> · LAN 20.80.20.100 · <b>in</b><br>PC 20.80.20.1, .2 y .3. Si el DHCP les dio otras IP, esas son las que van en el host.</div>
+  <div class="place"><b>Mendoza</b> · LAN 20.80.90.100 · <b>in</b><br>PC 20.80.90.1, .2 y .3. Misma pareja udp y tcp hacia 20.80.30.10.</div>
+</div>
+
+<div class="warn">
+  <p><strong>Santa Cruz no entra en esta lista.</strong> Sus PC (20.80.30.1, .2 y .3) y el DNS (20.80.30.10) están en la misma red. Esa consulta la entrega el switch y no pasa por el router. Poner el comando en el router de Santa Cruz no las frena.</p>
+</div>
+<p>Si en <code>show ip interface brief</code> la LAN no se llama FastEthernet0/0, usá el nombre que aparezca al lado de la IP .100. El <code>ip access-group</code> va en esa interfaz, no en el enlace que va hacia otro router.</p>
+
+<h2>Cómo se ve en la hoja</h2>
+<p>Cada renglón es un comando que te dieron. La columna de la derecha es lo que completás vos.</p>
+<table>
+  <thead>
+    <tr><th>Comando que te dan</th><th>Router</th><th>Interfaz</th><th>in / out</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>deny udp host 20.80.10.1 host 20.80.30.10 eq 53</code></td><td>Córdoba</td><td>LAN .100</td><td>in</td></tr>
+    <tr><td><code>deny tcp host 20.80.10.1 host 20.80.30.10 eq 53</code></td><td>Córdoba</td><td>LAN .100</td><td>in</td></tr>
+    <tr><td><code>deny udp host 20.80.90.2 host 20.80.30.10 eq 53</code></td><td>Mendoza</td><td>LAN .100</td><td>in</td></tr>
+    <tr><td><code>deny tcp host 20.80.20.3 host 20.80.30.10 eq 53</code></td><td>Corrientes</td><td>LAN .100</td><td>in</td></tr>
+    <tr><td><code>permit ip any any</code></td><td>en cada una de esas listas</td><td>la misma</td><td>el mismo</td></tr>
+  </tbody>
+</table>
+
+<h2>Los otros comandos se leen igual</h2>
+<p>Siempre la primera IP elige el router. Estos son los que ya aparecen en la actividad.</p>
+
+<div class="card">
+<pre>deny icmp host 20.80.20.1 host 20.80.90.1</pre>
+  <div class="place"><b>Corrientes</b><br>LAN · in<br>PC1 no hace ping a PC1 de Mendoza</div>
+</div>
+<div class="card">
+<pre>deny tcp host 20.80.20.2 host 20.80.30.50 eq 80</pre>
+  <div class="place"><b>Corrientes</b><br>LAN · in<br>Misma lista que el de arriba</div>
+</div>
+<div class="card">
+<pre>deny icmp host 20.80.30.1 host 20.80.10.50
+deny icmp host 20.80.30.1 host 20.80.10.10
+deny icmp host 20.80.30.1 host 20.80.20.101
+deny icmp host 20.80.30.1 host 20.80.90.4</pre>
+  <div class="place"><b>Santa Cruz</b><br>LAN · in<br>Los cuatro juntos. PC1 no hace ping a los servidores de las otras sedes</div>
+</div>
+<div class="card">
+<pre>deny icmp any host 20.80.20.101</pre>
+  <div class="place"><b>Corrientes</b><br>LAN · out<br>Dice any: va de salida, en otra lista</div>
+</div>
+
+<div class="bad">
+  <p>En Corrientes quedan <strong>dos</strong> listas sobre la misma interfaz: una <code>in</code> (el ping a Mendoza y el HTTP a Santa Cruz) y otra <code>out</code> (el ping de afuera al servidor .101). Cada una termina con su propio <code>permit ip any any</code>. Una segunda lista <code>in</code> borra la primera.</p>
+</div>
+
+<h2>Si el comando no corta tráfico</h2>
+<table>
+  <thead>
+    <tr><th>Te dan</th><th>Lo escribís en</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>network 20.80.10.0 0.0.0.255 area 0</code></td><td>Solo el router de Córdoba, adentro de <code>router ospf 1</code>. Cada <code>network</code> va en el router de esa red. Una /30 va en los dos routers del enlace.</td></tr>
+    <tr><td><code>version 2</code><br><code>no auto-summary</code><br><code>network 20.0.0.0</code></td><td>Los cuatro routers, adentro de <code>router rip</code>. OSPF y RIP no van juntos: ubicá solo el que pidió.</td></tr>
+    <tr><td>Registro <code>www.servercordoba.com.ar</code> → 20.80.10.50</td><td>Servidor DNS 20.80.30.10, Services → DNS. No es un comando de router.</td></tr>
+    <tr><td>Pool, gateway .100, DNS 20.80.30.10</td><td>Servidor de Corrientes 20.80.20.101, Services → DHCP. En la PC: DHCP.</td></tr>
+  </tbody>
+</table>
+
+<div class="warn">
+  <p>Para comprobar: <code>show access-lists</code> en el router donde colgaste la lista. Si el ping sigue andando y el contador del deny queda en 0, el comando está en el router equivocado o del lado equivocado (in / out).</p>
+</div>
+
+</div>
+</body>
+</html>

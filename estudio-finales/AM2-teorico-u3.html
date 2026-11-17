@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>AM II · Teórico 3: extremos</title>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap'>
+<link rel='stylesheet' href='fichas.css'></head><body>
+<nav><b>AM II · Teórico 3</b><a href='index.html'>Plan</a><a href='#libres'>A. Extremos libres</a><a href='#clasif'>B. Clasificar (Hessiana)</a><a href='#abs'>C. Absolutos</a><a href='#lag'>D. Lagrange</a><a href='AM2-teorico-u4.html'>Teórico 4</a></nav>
+<main>
+<h1>Teórico 3: Extremos</h1>
+<div class='ley'><mark>Amarillo</mark>: se copia textual. <span class='r'>Rojo</span>: palabra que no puede faltar. <span class='v'>Verde</span>: explicación, no se escribe en el examen. <span class='t'>Ondulado azul</span>: trampa.</div>
+<p>Este tema cayó en <b>4 de los 5</b> finales teóricos:</p>
+<table><tr><th>Teorema</th><th>Cayó</th><th>Fechas</th><th>Prioridad</th></tr>
+<tr><td><a href='#nec'>Condición necesaria (∇f = 0)</a></td><td>2 veces</td><td>22/11/2023, 26/06/2024</td><td>★★★</td></tr>
+<tr><td><a href='#hes'>Taylor de 2.º orden y Hessiana</a></td><td>3 veces</td><td>29/07/2022, 22/11/2023, 17/07/2024</td><td>★★★</td></tr>
+<tr><td><a href='#lag'>Lagrange e interpretación geométrica</a></td><td>1 vez</td><td>07/12/2022</td><td>★★</td></tr></table>
+
+<h2 id='libres'>A. Extremos libres</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Máximo local.</b> <mark>f tiene un <span class='r'>máximo local</span> en x₀ si <span class='r'>existe r &gt; 0</span> tal que f(x) <span class='r'>≤</span> f(x₀) para todo x ∈ B(x₀, r) ∩ U.</mark> <span class='v'>Gana en su barrio.</span></p>
+<p><b>Mínimo local.</b> <mark>Lo mismo con f(x) <span class='r'>≥</span> f(x₀).</mark> <span class='v'>Pierde en su barrio.</span></p>
+<p><b>Máximo y mínimo absoluto.</b> <mark>f(x) ≤ f(x₀) (o ≥) para <span class='r'>todo x ∈ U</span>.</mark> <span class='v'>Gana (o pierde) en todo el dominio.</span></p>
+<p><b>Extremo.</b> <mark>Punto donde f tiene un máximo o un mínimo.</mark></p>
+<p><b>Punto crítico.</b> <mark>x₀ interior a U tal que <span class='r'>∇f(x₀) = 0</span> <span class='r'>o</span> alguna derivada parcial <span class='r'>no existe</span> en x₀.</mark> <span class='v'>Son los candidatos a extremo.</span></p>
+<p><b>Punto de ensilladura.</b> <mark>Punto crítico que <span class='r'>no es extremo</span>: en todo entorno hay puntos con f(x) &gt; f(x₀) y puntos con f(x) &lt; f(x₀).</mark> <span class='v'>Silla de montar: sube para un lado y baja para el otro.</span></p></div>
+
+<h3 id='nec'>Teorema: condición necesaria de extremo <span class='sale'>★★★ 2023 · 2024</span></h3>
+<div class='criollo'>Si en un punto hay un pico o un pozo y la superficie es suave ahí, el piso es plano: todas las pendientes (las derivadas parciales) valen 0.</div>
+<div class='copiar'><p><b>H)</b> <mark>f tiene un <span class='r'>extremo local</span> en x₀, x₀ es <span class='r'>interior</span> a U y <span class='r'>existen las derivadas parciales</span> en x₀.</mark></p>
+<p><b>T)</b> <mark>∇f(x₀) = 0.</mark></p></div>
+<div class='idea'>Corto la superficie con una recta y uso lo que ya sé de una variable: Fermat.</div>
+<div class='fig'><svg viewBox='0 0 300 150' width='300' height='150'><line x1='10' y1='135' x2='290' y2='135' stroke='#888'/><path d='M20,125 Q150,-15 280,125' fill='none' stroke='#1f4fa3' stroke-width='3'/><line x1='95' y1='55' x2='205' y2='55' stroke='#b3261e' stroke-width='2' stroke-dasharray='6 4'/><circle cx='150' cy='55' r='4' fill='#b3261e'/><line x1='150' y1='59' x2='150' y2='135' stroke='#bbb' stroke-dasharray='3 3'/><text x='140' y='148' font-size='12'>t = 0</text><text x='208' y='52' font-size='13' fill='#b3261e'>tangente horizontal</text><text x='30' y='100' font-size='13' fill='#1f4fa3'>g(t)</text></svg>
+<div class='n'>g(t) es la superficie cortada sobre una recta que pasa por x₀. Si x₀ es máximo de f, t = 0 es máximo de g: ahí la tangente es horizontal, g′(0) = 0.</div></div>
+<div class='l'><div class='num'>1</div><div class='M'>g(t)=f(x_0+t@,e_i)</div><div class='n'><mark>Defino una función de <span class='r'>una variable</span>.</mark> Existe cerca de t = 0 <span class='r'>porque x₀ es interior</span>.</div></div>
+<div class='l'><div class='num'>2</div><div class='M'>g(t)@le g(0)@quad@text{cerca de } t=0</div><div class='n'><mark>Si f tiene máximo en x₀, <span class='r'>g tiene máximo en t = 0</span>.</mark> <span class='v'>En t = 0 estoy parado en x₀.</span></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>g'(0)=@lim_{t@to 0}@dfrac{f(x_0+t@,e_i)-f(x_0)}{t}=@dfrac{@partial f}{@partial x_i}(x_0)</div><div class='n'><mark>g′(0) es la <span class='r'>derivada parcial</span>.</mark> <span class='v'>Es su definición.</span></div></div>
+<div class='l'><div class='num'>4</div><div class='M'>g'(0)=0 @;@Rightarrow@; @dfrac{@partial f}{@partial x_i}(x_0)=0</div><div class='n'><mark>Por el <span class='r'>teorema de Fermat</span> en una variable.</mark></div></div>
+<div class='l'><div class='num'>5</div><div class='M'>@nabla f(x_0)=(0,@dots,0)@quad@blacksquare</div><div class='n'><mark>Vale para <span class='r'>cada i</span>: todas las parciales son 0.</mark> <span class='v'>El mínimo es igual.</span></div></div>
+<div class='acordate'>Función de una variable g(t) = f(x₀ + t eᵢ), y Fermat.</div>
+<div class='trampa'><span class='t'>La vuelta es falsa: f = x² − y² tiene ∇f(0, 0) = 0 y en (0, 0) hay una silla.</span> <span class='t'>Y puede haber extremo donde no existen las parciales: √(x² + y²) tiene mínimo en (0, 0).</span></div>
+
+<h2 id='clasif'>B. Clasificar puntos críticos: Taylor y Hessiana</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Matriz Hessiana.</b> <mark>H(x₀) = (∂²f/∂xᵢ∂xⱼ (x₀)): la matriz n × n de las <span class='r'>derivadas segundas</span>. Si f ∈ C², es <span class='r'>simétrica</span> (Schwarz).</mark> <span class='v'>Guarda la curvatura de f.</span></p>
+<p><b>Forma cuadrática.</b> <mark>Q(h) = hᵀ H h.</mark> En dos variables: <mark>Q(h, k) = f<sub>xx</sub>h² + 2f<sub>xy</sub>hk + f<sub>yy</sub>k².</mark></p>
+<p><b>Definida positiva.</b> <mark>hᵀHh <span class='r'>&gt; 0</span> para <span class='r'>todo h ≠ 0</span>.</mark> <span class='v'>Pozo.</span></p>
+<p><b>Definida negativa.</b> <mark>hᵀHh <span class='r'>&lt; 0</span> para todo h ≠ 0.</mark> <span class='v'>Loma.</span></p>
+<p><b>Indefinida.</b> <mark>Toma valores <span class='r'>positivos y negativos</span>.</mark> <span class='v'>Silla.</span></p>
+<p><b>Semidefinida.</b> <mark>hᵀHh ≥ 0 (o ≤ 0) y se anula para algún h ≠ 0.</mark> <span class='v'>No se puede concluir.</span></p></div>
+
+<h3 id='hes'>Teorema: Taylor de 2.º orden y condición suficiente <span class='sale'>★★★ 2022 · 2023 · 2024</span></h3>
+<div class='criollo'>Cerca de un punto, f se parece a una “parábola” en varias variables. En un punto crítico la parte inclinada (el gradiente) vale 0, así que manda la parte cuadrática, que está en la Hessiana. Siempre positiva: pozo (mínimo). Siempre negativa: loma (máximo). Cambia de signo: silla.</div>
+<div class='copiar'><p><b>a) Fórmula de Taylor de 2.º orden.</b> <mark>Si f es de <span class='r'>clase C³</span>:</mark></p>
+<div class='M'>f(x_0+h,@,y_0+k)=f+f_x@,h+f_y@,k+@tfrac12@big[f_{xx}@,h^2+2f_{xy}@,hk+f_{yy}@,k^2@big]+R_2</div>
+<p><mark>con todas las derivadas en (x₀, y₀) y <span class='r'>R₂/(h² + k²) → 0</span>.</mark></p>
+<p><b>b) Forma matricial.</b></p>
+<div class='M'>f(x_0+h)=f(x_0)+@nabla f(x_0)@cdot h+@tfrac12@,h^{@mathsf T}H@,h+R_2,@qquad H=@begin{pmatrix}f_{xx}&amp;f_{xy}@@ f_{xy}&amp;f_{yy}@end{pmatrix}</div>
+<p><b>c) Condición suficiente.</b> <b>H)</b> <mark>f ∈ C³ y <span class='r'>∇f(x₀) = 0</span>.</mark> <b>T)</b> <mark>H definida positiva ⇒ <span class='r'>mínimo local</span>; definida negativa ⇒ <span class='r'>máximo local</span>; indefinida ⇒ <span class='r'>ensilladura</span>.</mark></p></div>
+<div class='idea'>En un punto crítico, f(x₀ + h) − f(x₀) ≈ ½ hᵀHh. La Hessiana decide.</div>
+<div class='l'><div class='num'>1</div><div class='M'>f(x_0+h)-f(x_0)=@underbrace{@nabla f(x_0)@cdot h}_{=@,0}+@tfrac12 h^{@mathsf T}Hh+R_2</div><div class='n'><mark>Como x₀ es <span class='r'>punto crítico</span>, el término del gradiente se va.</mark></div></div>
+<div class='l'><div class='num'>2</div><div class='M'>f(x_0+h)-f(x_0)=@tfrac12 h^{@mathsf T}Hh+R_2</div><div class='n'><span class='v'>La izquierda dice si f sube o baja al moverme un poquito desde x₀.</span></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>@dfrac{R_2}{@|h@|^2}@to 0</div><div class='n'><mark>El resto es <span class='r'>despreciable</span> frente a la parte cuadrática</mark>: no le cambia el signo.</div></div>
+<div class='l'><div class='num'>4</div><div class='M'>@text{signo de }f(x_0+h)-f(x_0)=@text{signo de }h^{@mathsf T}Hh</div><div class='n'><mark>Siempre &gt; 0: f(x₀ + h) &gt; f(x₀), <span class='r'>mínimo</span>.</mark> Siempre &lt; 0: máximo. Cambia: silla. ∎</div></div>
+<div class='l'><div class='num'>★</div><div class='M'>ah^2+2bhk+ck^2=a@Big[@big(h+@tfrac{b}{a}k@big)^2+@dfrac{ac-b^2}{a^2}@,k^2@Big]</div><div class='n'><mark>De acá sale la D: <span class='r'>completando cuadrados</span></mark>, con a = f<sub>xx</sub>, b = f<sub>xy</sub>, c = f<sub>yy</sub>. Si D = ac − b² &gt; 0, manda el signo de a.</div></div>
+<table><tr><th>D = f<sub>xx</sub>f<sub>yy</sub> − f<sub>xy</sub>²</th><th>f<sub>xx</sub></th><th>Conclusión</th></tr>
+<tr><td><mark>&gt; 0</mark></td><td><mark>&gt; 0</mark></td><td><mark><span class='r'>mínimo</span></mark></td></tr>
+<tr><td><mark>&gt; 0</mark></td><td><mark>&lt; 0</mark></td><td><mark><span class='r'>máximo</span></mark></td></tr>
+<tr><td><mark>&lt; 0</mark></td><td>no importa</td><td><mark><span class='r'>silla</span></mark></td></tr>
+<tr><td><mark>= 0</mark></td><td></td><td><mark><span class='r'>no decide</span></mark></td></tr></table>
+<div class='acordate'>Punto crítico ⇒ se va el gradiente ⇒ queda ½ hᵀHh ⇒ su signo decide. En Taylor: el ½ adelante y el 2 delante de f<sub>xy</sub>.</div>
+<div class='trampa'><span class='t'>D = 0 no decide: x⁴ + y⁴ (mínimo), −x⁴ − y⁴ (máximo) y x⁴ − y⁴ (silla) tienen D = 0 en el origen.</span> <span class='t'>Con D &lt; 0 es silla, no se mira f<sub>xx</sub>.</span></div>
+
+<h2 id='abs'>C. Extremos absolutos</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Conjunto compacto.</b> <mark><span class='r'>Cerrado y acotado</span>.</mark></p>
+<p><b>Teorema de Weierstrass.</b> <mark>Si f es <span class='r'>continua</span> en un conjunto <span class='r'>compacto</span> K, alcanza un <span class='r'>máximo y un mínimo absolutos</span> en K.</mark> <span class='v'>Por eso en una región cerrada y acotada siempre hay respuesta.</span></p>
+<p><b>Procedimiento.</b> <mark>1) Puntos críticos del <span class='r'>interior</span>. 2) Extremos sobre la <span class='r'>frontera</span>. 3) <span class='r'>Evaluar f</span> en todos y comparar.</mark> <span class='v'>Acá no hace falta la Hessiana: alcanza con comparar valores.</span></p>
+<p><span class='t'>Trampa: “cerrado” solo no alcanza. f(x, y) = x en {x ≥ 0} es continua en un cerrado y no tiene máximo.</span></p></div>
+
+<h2 id='lag'>D. Extremos con restricción: Lagrange</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Curva (superficie) de nivel.</b> <mark>{x : f(x) = c}. El <span class='r'>gradiente es perpendicular</span> a ella.</mark> <span class='v'>Como las líneas de un mapa topográfico.</span></p>
+<p><b>Extremo condicionado.</b> <mark>Extremo de f considerando <span class='r'>solo los puntos que cumplen</span> la restricción g(x) = c.</mark></p>
+<p><b>Multiplicador de Lagrange.</b> <mark>El escalar λ tal que ∇f(x₀) = λ∇g(x₀).</mark> <span class='v'>Mide cuánto cambia el valor óptimo si muevo c.</span></p></div>
+
+<h3>Teorema de los multiplicadores de Lagrange <span class='sale'>★★ 2022</span></h3>
+<div class='criollo'>Busco el máximo de f caminando solo por la curva g = c. En el óptimo, la curva de nivel de f toca a la restricción sin cruzarla (son tangentes), y por eso los gradientes son paralelos.</div>
+<div class='copiar'><p><b>H)</b> <mark>f, g ∈ <span class='r'>C¹</span>; x₀ es extremo de f <span class='r'>sobre g(x) = c</span>; <span class='r'>∇g(x₀) ≠ 0</span>.</mark></p>
+<p><b>T)</b> <mark><span class='r'>Existe λ</span> tal que ∇f(x₀) = λ ∇g(x₀).</mark></p>
+<p><b>Método.</b> <mark>Resolver ∇f = λ∇g junto con <span class='r'>g = c</span>, y evaluar f en los puntos.</mark></p>
+<p><b>Interpretación geométrica.</b> <mark>En el extremo, la <span class='r'>curva de nivel de f</span> que pasa por x₀ es <span class='r'>tangente</span> a la curva g = c: sus gradientes son <span class='r'>paralelos</span>.</mark></p></div>
+<div class='fig'><svg viewBox='0 0 330 220' width='330' height='220'><defs><marker id='a1' viewBox='0 0 10 10' refX='8' refY='5' markerWidth='7' markerHeight='7' orient='auto'><path d='M0,0 L10,5 L0,10 z' fill='#b3261e'/></marker><marker id='a2' viewBox='0 0 10 10' refX='8' refY='5' markerWidth='7' markerHeight='7' orient='auto'><path d='M0,0 L10,5 L0,10 z' fill='#1f4fa3'/></marker></defs><ellipse cx='165' cy='130' rx='115' ry='60' fill='#e8f1fb' stroke='#1f4fa3' stroke-width='2.5'/><line x1='20' y1='40' x2='310' y2='40' stroke='#999' stroke-dasharray='5 4'/><line x1='20' y1='70' x2='310' y2='70' stroke='#b3261e' stroke-width='2'/><line x1='20' y1='110' x2='310' y2='110' stroke='#999' stroke-dasharray='5 4'/><circle cx='165' cy='70' r='4.5' fill='#b3261e'/><line x1='160' y1='70' x2='160' y2='28' stroke='#b3261e' stroke-width='2.5' marker-end='url(#a1)'/><line x1='171' y1='70' x2='171' y2='40' stroke='#1f4fa3' stroke-width='2.5' marker-end='url(#a2)'/><text x='118' y='30' font-size='12' fill='#b3261e'>∇f</text><text x='178' y='44' font-size='12' fill='#1f4fa3'>∇g</text><text x='232' y='35' font-size='11' fill='#777'>f = 3: no toca</text><text x='212' y='65' font-size='11' fill='#b3261e'>f = 2: tangente (máximo)</text><text x='232' y='105' font-size='11' fill='#777'>f = 1: corta</text><text x='140' y='160' font-size='13' fill='#1f4fa3'>g = c</text></svg>
+<div class='n'>La recta que corta a la elipse no es la mejor: puedo subir más. La que no la toca no se alcanza. La óptima es la tangente, y ahí ∇f y ∇g son paralelos.</div></div>
+<div class='l'><div class='num'>1</div><div class='M'>g(@gamma(t))=c@;@Rightarrow@;@nabla g(x_0)@cdot@gamma'(0)=0</div><div class='n'><mark>γ(t): curva <span class='r'>sobre la restricción</span>, γ(0) = x₀. Derivo con la <span class='r'>regla de la cadena</span>.</mark> <span class='v'>Derivar una constante da 0: ∇g es perpendicular a la tangente.</span></div></div>
+<div class='l'><div class='num'>2</div><div class='M'>f(@gamma(t))@text{ tiene extremo en }t=0@;@Rightarrow@;@nabla f(x_0)@cdot@gamma'(0)=0</div><div class='n'><mark>Mismo argumento que la <span class='r'>condición necesaria</span>.</mark> <span class='v'>∇f también es perpendicular a la tangente.</span></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>@nabla f@perp@gamma',@ @nabla g@perp@gamma'@;@Rightarrow@;@nabla f(x_0)=@lambda@,@nabla g(x_0)@quad@blacksquare</div><div class='n'><mark>Perpendiculares a la misma dirección ⇒ <span class='r'>paralelos</span>.</mark></div></div>
+<div class='acordate'>Curva de nivel tangente a la restricción ⇒ gradientes paralelos ⇒ ∇f = λ∇g.</div>
+<div class='trampa'><span class='t'>Los gradientes son paralelos, no perpendiculares.</span> <span class='t'>Si ∇g(x₀) = 0 el teorema no se aplica: ese punto se revisa aparte.</span></div>
+</main>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js'></script>
+<script>(function(){var B=String.fromCharCode(92);function go(){if(!window.katex)return;document.querySelectorAll('.M, .m').forEach(function(el){var s=el.textContent.split('@').join(B);try{katex.render(s,el,{displayMode:el.classList.contains('M'),throwOnError:false});}catch(e){}});}if(window.katex)go();else window.addEventListener('load',go);})();</script>
+</body></html>

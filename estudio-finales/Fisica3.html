@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Física III · Final</title><link rel='stylesheet' href='estilo.css'></head><body>
+<header class='top'><strong>Física III</strong><a href='index.html'>Plan</a><a href='#ondas'>Ondas</a><a href='#sonido'>Sonido</a><a href='#estac'>Estacionarias</a><a href='#em'>EM</a><a href='#optica'>Óptica</a><a href='#termo'>Termo</a><a href='#cuant'>Cuántica</a><a href='#nuc'>Núcleo</a><a href='#mc'>Opción múltiple</a></header>
+<main>
+<p class='k'>UCC · Ingeniería · 10 de diciembre</p>
+<h1>Física III. Fórmulas, problemas de parcial resueltos y las preguntas que se repiten.</h1>
+<p>Serway. Dos mitades: <b>ondas y óptica</b> (unidades 1 a 6) y <b>térmica, cuántica y núcleo</b> (7 a 11). Los parciales de 2024 fueron de opción múltiple con cuentas cortas; los anteriores, cinco problemas de 20%. El final pide las dos mitades. Constantes que conviene saber: c = 3×10⁸ m/s, v<sub>sonido</sub> = 343 m/s, h = 6,63×10⁻³⁴ J·s, e = 1,6×10⁻¹⁹ C, μ₀ = 4π×10⁻⁷, ε₀ = 8,85×10⁻¹², R = 8,314 J/mol·K, k<sub>B</sub> = 1,38×10⁻²³, σ = 5,67×10⁻⁸, m<sub>e</sub> = 9,11×10⁻³¹ kg, 1 u = 931,5 MeV.</p>
+
+<h2 id='ondas'>1. Ondas en cuerdas</h2>
+<p>y(x, t) = A sen(kx − ωt + φ). k = 2π/λ, ω = 2πf, v = λf = ω/k. Hacia +x es (x − vt).</p>
+<p><b>Velocidad en la cuerda:</b> <span class='f'>v = √(T/μ)</span>, μ = m/L. Depende solo del medio: no de A ni de f.</p>
+<p>Velocidad transversal máxima ωA; aceleración máxima ω²A. <b>Potencia:</b> <span class='f'>P = ½ μ ω² A² v</span>. Ecuación de onda: ∂²y/∂x² = (1/v²) ∂²y/∂t²; cualquier y = f(x − vt) la cumple.</p>
+<div class='enun'>a) Cuerda de 5 m y 0,06 kg, ondas a 50 m/s: tensión. b) y = 0,08 sen(0,24x − 30t): velocidad de la onda y transversal máxima. c) 0,18 kg y 3,6 m, A = 0,1 m, λ = 0,5 m, v = 30 m/s: potencia.</div>
+<details><summary>Resolución</summary>
+<p>a) μ = 0,012 kg/m. T = μv² = 0,012 · 2500 = <b>30 N</b>.</p>
+<p>b) v = ω/k = 30/0,24 = <b>125 m/s</b>. v<sub>y,máx</sub> = ωA = 30 · 0,08 = <b>2,4 m/s</b>.</p>
+<p>c) μ = 0,05 kg/m, f = 30/0,5 = 60 Hz, ω = 377 rad/s. P = ½ · 0,05 · 377² · 0,01 · 30 = <b>1066 W</b>.</p></details>
+
+<h2 id='sonido'>2. Ondas sonoras y Doppler</h2>
+<p>v = 331 + 0,6·T(°C) en aire. <b>Intensidad</b> I = P/(4πr²) en W/m². <b>Nivel</b> β = 10 log(I/I₀) en dB, I₀ = 10⁻¹² W/m². Duplicar la distancia divide la intensidad por 4 (−6 dB). Amplitud de presión ΔP<sub>máx</sub> = ρ v ω s<sub>máx</sub>. I = ΔP²<sub>máx</sub>/(2ρv).</p>
+<p><b>Doppler:</b> <span class='f'>f′ = f (v ± v<sub>o</sub>)/(v ∓ v<sub>f</sub>)</span>. Signos de arriba cuando se acercan (observador hacia la fuente: +v<sub>o</sub>; fuente hacia el observador: −v<sub>f</sub>). Onda de choque: sen θ = v/v<sub>f</sub>.</p>
+<div class='enun'>a) Tren a 40 m/s, silbato de 320 Hz: cambio de frecuencia al pasar y λ al acercarse. b) Fuente de 480 Hz, el observador que se acerca oye 500 Hz: su velocidad. c) Nivel de 4 μW/m². d) 75 dB y 80 dB juntos.</div>
+<details><summary>Resolución</summary>
+<p>a) Acercándose: 320 · 343/303 = 362,24 Hz. Alejándose: 320 · 343/383 = 286,58 Hz. <b>Cambio: 75,66 Hz.</b> λ = (v − v<sub>f</sub>)/f = 303/320 = <b>0,947 m</b>.</p>
+<p>b) 500 = 480(343 + v<sub>o</sub>)/343 ⇒ v<sub>o</sub> = <b>14,29 m/s</b>.</p>
+<p>c) β = 10 log(4×10⁻⁶/10⁻¹²) = 10 log(4×10⁶) = <b>66,0 dB</b>.</p>
+<p>d) Se suman intensidades, no decibeles: 3,16×10⁻⁵ + 10⁻⁴ = 1,316×10⁻⁴ W/m² ⇒ <b>81,2 dB</b>.</p></details>
+
+<h2 id='estac'>3. Superposición y ondas estacionarias</h2>
+<p>Interferencia de dos fuentes en fase: diferencia de caminos Δr = mλ constructiva, (m + ½)λ destructiva. <b>Pulsaciones:</b> f<sub>b</sub> = |f₁ − f₂|.</p>
+<p>Estacionaria y = 2A sen(kx) cos(ωt). Nodos cada λ/2.</p>
+<table><tr><th>Sistema</th><th>Frecuencias</th></tr>
+<tr><td>Cuerda fija en los dos extremos, tubo abierto-abierto</td><td>f<sub>n</sub> = n v/(2L), n = 1, 2, 3…</td></tr>
+<tr><td>Tubo cerrado en un extremo</td><td>f<sub>n</sub> = n v/(4L), n = 1, 3, 5… (solo impares)</td></tr></table>
+<div class='enun'>a) Cuerda de 30 m, μ = 0,009 kg/m, T = 20 N: fundamental y tres siguientes. b) Dos altavoces de 440 Hz en el frente y el fondo; un estudiante camina a 2 m/s: pulsaciones. c) Dos altavoces enfrentados a 1,25 m, 800 Hz: mínimos sobre la línea que los une. d) Tubo de 2 m abierto, armónicas consecutivas 410 y 492 Hz: velocidad del sonido.</div>
+<details><summary>Resolución</summary>
+<p>a) v = √(20/0,009) = 47,14 m/s. f₁ = 47,14/60 = <b>0,786 Hz</b>; f₂ = 1,571; f₃ = 2,357; f₄ = 3,143 Hz. (Si la cuerda fuera de 30 mm, multiplicá por 1000.)</p>
+<p>b) De uno se acerca, del otro se aleja: f(1 + v/c) − f(1 − v/c) = 2fv/c = 2 · 440 · 2/343 = <b>5,13 pulsaciones/s</b>.</p>
+<p>c) λ = 343/800 = 0,4288 m. A distancia x de un altavoz, Δr = |2x − 1,25| = (m + ½)λ ⇒ x = 0,625 ± (m + ½) · 0,2144. <b>x = 0,089; 0,303; 0,518; 0,732; 0,947; 1,161 m.</b></p>
+<p>d) Armónicas consecutivas difieren en v/2L: 82 = v/4 ⇒ <b>v = 328 m/s</b>.</p></details>
+
+<h2 id='em'>4. Ondas electromagnéticas</h2>
+<p>E/B = c. c = 1/√(μ₀ε₀). <b>Intensidad</b> (Poynting medio): <span class='f'>I = E<sub>m</sub>B<sub>m</sub>/(2μ₀) = E<sub>m</sub>²/(2μ₀c)</span> = c u<sub>media</sub>. Fuente isotrópica: I = P/(4πr²). Presión de radiación: I/c si absorbe, 2I/c si refleja. Antena de media onda: L = λ/2.</p>
+<div class='enun'>a) E = 220 V/m: B. b) ¿Qué potencia isotrópica da E<sub>m</sub> = 55 V/m a 20 m? c) Antena de media onda para 20 MHz.</div>
+<details><summary>Resolución</summary>
+<p>a) B = 220/3×10⁸ = <b>7,33×10⁻⁷ T</b>.</p>
+<p>b) I = 55²/(2 · 4π×10⁻⁷ · 3×10⁸) = 3025/754 = 4,01 W/m². P = 4,01 · 4π · 400 = <b>20,2 kW</b>.</p>
+<p>c) λ = 15 m, L = <b>7,5 m</b>.</p></details>
+
+<h2 id='optica'>5 y 6. Interferencia, difracción y polarización</h2>
+<p><b>Young:</b> brillantes d sen θ = mλ, y<sub>m</sub> = mλL/d; oscuras (m + ½)λ. I = I<sub>máx</sub> cos²(πd sen θ/λ).</p>
+<p><b>Películas delgadas:</b> al reflejarse en un medio de mayor n hay cambio de fase de media longitud de onda. Película en aire (una sola inversión): reflexión fuerte si <span class='f'>2nt = (m + ½)λ</span>, débil si 2nt = mλ. Recubrimiento sobre vidrio con n<sub>película</sub> &lt; n<sub>vidrio</sub> (dos inversiones): antirreflejo si 2nt = (m + ½)λ, mínimo t = λ/(4n).</p>
+<p><b>Rendija simple:</b> mínimos a sen θ = mλ (m ≠ 0). Ancho del máximo central 2λL/a. <b>Red:</b> d sen θ = mλ. <b>Resolución circular:</b> θ = 1,22λ/D.</p>
+<p><b>Polarización:</b> luz no polarizada por un polarizador: I₀/2. Malus: I = I₀ cos²θ. Brewster: tan θ<sub>p</sub> = n₂/n₁.</p>
+<div class='enun'>a) Aceite de 500 nm, n = 1,46, en aire: λ reflejadas fuerte entre 300 y 700 nm. b) Burbuja n = 1,33 refleja fuerte rojo 700 y verde 500 nm: espesor. c) Luz no polarizada por dos polaroid a 0° y 60°. d) Young, d = 0,25 mm, λ = 546,1 nm, L = 1,2 m: primer brillante. e) Rendija de 0,3 mm, 632,8 nm, pantalla a 1 m: ancho central.</div>
+<details><summary>Resolución</summary>
+<p>a) λ = 2nt/(m + ½) = 1460/(m + ½) nm: 2920, 973, <b>584, 417, 324</b> nm. Las tres últimas están en el rango.</p>
+<p>b) 2nt = (m₁ + ½)700 = (m₂ + ½)500 ⇒ 7(2m₁ + 1) = 5(2m₂ + 1): el menor es m₁ = 2, m₂ = 3, 2nt = 1750 nm ⇒ <b>t = 658 nm</b>.</p>
+<p>c) I = (I₀/2) cos²60° = <b>I₀/8 = 12,5%</b>.</p>
+<p>d) y₁ = 546,1×10⁻⁹ · 1,2/0,25×10⁻³ = <b>2,62 mm</b>.</p>
+<p>e) 2 · 632,8×10⁻⁹ · 1/0,3×10⁻³ = <b>4,22 mm</b>.</p></details>
+
+<h2 id='termo'>7 y 8. Temperatura, gases y termodinámica</h2>
+<p>T(K) = T(°C) + 273,15. Dilatación ΔL = αL₀ΔT, ΔV = βV₀ΔT, β ≈ 3α. Gas ideal <span class='f'>PV = nRT = Nk<sub>B</sub>T</span>. Energía cinética media por molécula (3/2)k<sub>B</sub>T; v<sub>rms</sub> = √(3RT/M).</p>
+<p>Calor: Q = mcΔT; cambio de fase Q = mL. <b>Primera ley:</b> <span class='f'>ΔU = Q − W</span> (W hecho por el gas). Gas ideal monoatómico: ΔU = (3/2)nRΔT, C<sub>v</sub> = (3/2)R, C<sub>p</sub> = (5/2)R, γ = 5/3; diatómico C<sub>v</sub> = (5/2)R, γ = 7/5.</p>
+<table><tr><th>Proceso</th><th>W</th><th>Q</th><th>ΔU</th></tr>
+<tr><td>Isocórico</td><td>0</td><td>nC<sub>v</sub>ΔT</td><td>Q</td></tr>
+<tr><td>Isobárico</td><td>PΔV</td><td>nC<sub>p</sub>ΔT</td><td>nC<sub>v</sub>ΔT</td></tr>
+<tr><td>Isotérmico</td><td>nRT ln(V₂/V₁)</td><td>W</td><td>0</td></tr>
+<tr><td>Adiabático</td><td>−ΔU = (P₁V₁ − P₂V₂)/(γ − 1)</td><td>0</td><td>−W</td></tr></table>
+<p>Adiabático: PV<sup>γ</sup> = cte, TV<sup>γ−1</sup> = cte. Ciclo: ΔU = 0, W neto = área encerrada. Conducción P = kA ΔT/L. Radiación P = σAeT⁴.</p>
+<div class='enun'>2 moles de gas ideal se expanden isotérmicamente a 300 K hasta el doble de volumen.</div>
+<details><summary>Resolución</summary><p>W = nRT ln 2 = 2 · 8,314 · 300 · 0,693 = <b>3458 J</b>. ΔU = 0, así que Q = 3458 J absorbidos.</p></details>
+
+<h2 id='cuant'>9 y 10. Física cuántica y atómica</h2>
+<p><b>Cuerpo negro:</b> absorbe todo el espectro. Wien λ<sub>máx</sub>T = 2,898×10⁻³ m·K. Stefan P = σAT⁴. <b>Planck:</b> la energía se emite en cuantos E = hf.</p>
+<p><b>Fotón:</b> E = hf = hc/λ; hc = 1240 eV·nm. p = h/λ.</p>
+<p><b>Fotoeléctrico:</b> <span class='f'>K<sub>máx</sub> = hf − φ</span>. La energía del electrón depende de la frecuencia, no de la intensidad; la intensidad cambia cuántos salen. Frecuencia de corte f<sub>c</sub> = φ/h. Potencial de frenado eV<sub>s</sub> = K<sub>máx</sub>.</p>
+<p><b>Compton:</b> <span class='f'>λ′ − λ = (h/m<sub>e</sub>c)(1 − cos θ)</span>, h/m<sub>e</sub>c = 2,43 pm. El fotón dispersado pierde energía: λ′ &gt; λ.</p>
+<p><b>De Broglie:</b> λ = h/p = h/mv.</p>
+<p><b>Bohr (hidrógeno):</b> órbitas estacionarias. E<sub>n</sub> = −13,6/n² eV; r<sub>n</sub> = 0,0529 n² nm. Bajar de órbita emite un fotón: 1/λ = R<sub>H</sub>(1/n<sub>f</sub>² − 1/n<sub>i</sub>²), R<sub>H</sub> = 1,097×10⁷ m⁻¹.</p>
+<div class='enun'>a) Frecuencia de un fotón de 6,63×10⁻¹⁹ J. b) Energía de un fotón de 500 nm. c) K = 2 eV con φ = 1 eV: energía del fotón. d) Transición 3 → 2 en hidrógeno. e) Corrimiento Compton a 90°.</div>
+<details><summary>Resolución</summary>
+<p>a) f = E/h = <b>1×10¹⁵ Hz</b>. b) E = 6,63×10⁻³⁴ · 3×10⁸/5×10⁻⁷ = <b>3,98×10⁻¹⁹ J</b> (2,48 eV). c) <b>3 eV</b>.</p>
+<p>d) ΔE = 13,6(1/4 − 1/9) = 1,889 eV; λ = 1240/1,889 = <b>656 nm</b> (roja, Balmer).</p>
+<p>e) Δλ = 2,43 · (1 − 0) = <b>2,43 pm</b>.</p></details>
+
+<h2 id='nuc'>11. Estructura nuclear</h2>
+<p>Núcleo <sup>A</sup><sub>Z</sub>X: Z protones, N = A − Z neutrones. Radio R = 1,2 A<sup>1/3</sup> fm. <b>Defecto de masa</b> Δm = Z m<sub>p</sub> + N m<sub>n</sub> − M<sub>núcleo</sub>; energía de enlace E = Δm · 931,5 MeV/u.</p>
+<p><b>Decaimientos:</b> α emite un núcleo de helio (A − 4, Z − 2). β⁻ emite un electrón y un antineutrino (n → p, Z + 1). β⁺ emite un positrón (Z − 1). γ emite un fotón (no cambia A ni Z). Penetración: γ &gt; β &gt; α.</p>
+<p><b>Ley de decaimiento:</b> N = N₀ e<sup>−λt</sup>, T<sub>½</sub> = ln 2/λ, actividad R = λN (Bq). Después de n vidas medias queda N₀/2ⁿ.</p>
+<p><b>Fisión:</b> un núcleo pesado se divide en dos más livianos y libera neutrones y energía (≈200 MeV por fisión de U-235). <b>Fusión:</b> núcleos livianos se unen en uno más pesado (en el Sol). Las dos liberan energía porque los productos tienen mayor energía de enlace por nucleón (máximo cerca del hierro).</p>
+
+<h2 id='mc'>Las preguntas de opción múltiple de 2024, con respuesta</h2>
+<table><tr><th>Pregunta</th><th>Respuesta</th></tr>
+<tr><td>Una onda senoidal progresiva en una cuerda…</td><td>Hace que todos los puntos se muevan con MAS</td></tr>
+<tr><td>Velocidad en cuerda a tensión constante si duplico masa y longitud</td><td>Constante (μ no cambia)</td></tr>
+<tr><td>Una onda sonora…</td><td>Nivel en decibeles, intensidad en W/m²; es longitudinal y no viaja en el vacío</td></tr>
+<tr><td>Observador acercándose oye 500 Hz de una fuente de 480</td><td>14,29 m/s</td></tr>
+<tr><td>Radiación absorbida por un cuerpo negro</td><td>Absorbe todo el espectro</td></tr>
+<tr><td>Hipótesis de Planck</td><td>En cuantos discretos</td></tr>
+<tr><td>Frecuencia de un fotón de 6,63×10⁻¹⁹ J</td><td>1×10¹⁵ Hz</td></tr>
+<tr><td>Efecto fotoeléctrico</td><td>Emisión de electrones de una superficie iluminada</td></tr>
+<tr><td>Qué propiedad del fotón fija la energía del electrón expulsado</td><td>Su frecuencia</td></tr>
+<tr><td>Efecto Compton</td><td>El fotón pierde energía y cambia de dirección; λ dispersada mayor</td></tr>
+<tr><td>Bohr</td><td>Órbitas estacionarias; al bajar de órbita emite un fotón</td></tr>
+<tr><td>Alfa, beta⁻, gamma</td><td>Núcleo de helio; electrón; fotón</td></tr>
+<tr><td>Mayor penetración</td><td>Gamma</td></tr>
+<tr><td>Fisión / fusión</td><td>Pesado se divide / livianos se unen</td></tr>
+<tr><td>K = 2 eV, φ = 1 eV</td><td>3 eV</td></tr>
+<tr><td>Energía de un fotón de 500 nm</td><td>3,98×10⁻¹⁹ J</td></tr></table>
+
+<h2>Plan, del 25 de noviembre al 9 de diciembre</h2>
+<table><tr><th>Días</th><th>Unidad</th></tr>
+<tr><td>25–26 nov</td><td>1 y 2: cuerdas, sonido, Doppler. Todos los problemas de esta página sin mirar.</td></tr>
+<tr><td>27–28</td><td>3 y 4: estacionarias, pulsaciones, ondas EM.</td></tr>
+<tr><td>29–30</td><td>5 y 6: Young, películas, rendija, polarización.</td></tr>
+<tr><td>1 dic</td><td>Simulacro de la primera mitad: los cinco problemas del primer parcial.</td></tr>
+<tr><td>2–3</td><td>7 y 8: gases, primera ley, procesos.</td></tr>
+<tr><td>4–5</td><td>9, 10 y 11: cuántica, Bohr, núcleo.</td></tr>
+<tr><td>6</td><td>Simulacro de la segunda mitad y la tabla de opción múltiple.</td></tr>
+<tr><td>7–8</td><td>Problemas del Serway del banco (<code>práctico Física III.docx</code>), dos por unidad.</td></tr>
+<tr><td>9</td><td>Repaso de esta página. Dormir.</td></tr></table>
+<p class='small'>Si Análisis II se aprueba el 2 de diciembre, el acta tiene que estar cargada para el 10: preguntalo en bedelía el 3. Material: zip “FISICA 3”, carpetas Física 3 Práctico Abdel (problemas resueltos por unidad) y Fisica III cosas/Teorico/Resumen Fisica III.pdf.</p>
+</main></body></html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Machete TP 11</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 210mm; height: 297mm; background: white; }
+  .sheet {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    background: #fffef8;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    color: #1a2744;
+  }
+  .red {
+    position: absolute;
+    left: 16mm;
+    top: 8mm;
+    bottom: 8mm;
+    width: 0.45mm;
+    background: #e15b5b;
+  }
+  .rows {
+    position: absolute;
+    left: 19mm;
+    right: 7mm;
+    top: 9mm;
+  }
+  .row {
+    height: 8.6mm;
+    border-bottom: 0.28mm solid #9ec4ea;
+    font-size: 11.4px;
+    line-height: 1;
+    padding: 3.15mm 0 0 1.5mm;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  b { font-weight: 700; }
+  .k { color: #8d3b18; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="red"></div>
+  <div class="rows">
+    <div class="row"><b>10</b> Córdoba .100 PC.1.2.3 web.50 &nbsp;|&nbsp; <b>20</b> Corrientes .100 srv.101 &nbsp;|&nbsp; <b>90</b> Mza .100 web.4 &nbsp;|&nbsp; <b>30</b> SCZ DNS.10 web.50</div>
+    <div class="row"><b class="k">CADA ACL</b> &nbsp; access-list N &nbsp; deny &nbsp; tipo &nbsp; host QUIÉN &nbsp; host DESTINO &nbsp; eq PUERTO</div>
+    <div class="row">ping = icmp, sin puerto. &nbsp; página = tcp eq 80. &nbsp; DNS = udp eq 53 y también tcp eq 53.</div>
+    <div class="row">deny corta solo esa línea. &nbsp; Al final, una vez: permit ip any any</div>
+    <div class="row">La 1ª IP es la PC → router de esa sede, interfaz del .100, <b>in</b>.</div>
+    <div class="row">Si dice any → router de la 2ª IP, interfaz del .100, <b>out</b>.</div>
+    <div class="row">Mismo router y mismo sentido = una sola lista. Otra in pisa la anterior.</div>
+    <div class="row">En la interfaz: &nbsp; ip access-group NOMBRE in &nbsp;&nbsp; o &nbsp;&nbsp; ip access-group NOMBRE out</div>
+    <div class="row"><b class="k">EJEMPLO IN</b> &nbsp; 20.80.20.2 no abre la web 20.80.30.50 → router Corrientes, in</div>
+    <div class="row">deny tcp host 20.80.20.2 host 20.80.30.50 eq 80</div>
+    <div class="row">permit ip any any</div>
+    <div class="row"><b class="k">EJEMPLO OUT</b> &nbsp; nadie de afuera pingea a 20.80.20.101 → Corrientes, out</div>
+    <div class="row">deny icmp any host 20.80.20.101</div>
+    <div class="row">permit ip any any</div>
+    <div class="row">PC y servidor de la misma sede no pasan por el router: la ACL no los ve.</div>
+    <div class="row">show access-lists: si el número no sube, el router o el sentido están mal.</div>
+    <div class="row">Por IP anda y por nombre no = cortaste el DNS. La página es el puerto 80.</div>
+    <div class="row"></div>
+    <div class="row"><b class="k">SI ES DNS</b> &nbsp; servidor 20.80.30.10 &nbsp; nombre → IP &nbsp; las PC usan ese DNS</div>
+    <div class="row">www.servercordoba.com.ar = 20.80.10.50</div>
+    <div class="row">www.servermendoza.com.ar = 20.80.90.4</div>
+    <div class="row">www.serversantacruz.com.ar = 20.80.30.50</div>
+    <div class="row"></div>
+    <div class="row"><b class="k">SI ES HTTP</b> &nbsp; puerto 80 &nbsp; el servidor web de cada sede:</div>
+    <div class="row">Córdoba 20.80.10.50 &nbsp;&nbsp; Mendoza 20.80.90.4 &nbsp;&nbsp; Santa Cruz 20.80.30.50</div>
+    <div class="row">Se abre http://IP y http://nombre. Si solo falla el nombre, HTTP está bien.</div>
+    <div class="row"></div>
+    <div class="row"></div>
+    <div class="row"></div>
+    <div class="row"></div>
+    <div class="row"></div>
+  </div>
+</div>
+</body>
+</html>

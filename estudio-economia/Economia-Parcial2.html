@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Economía · Parcial 2 · Bisagras</title>
+<style>
+  :root {
+    --bg: #f3eee6;
+    --paper: #fffdf9;
+    --ink: #1c1712;
+    --muted: #5e564c;
+    --line: #e3d8c8;
+    --accent: #8d3b18;
+    --accent-soft: #f6e6dc;
+    --green: #1c5c3a;
+    --green-soft: #e5f2ea;
+    --red: #8d2b2b;
+    --red-soft: #f8e6e6;
+    --gold: #8a5a10;
+    --gold-soft: #f8f0dc;
+    --nav: 232px;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: "Avenir Next", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+  button, input { font: inherit; }
+  .chrome {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 14px;
+    height: 56px; padding: 0 16px;
+    background: #1c1712; color: #f6f1e8;
+    font-family: var(--sans);
+  }
+  .chrome .brand { font-weight: 650; }
+  .chrome .brand span { color: #e4b397; font-weight: 500; }
+  .chrome .grow { flex: 1; }
+  .bar { width: 120px; height: 8px; border-radius: 99px; background: #3a332c; overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0; background: #e4b397; transition: width .2s; }
+  .chrome .meta { font-size: 13px; color: #cbbba8; }
+  .layout { display: grid; grid-template-columns: var(--nav) 1fr; min-height: calc(100vh - 56px); }
+  nav {
+    position: sticky; top: 56px; align-self: start;
+    height: calc(100vh - 56px); overflow: auto;
+    padding: 12px 8px 24px;
+    background: #ebe4d8;
+    border-right: 1px solid var(--line);
+    font-family: var(--sans);
+  }
+  nav h2 {
+    margin: 14px 10px 6px; font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted); font-weight: 650;
+  }
+  nav button {
+    display: flex; width: 100%; text-align: left; gap: 8px; align-items: baseline;
+    border: 0; background: transparent; color: var(--ink);
+    border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 14px;
+  }
+  nav button small { margin-left: auto; color: var(--muted); font-size: 12px; }
+  nav button.on { background: var(--paper); color: var(--accent); font-weight: 650; }
+  nav button:hover { background: rgba(255,255,255,.55); }
+  main { padding: 26px 32px 88px; max-width: 880px; }
+  .sheet { display: none; }
+  .sheet.active { display: block; }
+  h1 { font-size: 34px; line-height: 1.12; margin: 0 0 8px; font-weight: 650; }
+  h2 { font-size: 24px; margin: 1.35em 0 .35em; line-height: 1.2; }
+  h3 { font-size: 18px; margin: 1.15em 0 .3em; }
+  p { margin: .45em 0; }
+  .kicker {
+    font-family: var(--sans); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 6px;
+  }
+  .lead { font-size: 19px; color: #3a332c; }
+  ul, ol { margin: .35em 0 .7em; padding-left: 1.15em; }
+  li { margin: .22em 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 15.5px; background: var(--paper); }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; vertical-align: top; text-align: left; }
+  th { background: #f6efe4; font-family: var(--sans); font-size: 12.5px; letter-spacing: .02em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--sans); }
+  .rule, .trap, .note, .example {
+    margin: 10px 0; padding: 10px 14px; border-radius: 10px;
+  }
+  .rule { background: var(--green-soft); border-left: 4px solid var(--green); }
+  .trap { background: var(--red-soft); border-left: 4px solid var(--red); }
+  .note { background: var(--gold-soft); border-left: 4px solid var(--gold); }
+  .example { background: var(--paper); border-left: 4px solid var(--accent); }
+  .rule .label, .trap .label, .note .label, .example .label {
+    font-family: var(--sans); font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; display: block; margin-bottom: 3px; font-weight: 700;
+  }
+  .f {
+    font-family: var(--sans); font-size: 15.5px;
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 12px; margin: 6px 0;
+  }
+  details {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; padding: 0 14px; margin: 10px 0 16px;
+  }
+  details summary {
+    cursor: pointer; font-family: var(--sans); font-size: 15px;
+    font-weight: 650; padding: 12px 0; color: var(--accent);
+  }
+  details[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .cards3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .mini {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    font-family: var(--sans); font-size: 14px; line-height: 1.4;
+  }
+  .mini b { display: block; font-size: 15px; margin-bottom: 4px; font-family: var(--serif); }
+  .check {
+    display: flex; gap: 10px; align-items: center;
+    margin: 16px 0; padding: 10px 12px; border-radius: 10px;
+    background: var(--paper); border: 1px solid var(--line);
+    font-family: var(--sans); font-size: 14px;
+  }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+  .q {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px; margin: 10px 0;
+  }
+  .q p { margin-top: 0; }
+  .opt {
+    display: block; width: 100%; text-align: left; margin: 6px 0; padding: 9px 12px;
+    border-radius: 10px; border: 1px solid var(--line); background: #fff;
+    cursor: pointer; font-family: var(--sans); font-size: 15px;
+  }
+  .opt.correct { background: var(--green-soft); border-color: var(--green); }
+  .opt.wrong { background: var(--red-soft); border-color: var(--red); }
+  .why { display: none; margin: 8px 0 0; color: var(--green); font-size: 16px; }
+  .q.done .why { display: block; }
+  .plan { display: grid; grid-template-columns: 92px 1fr; gap: 8px 12px; margin: 12px 0 4px; }
+  .plan .day { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--accent); padding-top: 2px; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { position: sticky; top: 56px; height: auto; display: flex; gap: 4px; overflow: auto; padding: 8px; }
+    nav h2 { display: none; }
+    nav button { width: auto; white-space: nowrap; }
+    nav button small { display: none; }
+    main { padding: 18px 14px 64px; }
+    .cards, .cards3, .plan { grid-template-columns: 1fr; }
+    h1 { font-size: 28px; }
+  }
+  @page { size: A4; margin: 14mm 13mm 16mm; }
+  @media print {
+    .chrome, nav, .check { display: none !important; }
+    .layout { display: block; }
+    main { max-width: none; padding: 0; }
+    .sheet { display: block !important; }
+    .sheet + .sheet { margin-top: 1.6em; padding-top: .4em; border-top: 1px solid var(--line); }
+    body { background: white; font-size: 12.5pt; }
+    h1 { font-size: 22pt; }
+    h2 { font-size: 15pt; }
+    h3 { font-size: 13pt; }
+    table { font-size: 10pt; }
+    .why { display: block !important; }
+    .opt[data-ok] { background: var(--green-soft) !important; border-color: var(--green) !important; }
+    .rule, .trap, .note, .q, tr { break-inside: avoid; }
+    * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<header class="chrome">
+  <div class="brand">Economía <span>· Parcial 2</span></div>
+  <div class="grow"></div>
+  <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+  <div class="meta" id="meta">0/4 rehechas</div>
+</header>
+<div class="layout">
+<nav>
+  <h2>Antes</h2>
+  <button type="button" data-id="hoy" class="on">Cómo estudiar</button>
+  <button type="button" data-id="hoja">Hoja de reglas</button>
+  <h2>Bisagras</h2>
+  <button type="button" data-id="mercados">Mercados <small>1 y 2</small></button>
+  <button type="button" data-id="ratios">Ratios <small>4, 5, 6</small></button>
+  <button type="button" data-id="costeo">Costeo <small>7, 8, 9</small></button>
+  <button type="button" data-id="fin">Financiera <small>10 a 12</small></button>
+  <h2>Cierre</h2>
+  <button type="button" data-id="trampas">Trampas</button>
+  <button type="button" data-id="ensayo">Ensayo <small>12</small></button>
+</nav>
+<main>
+
+<section class="sheet active" id="hoy">
+  <p class="kicker">Jueves · cuatro temas</p>
+  <h1>Estudiá cuatro procedimientos, no once ejercicios.</h1>
+  <p class="lead">Revisé las cuentas del PDF: cierran. Lo que está mal es el armado. Son 48 páginas que repiten la misma cuenta, las tablas se cortan a la mitad y la numeración salta del ejercicio 2 al 4. No te falta un ejercicio 3: el PDF pasa de mercados a ratios y listo.</p>
+
+  <div class="cards">
+    <div class="mini"><b>Qué conservar</b>La regla de decisión y un ejercicio bisagra por tema. Si ese sale, el parecido del parcial sale con otros números.</div>
+    <div class="mini"><b>Qué soltar</b>Releer la prosa, rehacer la tabla francesa de seis filas de memoria y resolver el 8 entero. El 8 es el 7 con inventario inicial y el signo al revés.</div>
+  </div>
+
+  <h2>De acá al jueves</h2>
+  <div class="plan">
+    <div class="day">Domingo</div>
+    <div>Hoja de reglas, de una leída. Después la bisagra de mercados: equilibrio, P = CMg, cierre y abandono. El monopolio es el mismo margen con otra igualdad.</div>
+    <div class="day">Lunes</div>
+    <div>Costeo. Armá los dos estados del ejercicio 7 en una hoja, sin mirar. La diferencia tiene que darte el CIF fijo que quedó en el stock.</div>
+    <div class="day">Martes</div>
+    <div>Financiera. Tres herramientas distintas: cuota francesa y alemana, valor presente, y la cadena del proyecto (resultado → flujo → VAN → TIR).</div>
+    <div class="day">Miércoles</div>
+    <div>Ratios, que es memoria y conviene fresca. Después rehacé las cuatro bisagras con la resolución cerrada y hacé el ensayo.</div>
+  </div>
+
+  <h2>Mapa del PDF</h2>
+  <table>
+    <tr><th>Tema</th><th>Bisagra</th><th>El resto del PDF</th></tr>
+    <tr><td>Mercados</td><td>Ejercicio 1, empresa competitiva completa</td><td>El 2 cambia una sola cosa: en monopolio se iguala IMg = CMg y el precio se lee en la demanda.</td></tr>
+    <tr><td>Ratios</td><td>Ejercicio 4, todos los ratios de una empresa</td><td>El 5 es variación % y “por qué cayó el operativo”. El 6 es devengado y la ecuación patrimonial.</td></tr>
+    <tr><td>Costeo</td><td>Ejercicio 7, variable contra absorción</td><td>El 8 agrega inventario inicial y PEPS. El 9 es clasificar conceptos y poner un margen sobre el costo.</td></tr>
+    <tr><td>Financiera</td><td>Ejercicio 12, el proyecto entero</td><td>El 10 es francés contra alemán. El 11 es anualidad y perpetuidad. Son fórmulas cortas, van en la hoja.</td></tr>
+  </table>
+
+  <div class="note"><span class="label">Una sola cuenta en disputa</span>
+  Días de cobranza. Sin IVA da 30,4 días. Si a las ventas se les carga IVA 21 % da 25,1, que es el número de la clave vieja. El enunciado no habla de IVA: si el jueves tampoco lo menciona, usá las ventas como están.</div>
+</section>
+
+<section class="sheet" id="hoja">
+  <p class="kicker">Para tener a mano el miércoles</p>
+  <h1>Hoja de reglas</h1>
+  <p>Esto es lo que el parcial pide aplicar. Los números de al lado son los del PDF, para anclar la fórmula.</p>
+
+  <h2>Mercados</h2>
+  <div class="f">Equilibrio de mercado: Qd = Qo → despejar P, y Q en cualquiera de las dos.</div>
+  <div class="f">Competencia: la empresa produce donde P = CMg. IMg = P.</div>
+  <div class="f">Corto plazo: produce si P ≥ CVMe. Si cierra, pierde igual el costo fijo.</div>
+  <div class="f">Largo plazo: se queda si P ≥ mínimo del CTMe. Ese mínimo está donde CMg = CTMe.</div>
+  <div class="f">Cantidad de empresas: N = Q de mercado / q de cada empresa.</div>
+  <div class="f">Monopolio: produce donde IMg = CMg. El precio sale de la demanda, no del IMg.</div>
+  <div class="f">Si P = a − bQ, entonces IT = aQ − bQ² y IMg = a − 2bQ. La pendiente del IMg es el doble.</div>
+  <div class="f">La misma demanda en competencia: se iguala la demanda con el CMg (P = CMg).</div>
+  <div class="f">Pérdida de eficiencia = (Qcomp − Qmon) · (Pmon − CMg en Qmon) / 2.</div>
+
+  <h2>Ratios · con la empresa del ejercicio 4</h2>
+  <table>
+    <tr><th>Ratio</th><th>Fórmula de esta cátedra</th><th class="num">Dato</th></tr>
+    <tr><td>Liquidez corriente</td><td>Activo corriente / Pasivo corriente</td><td class="num">1,60</td></tr>
+    <tr><td>Liquidez seca</td><td>(Activo corriente − bienes de cambio) / Pasivo corriente</td><td class="num">0,93</td></tr>
+    <tr><td>Solvencia</td><td>Activo total / Pasivo total</td><td class="num">1,71</td></tr>
+    <tr><td>Endeudamiento</td><td>Pasivo total / Activo total</td><td class="num">58,33 %</td></tr>
+    <tr><td>Pasivo / PN</td><td>Pasivo total / Patrimonio neto</td><td class="num">1,40</td></tr>
+    <tr><td>Margen sobre ventas</td><td>Resultado bruto / Ventas</td><td class="num">40 %</td></tr>
+    <tr><td>Margen de rentabilidad</td><td>Resultado final / Ventas</td><td class="num">8,67 %</td></tr>
+    <tr><td>ROA</td><td>Resultado final / Activo total</td><td class="num">13 %</td></tr>
+    <tr><td>ROE</td><td>Resultado final / Patrimonio neto</td><td class="num">31,2 %</td></tr>
+    <tr><td>EBITDA</td><td>Resultado operativo + amortizaciones</td><td class="num">39.000</td></tr>
+    <tr><td>Días de cobranza</td><td>Créditos por ventas / Ventas · 365</td><td class="num">30,4</td></tr>
+    <tr><td>Días de inventario</td><td>Bienes de cambio / CMV · 365</td><td class="num">67,6</td></tr>
+  </table>
+  <div class="f">Vertical: cada línea / ventas del mismo año. Horizontal: (año nuevo − año viejo) / año viejo.</div>
+  <div class="f">PN final = PN inicial + resultado + aportes − dividendos. Una reserva no cambia el total: mueve plata adentro del PN.</div>
+  <div class="f">Devengado: gasto = prima · meses consumidos / 12. Lo pagado de más es un activo (pago por adelantado).</div>
+  <div class="f">Ecuación: Activo = Pasivo + PN, así que Pasivo = Activo − PN.</div>
+
+  <h2>Costeo</h2>
+  <div class="f">Costo variable unitario = materia prima + mano de obra + CIF variable. Los gastos de administración y ventas no entran.</div>
+  <div class="f">Costo por absorción = costo variable + CIF fijos / unidades producidas.</div>
+  <div class="f">Resultado absorción − resultado variable = CIF fijo en el inventario final − CIF fijo en el inventario inicial.</div>
+  <div class="f">Producción &gt; ventas → absorción da más. Ventas &gt; producción → variable da más. Iguales → el mismo resultado.</div>
+  <div class="f">Precio con margen sobre el costo = costo · (1 + margen).</div>
+  <div class="f">Costo = se fabrica y va al producto. Gasto = administración o comercialización, va al resultado del período.</div>
+
+  <h2>Matemática financiera</h2>
+  <div class="f">Tasa del período = TNA / cantidad de períodos en el año. Acá la TNA se reparte proporcional, no se convierte a efectiva.</div>
+  <div class="f">Francés, cuota constante: C · i / [1 − (1 + i)<sup>−n</sup>]. Interés del período = saldo · i. Amortización = cuota − interés.</div>
+  <div class="f">Alemán, amortización constante: C / n. Cuota = amortización + saldo · i. Intereses totales = i · amortización · n(n+1)/2.</div>
+  <div class="f">Anualidad vencida: VP = cuota · [1 − (1 + i)<sup>−n</sup>] / i.</div>
+  <div class="f">Perpetuidad: VP = renta / i. Para igualar un monto de hoy, renta = monto · i.</div>
+  <div class="f">Flujo de fondos = resultado final + amortización. La amortización no es salida de caja: se restó solo para calcular el impuesto.</div>
+  <div class="f">Atajo: (ingresos − costos sin amortizar) · (1 − t) + t · amortización.</div>
+  <div class="f">Venta del bien = precio − t · (precio − valor contable). Si está todo amortizado, el valor contable es cero.</div>
+  <div class="f">Se acepta si VAN &gt; 0 y si TIR &gt; tasa exigida. El recupero simple no descuenta: no decide solo.</div>
+  <div class="f">TIR por tanteo: i₁ + (i₂ − i₁) · VAN(i₁) / [VAN(i₁) − VAN(i₂)], con VAN de signos opuestos.</div>
+</section>
+
+<section class="sheet" id="mercados">
+  <p class="kicker">Bisagra · ejercicios 1 y 2</p>
+  <h1>Competencia, y el giro del monopolio</h1>
+  <p>El ejercicio 1 recorre todo lo que le pueden pedir a una empresa competitiva. El 2 es la misma empresa con poder de mercado: cambia la condición de óptimo y aparece la comparación.</p>
+
+  <h2>Procedimiento</h2>
+  <ol>
+    <li>Igualá Qd y Qo. Despejá P. Meté P en la demanda para sacar Q. Controlalo con la oferta: tiene que dar lo mismo.</li>
+    <li>Del CT, el término sin q es el costo fijo. CMg es la derivada. CVMe = CV / q. CTMe = CT / q.</li>
+    <li>La cantidad de la empresa sale de P = CMg. Beneficio = P·q − CT. También (P − CTMe)·q.</li>
+    <li>Corto plazo: compará P con el CVMe de esa cantidad. Si el precio cubre el variable, produce, aunque dé pérdida.</li>
+    <li>Largo plazo: igualá CMg = CTMe y despejá q. Ese CTMe es el precio de abandono. Con CT = a q² + b q + c, el q del mínimo es √(c / a).</li>
+    <li>Empresas = Q de mercado / q de una empresa. Solo vale si todas producen esa q.</li>
+  </ol>
+
+  <div class="example"><span class="label">Datos del ejercicio 1</span>
+  Qd = 1.800 − 20P &nbsp;&nbsp; Qo = 300 + 30P &nbsp;&nbsp; CT = 0,5 q² + 6q + 200</div>
+
+  <details>
+    <summary>Resolución del ejercicio 1</summary>
+    <p>1.800 − 20P = 300 + 30P → 1.500 = 50P → <b>P = 30</b>. Q = 1.800 − 600 = <b>1.200</b>. Por la oferta: 300 + 900 = 1.200.</p>
+    <p>CF = 200. CMg = q + 6. CVMe = 0,5q + 6. CTMe = 0,5q + 6 + 200/q.</p>
+    <p>30 = q + 6 → <b>q = 24</b>. IT = 720. CT = 0,5·576 + 144 + 200 = 632. <b>Beneficio = 88</b>.</p>
+    <p>En q = 24, CVMe = 18 y CTMe = 26,33. Como 30 &gt; 18, produce en el corto plazo. Como además 30 &gt; 26,33, gana plata: cubre el fijo entero.</p>
+    <p>Control por totales: IT − CV = 720 − 432 = 288, y 288 &gt; 200. Lo que sobra después de pagar el variable alcanza para el fijo y deja 88.</p>
+    <p>Mínimo del CTMe: q + 6 = 200/q + 0,5q + 6 → 0,5q = 200/q → q² = 400 → q = 20. CTMe = 10 + 10 + 6 = <b>26</b>. Por debajo de 26 se va en el largo plazo.</p>
+    <p>Atajo: a = 0,5 y c = 200, q = √(200 / 0,5) = √400 = 20. N = 1.200 / 24 = <b>50 empresas</b>.</p>
+  </details>
+
+  <h2>El giro: monopolio</h2>
+  <div class="rule"><span class="label">Lo único que cambia</span>
+  El monopolista no toma el precio. Su ingreso marginal cae al vender una unidad más, porque baja el precio de todas. Produce donde IMg = CMg, y el precio de esa cantidad se lee en la demanda. En la competencia equivalente, con los mismos costos, se iguala la demanda con el CMg.</div>
+
+  <div class="example"><span class="label">Datos del ejercicio 2</span>
+  P = 200 − 2Q &nbsp;&nbsp; CT = 0,5 Q² + 20Q + 400</div>
+
+  <details>
+    <summary>Resolución del ejercicio 2</summary>
+    <p>IT = 200Q − 2Q². IMg = 200 − 4Q. CMg = Q + 20.</p>
+    <p>200 − 4Q = Q + 20 → 180 = 5Q → <b>Q = 36</b>. P = 200 − 2·36 = <b>128</b>. No uses 200 − 4·36: eso es el IMg, y da 56, que es el costo, no el precio.</p>
+    <p>IT = 4.608. CT = 648 + 720 + 400 = 1.768. <b>Beneficio = 2.840</b>. CTMe = 1.768 / 36 = 49,11.</p>
+    <p>Competencia: 200 − 2Q = Q + 20 → 180 = 3Q → <b>Q = 60</b>, <b>P = 80</b>. CT = 1.800 + 1.200 + 400 = 3.400. Beneficio = 4.800 − 3.400 = <b>1.400</b>.</p>
+    <p>El monopolio vende 24 unidades menos y cobra 48 más. Gana 1.440 más (2.840 − 1.400).</p>
+    <p>Pérdida de eficiencia: base 60 − 36 = 24. Altura = precio del monopolio menos el CMg en Q = 36, o sea 128 − 56 = 72. Área = 24 · 72 / 2 = <b>864</b>.</p>
+  </details>
+
+  <div class="trap"><span class="label">Trampa de la pérdida de eficiencia</span>
+  La altura no es 128 − 80. Esos son los dos precios. La altura del triángulo es lo que el consumidor pagaría por la unidad 36 menos lo que cuesta producirla: 128 − 56. El 80 es el vértice de la derecha, donde demanda y CMg se cruzan.</div>
+
+  <table>
+    <tr><th></th><th>Monopolio</th><th>Competencia</th></tr>
+    <tr><td>Condición</td><td>IMg = CMg</td><td>P = CMg</td></tr>
+    <tr><td>Cantidad</td><td>36</td><td>60</td></tr>
+    <tr><td>Precio</td><td>128</td><td>80</td></tr>
+    <tr><td>Beneficio</td><td>2.840</td><td>1.400</td></tr>
+  </table>
+
+  <label class="check"><input type="checkbox" data-check="mercados"> Rehíce el 1 y el cuadro del 2 sin mirar la resolución.</label>
+</section>
+
+<section class="sheet" id="ratios">
+  <p class="kicker">Bisagra · ejercicio 4, más dos preguntas</p>
+  <h1>Un balance, todos los ratios</h1>
+  <p>El ejercicio 4 es la bisagra porque cada ítem del parcial de este tema es una fórmula de esa lista. El 5 y el 6 no agregan ratios: agregan lectura y devengado.</p>
+
+  <div class="example"><span class="label">Datos que hay que reconstruir</span>
+  El enunciado del PDF deja los importes del estado de resultados sueltos. Los que usa la resolución, y con los que cierra todo, son estos.</div>
+
+  <table>
+    <tr><th>Situación patrimonial</th><th class="num">Importe</th><th>Resultados</th><th class="num">Importe</th></tr>
+    <tr><td>Activo corriente</td><td class="num">48.000</td><td>Ventas</td><td class="num">180.000</td></tr>
+    <tr><td>Activo no corriente</td><td class="num">72.000</td><td>CMV</td><td class="num">108.000</td></tr>
+    <tr><td>Activo total</td><td class="num">120.000</td><td>Resultado bruto</td><td class="num">72.000</td></tr>
+    <tr><td>Pasivo corriente</td><td class="num">30.000</td><td>Gastos de administración</td><td class="num">24.000</td></tr>
+    <tr><td>Pasivo no corriente</td><td class="num">40.000</td><td>Gastos de comercialización</td><td class="num">18.000</td></tr>
+    <tr><td>Pasivo total</td><td class="num">70.000</td><td>Resultado operativo</td><td class="num">30.000</td></tr>
+    <tr><td>Patrimonio neto</td><td class="num">50.000</td><td>Intereses</td><td class="num">6.000</td></tr>
+    <tr><td></td><td class="num"></td><td>Resultado antes de impuestos</td><td class="num">24.000</td></tr>
+    <tr><td></td><td class="num"></td><td>Impuesto 35 %</td><td class="num">8.400</td></tr>
+    <tr><td></td><td class="num"></td><td>Resultado final</td><td class="num">15.600</td></tr>
+  </table>
+  <p>Dentro del activo corriente: bienes de cambio 20.000 y créditos por ventas 15.000. Amortizaciones del ejercicio: 9.000, metidas en el CMV. Control: 48.000 + 72.000 = 30.000 + 40.000 + 50.000.</p>
+
+  <h3>Cómo se arma el estado de resultados</h3>
+  <div class="f">Bruto = ventas − CMV. Operativo = bruto − administración − comercialización. Antes de impuestos = operativo − intereses. Final = antes de impuestos · (1 − alícuota).</div>
+
+  <details>
+    <summary>Los doce números, con la cuenta al lado</summary>
+    <table>
+      <tr><th>Pedido</th><th>Cuenta</th><th class="num">Resultado</th></tr>
+      <tr><td>Liquidez corriente</td><td>48.000 / 30.000</td><td class="num">1,60</td></tr>
+      <tr><td>Liquidez seca</td><td>(48.000 − 20.000) / 30.000</td><td class="num">0,93</td></tr>
+      <tr><td>Solvencia</td><td>120.000 / 70.000</td><td class="num">1,71</td></tr>
+      <tr><td>Endeudamiento</td><td>70.000 / 120.000</td><td class="num">58,33 %</td></tr>
+      <tr><td>Pasivo / PN</td><td>70.000 / 50.000</td><td class="num">1,40</td></tr>
+      <tr><td>Margen sobre ventas</td><td>72.000 / 180.000</td><td class="num">40 %</td></tr>
+      <tr><td>Margen de rentabilidad</td><td>15.600 / 180.000</td><td class="num">8,67 %</td></tr>
+      <tr><td>ROA</td><td>15.600 / 120.000</td><td class="num">13 %</td></tr>
+      <tr><td>ROE</td><td>15.600 / 50.000</td><td class="num">31,2 %</td></tr>
+      <tr><td>EBITDA</td><td>30.000 + 9.000</td><td class="num">39.000</td></tr>
+      <tr><td>Días de cobranza</td><td>15.000 / 180.000 · 365</td><td class="num">30,4</td></tr>
+      <tr><td>Días de inventario</td><td>20.000 / 108.000 · 365</td><td class="num">67,6</td></tr>
+    </table>
+    <p>El ROE supera al ROA porque el 58 % del activo está financiado con deuda: la ganancia del activo entero se mide contra un patrimonio más chico.</p>
+    <p>EBITDA por el otro camino, para controlar: 24.000 + intereses 6.000 + amortizaciones 9.000 = 39.000. Se suma la amortización porque ya está restada dentro del CMV.</p>
+  </details>
+
+  <div class="trap"><span class="label">Nombres de esta cátedra</span>
+  Margen sobre ventas es el margen bruto. Margen de rentabilidad es el neto, resultado final sobre ventas. ROA y ROE usan el resultado final, no el operativo. Días de inventario se divide por el CMV, porque el stock está a costo. Días de cobranza se divide por ventas.</div>
+
+  <h2>Ejercicio 5, en cuatro lecturas</h2>
+  <p>No hace falta rearmar las dos tablas. Hace falta saber leerlas.</p>
+  <ol>
+    <li>Vertical: cada línea contra las ventas de su año. En 2025 el CMV es el 60 % y el operativo el 16,67 %. En 2026 el CMV pasa al 65 % y el operativo al 12,72 %.</li>
+    <li>Horizontal: ventas +30 %, CMV +40,83 %, comercialización +43 %, administración +10 %, operativo −0,8 % (de 30.000 a 29.760).</li>
+    <li>El operativo cae porque el CMV y la comercialización crecieron más rápido que las ventas. Administración se diluyó. El puente del margen: bruto −5 puntos, administración +2,05, comercialización −1, neto −3,95 puntos.</li>
+    <li>Para sostener el margen operativo de 16,67 % sobre ventas de 234.000, el operativo tenía que ser 39.000. Sumando los gastos de 2026 (26.400 + 25.740) el bruto necesario es 91.140, así que el CMV tenía que ser 234.000 − 91.140 = <b>142.860</b> (61,05 % de las ventas, no 65 %).</li>
+  </ol>
+
+  <h2>Ejercicio 6, devengado</h2>
+  <div class="example"><span class="label">Datos</span>
+  PN inicial 80.000 (capital 60.000 + resultados no asignados 20.000). Resultado del año 18.000. Aportes 12.000. Dividendos 7.000. Reserva legal 3.000. El 1 de septiembre paga un seguro anual de 24.000. Cierra el 31 de diciembre. Activo final 190.000.</div>
+  <details>
+    <summary>Resolución corta</summary>
+    <p>PN final = 80.000 + 18.000 + 12.000 − 7.000 = <b>103.000</b>. La reserva no se resta otra vez.</p>
+    <p>Composición: capital 60.000, aportes 12.000, reserva 3.000, resultados no asignados 20.000 + 18.000 − 7.000 − 3.000 = 28.000. Suma 103.000.</p>
+    <p>Seguro: 24.000 / 12 = 2.000 por mes. De septiembre a diciembre son 4 meses. <b>Gasto = 8.000</b>. Salió de caja <b>24.000</b>. La diferencia, <b>16.000</b>, es un activo corriente: seguro pagado por adelantado. Se va a gastar el año que viene.</p>
+    <p>Pasivo = 190.000 − 103.000 = <b>87.000</b>.</p>
+  </details>
+
+  <label class="check"><input type="checkbox" data-check="ratios"> Calculé los ratios del 4 sin mirar, y el PN y el seguro del 6.</label>
+</section>
+
+<section class="sheet" id="costeo">
+  <p class="kicker">Bisagra · ejercicio 7</p>
+  <h1>Variable contra absorción</h1>
+  <p>El ejercicio 7 es el caso limpio: no hay inventario inicial y se produce más de lo que se vende. Si armás estos dos estados, el 8 es el mismo esquema con PEPS.</p>
+
+  <div class="rule"><span class="label">Qué entra al producto</span>
+  Variable: materia prima, mano de obra y CIF variables. Absorción: eso más los CIF fijos repartidos entre lo producido, no entre lo vendido. Administración y ventas, fijos o variables, nunca van al costo del producto: van al resultado.</div>
+
+  <div class="example"><span class="label">Datos del ejercicio 7</span>
+  MP 12, MO 7, CIF variable 3, CIF fijos 90.000. Produce 9.000, vende 7.500 a 60. Gasto variable de ventas 2 por unidad. Gasto fijo de administración y ventas 45.000. Sin inventario inicial.</div>
+
+  <h3>Costos unitarios, antes de armar el estado</h3>
+  <div class="f">Variable = 12 + 7 + 3 = 22. CIF fijo unitario = 90.000 / 9.000 = 10. Absorción = 32.</div>
+
+  <details>
+    <summary>Los dos estados y el inventario</summary>
+    <table>
+      <tr><th>Variable</th><th class="num"></th><th>Absorción</th><th class="num"></th></tr>
+      <tr><td>Ventas 7.500 · 60</td><td class="num">450.000</td><td>Ventas</td><td class="num">450.000</td></tr>
+      <tr><td>Costo variable 7.500 · 22</td><td class="num">−165.000</td><td>CMV 7.500 · 32</td><td class="num">−240.000</td></tr>
+      <tr><td>Gasto variable 7.500 · 2</td><td class="num">−15.000</td><td>Resultado bruto</td><td class="num">210.000</td></tr>
+      <tr><td>Margen de contribución</td><td class="num">270.000</td><td>Gastos variables y fijos</td><td class="num">−60.000</td></tr>
+      <tr><td>CIF fijos, todos</td><td class="num">−90.000</td><td></td><td class="num"></td></tr>
+      <tr><td>Gasto fijo</td><td class="num">−45.000</td><td></td><td class="num"></td></tr>
+      <tr><td>Resultado</td><td class="num">135.000</td><td>Resultado</td><td class="num">150.000</td></tr>
+    </table>
+    <p>Stock = 9.000 − 7.500 = 1.500. Inventario variable = 1.500 · 22 = 33.000. Inventario absorción = 1.500 · 32 = 48.000.</p>
+    <p>Diferencia de resultados = 150.000 − 135.000 = 15.000. Es exactamente 1.500 · 10: el CIF fijo de lo que no se vendió. Absorción lo deja en el inventario. Variable manda los 90.000 enteros al resultado de este período.</p>
+    <p>Si vende las 9.000, no queda stock y los dos dan <b>189.000</b>. Variable: margen 324.000 − fijos 135.000. Absorción: bruto 252.000 − gastos 63.000.</p>
+  </details>
+
+  <h2>Si hay inventario inicial: ejercicio 8</h2>
+  <p>No rearmés los estados salvo que te sobre el miércoles. Guardá la regla y el control.</p>
+  <div class="rule"><span class="label">Regla del signo</span>
+  Ventas mayores que la producción: el stock baja y absorción manda al resultado CIF fijos de períodos anteriores. Ahí el variable da más. En el 8 se venden 4.500 y se producen 4.000: variable 132.800, absorción 128.300.</div>
+  <div class="f">Con PEPS salen primero las unidades viejas. Stock final = inicial + producción − ventas, y esas unidades se valúan al costo de este período.</div>
+  <div class="f">Variable − absorción = CIF fijo del inventario inicial − CIF fijo del inventario final. En el 8: 800 · 9 − 300 · 9 = 7.200 − 2.700 = 4.500.</div>
+  <p>Costos de este período, por si lo practicás: variable 14 + 8 + 4 = 26, CIF fijo 36.000 / 4.000 = 9, absorción 35. El inicial venía a 25 y a 34: la diferencia de 9 es el CIF fijo unitario viejo.</p>
+
+  <h2>Ejercicio 9, de memoria</h2>
+  <p>Orden 142: materia prima 480.000, mano de obra 320.000, CIF aplicados = 60 % de la mano de obra = 192.000. Costo de la orden = 992.000. Unitario = 992.000 / 16 = 62.000. Precio con 35 % sobre el costo = 62.000 · 1,35 = 83.700.</p>
+  <table>
+    <tr><th>Concepto</th><th>Costo o gasto</th><th>Fijo o variable</th><th>Directo o indirecto</th></tr>
+    <tr><td>Sueldo del jefe de planta</td><td>Costo</td><td>Fijo</td><td>Indirecto</td></tr>
+    <tr><td>Acero de las piezas</td><td>Costo</td><td>Variable</td><td>Directo</td></tr>
+    <tr><td>Energía de la planta</td><td>Costo</td><td>Variable</td><td>Indirecto</td></tr>
+    <tr><td>Flete de entrega al cliente</td><td>Gasto</td><td>Variable</td><td>Directo</td></tr>
+    <tr><td>Amortización de las máquinas</td><td>Costo</td><td>Fijo</td><td>Indirecto</td></tr>
+    <tr><td>Comisión del vendedor</td><td>Gasto</td><td>Variable</td><td>Directo</td></tr>
+  </table>
+  <p>Órdenes: cada pedido es distinto y el costo se junta en una orden. Esta metalúrgica va por órdenes. Procesos: producción continua de un producto homogéneo, costo por departamento dividido las unidades. Cemento, bebidas, lácteos, refinería.</p>
+
+  <label class="check"><input type="checkbox" data-check="costeo"> Armé los dos estados del 7 y la diferencia me dio 15.000 sin mirar.</label>
+</section>
+
+<section class="sheet" id="fin">
+  <p class="kicker">Bisagra · ejercicio 12, con el 10 y el 11 en fórmula</p>
+  <h1>Cuotas, valor presente y el proyecto</h1>
+  <p>Son tres herramientas. El proyecto es la bisagra larga porque encadena todo. Francés, alemán, anualidad y perpetuidad son una fórmula cada uno: no hace falta memorizar tablas.</p>
+
+  <h2>Ejercicio 10 · francés y alemán</h2>
+  <div class="example"><span class="label">Datos</span>
+  Capital 6.000.000. Tres años. Cuotas semestrales. TNA 24 %.</div>
+  <div class="f">Períodos en el año = 2. Tasa del período = 24 % / 2 = 12 %. n = 3 · 2 = 6.</div>
+
+  <details>
+    <summary>Francés: una cuota, y cómo se arma una fila</summary>
+    <p>Cuota = 6.000.000 · 0,12 / [1 − 1,12<sup>−6</sup>].</p>
+    <p>En la calculadora: 1,12 ^ 6 = 1,9738. Invertido, 0,5066. Entonces 1 − 0,5066 = 0,4934. Numerador 720.000. Cuota = 720.000 / 0,4934 = <b>1.459.354</b>.</p>
+    <p>Seis cuotas = 8.756.126. Intereses = 8.756.126 − 6.000.000 = <b>2.756.126</b>.</p>
+    <p>Fila 1: interés = 6.000.000 · 0,12 = 720.000. Amortización = 1.459.354 − 720.000 = 739.354. Saldo que pasa = 5.260.646. Cada fila siguiente: interés sobre el saldo nuevo, amortización = cuota − interés. La cuota no se mueve. Al final, la última amortización se come el saldo.</p>
+  </details>
+
+  <details>
+    <summary>Alemán: las dos primeras cuotas y el total de intereses</summary>
+    <p>Amortización = 6.000.000 / 6 = 1.000.000, todas las cuotas.</p>
+    <p>Cuota 1 = 1.000.000 + 720.000 = <b>1.720.000</b>. Saldo = 5.000.000.</p>
+    <p>Cuota 2 = 1.000.000 + 600.000 = <b>1.600.000</b>. Cada cuota baja 120.000, que es 1.000.000 · 0,12.</p>
+    <p>Intereses = 0,12 · 1.000.000 · (1+2+3+4+5+6) = 120.000 · 21 = <b>2.520.000</b>. El alemán ahorra 236.126 de intereses contra el francés, pero la primera cuota es 260.646 más alta.</p>
+    <p>Para una PyME que todavía no produce a pleno, el francés es más fácil de pagar al principio. Si puede bancarse la cuota alta, el alemán sale más barato en total.</p>
+  </details>
+
+  <h2>Ejercicio 11 · tres formas de cobrar</h2>
+  <div class="example"><span class="label">Datos, tasa 9 %</span>
+  A: 8.000.000 hoy. B: 10 pagos de 1.200.000, el primero dentro de un año. C: 780.000 por año, para siempre.</div>
+  <details>
+    <summary>Valores presentes y la tasa de indiferencia</summary>
+    <p>B es anualidad vencida. 1,09 ^ 10 ≈ 2,3674. Invertido, 0,4224. Factor = (1 − 0,4224) / 0,09 = 6,4177. VP = 1.200.000 · 6,4177 = <b>7.701.189</b>.</p>
+    <p>C es perpetuidad. VP = 780.000 / 0,09 = <b>8.666.667</b>.</p>
+    <p>Orden: C, después A, después B. Se elige C. Comparar plata de momentos distintos solo vale en valor presente.</p>
+    <p>Tasa que iguala C con A: i = 780.000 / 8.000.000 = <b>9,75 %</b>. Si la tasa fuera más alta que eso, conviene el pago de hoy. Renta perpetua que iguala a A, al 9 %: 8.000.000 · 0,09 = <b>720.000</b> por año.</p>
+  </details>
+
+  <h2>Ejercicio 12 · el proyecto</h2>
+  <div class="example"><span class="label">Datos</span>
+  Máquina 1.200.000. Vida 5 años, amortización lineal, valor residual contable cero. Ingresos 780.000. Costos sin amortizar 380.000. Impuesto 35 %. Tasa exigida 14 %. Al final del año 5 se vende en 150.000 y esa venta paga impuesto.</div>
+
+  <ol>
+    <li>Amortización = 1.200.000 / 5 = 240.000 por año.</li>
+    <li>Resultado de un año tipo: ingresos 780.000 − costos 380.000 − amortización 240.000 = 160.000. Impuesto 56.000. Resultado final <b>104.000</b>.</li>
+    <li>Flujo de los años 1 a 4 = 104.000 + 240.000 = <b>344.000</b>. Atajo: 400.000 · 0,65 + 0,35 · 240.000 = 260.000 + 84.000. Esos 84.000 son el ahorro de impuesto por amortizar.</li>
+    <li>Venta neta del año 5 = 150.000 − 0,35 · 150.000 = <b>97.500</b>. Flujo del año 5 = 344.000 + 97.500 = <b>441.500</b>. Año 0 = −1.200.000.</li>
+    <li>VAN al 14 % = <b>31.618</b>. Positivo: rinde más que el 14 %.</li>
+    <li>Al 15 % el VAN sigue positivo (1.616). Al 16 % pasa a −27.222. TIR ≈ 15 + 1.616 / (1.616 + 27.222) = <b>15,06 %</b>.</li>
+    <li>Recupero simple: 344.000 · 3 = 1.032.000. Falta 168.000, y 168.000 / 344.000 = 0,49. Recupero ≈ <b>3,49 años</b>. No descuenta, así que no es el criterio de decisión.</li>
+  </ol>
+
+  <div class="rule"><span class="label">Decisión</span>
+  Conviene. VAN positivo y TIR mayor que 14 %. Los dos criterios que miran el valor tiempo coinciden. El margen es finito: con una tasa del 15 % el VAN ya es casi cero.</div>
+
+  <details>
+    <summary>El VAN desarmado, por si te piden el factor</summary>
+    <table>
+      <tr><th>Año</th><th class="num">Flujo</th><th class="num">1 / 1,14ᵗ</th><th class="num">Valor actual</th></tr>
+      <tr><td>0</td><td class="num">−1.200.000</td><td class="num">1</td><td class="num">−1.200.000</td></tr>
+      <tr><td>1</td><td class="num">344.000</td><td class="num">0,8772</td><td class="num">301.754</td></tr>
+      <tr><td>2</td><td class="num">344.000</td><td class="num">0,7695</td><td class="num">264.697</td></tr>
+      <tr><td>3</td><td class="num">344.000</td><td class="num">0,6750</td><td class="num">232.190</td></tr>
+      <tr><td>4</td><td class="num">344.000</td><td class="num">0,5921</td><td class="num">203.676</td></tr>
+      <tr><td>5</td><td class="num">441.500</td><td class="num">0,5194</td><td class="num">229.301</td></tr>
+      <tr><td>VAN</td><td class="num"></td><td class="num"></td><td class="num">31.618</td></tr>
+    </table>
+    <p>Años 1 a 4 son una anualidad. Si te dejan, actualizá 344.000 con el factor de 4 años al 14 % y el año 5 aparte. Da el mismo 31.618.</p>
+  </details>
+
+  <div class="trap"><span class="label">Tres formas de romper el flujo</span>
+  Usar 104.000 como caja, sin sumar la amortización. Sumar los 150.000 enteros de la venta, sin el impuesto. Restar la amortización en el flujo, cuando ya se pagó la máquina en el año 0.</div>
+
+  <label class="check"><input type="checkbox" data-check="fin"> Llegué al flujo de 344.000 y a la decisión del proyecto sin mirar.</label>
+</section>
+
+<section class="sheet" id="trampas">
+  <p class="kicker">Donde se cae el parcial</p>
+  <h1>Quince cosas que el PDF esconde en la prosa</h1>
+  <ol>
+    <li>En competencia, P = CMg. En monopolio, IMg = CMg, y el precio se lee en la demanda.</li>
+    <li>Si la demanda baja 2 por unidad, el IMg baja 4. Siempre el doble de la pendiente.</li>
+    <li>Corto plazo se compara contra el CVMe. Largo plazo, contra el mínimo del CTMe. Son precios distintos: en el ejercicio, 18 contra 26.</li>
+    <li>Producir con pérdida puede convenir. Conviene si la pérdida es menor que el costo fijo, o sea si el precio cubre el variable.</li>
+    <li>La altura de la pérdida de eficiencia es P del monopolio menos CMg en esa cantidad, no la diferencia entre los dos precios.</li>
+    <li>Liquidez seca saca los bienes de cambio, que son lo menos líquido del activo corriente. No saca los créditos.</li>
+    <li>En esta cátedra, margen sobre ventas = bruto, margen de rentabilidad = neto. ROA y ROE van con resultado final.</li>
+    <li>Inventario se divide por CMV. Cobranzas, por ventas. Si no dicen IVA, no se lo agregues.</li>
+    <li>Constituir una reserva no cambia el patrimonio neto. Los dividendos sí lo bajan. Los aportes lo suben.</li>
+    <li>Pagado no es devengado. Del seguro, al resultado van 8.000. Los otros 16.000 quedan como activo.</li>
+    <li>Los gastos comerciales no forman parte del costo unitario, ni en variable ni en absorción.</li>
+    <li>El CIF fijo unitario se reparte sobre lo producido. La diferencia entre métodos es el fijo que cambió de inventario, no “un método es mejor”.</li>
+    <li>Francés: cuota fija, intereses más altos en total. Alemán: amortización fija, cuota que baja, menos intereses.</li>
+    <li>La TNA se divide por los períodos del año. Con semestrales, 24 % / 2 = 12 %. No uses 24 % sobre una cuota semestral.</li>
+    <li>VAN y TIR deciden el proyecto. El recupero simple no trae los flujos a hoy. La amortización se suma al flujo. La venta del bien totalmente amortizado paga impuesto sobre el precio entero.</li>
+  </ol>
+</section>
+
+<section class="sheet" id="ensayo">
+  <p class="kicker">Doce preguntas · miércoles</p>
+  <h1>Ensayo corto</h1>
+  <p>Son decisiones, no cuentas largas. Si dudás en una, volvé a esa bisagra y rehacela con la resolución cerrada.</p>
+
+  <div class="q">
+    <p>1. La empresa del ejercicio 1 enfrenta P = 30, CVMe = 18 y CTMe = 26,33. En el corto plazo…</p>
+    <button class="opt" type="button" data-ok="1">Produce, y además gana, porque el precio cubre el costo total medio.</button>
+    <button class="opt" type="button">Cierra, porque el costo fijo de 200 no depende de ella.</button>
+    <button class="opt" type="button">Produce solo si el precio cubre el mínimo de largo plazo, que es 26.</button>
+    <p class="why">Corto plazo: P contra CVMe. Como 30 también supera al CTMe, el beneficio es positivo. El 26 es el precio de abandono de largo plazo, otra pregunta.</p>
+  </div>
+
+  <div class="q">
+    <p>2. Misma empresa, pero el precio de mercado cae a 20. ¿Qué hace?</p>
+    <button class="opt" type="button">Cierra ya, porque 20 está por debajo de 26.</button>
+    <button class="opt" type="button" data-ok="1">En el corto plazo produce (q = 14, CVMe = 13). En el largo plazo se va, porque 20 &lt; 26.</button>
+    <button class="opt" type="button">Sigue en los dos plazos: 20 sigue por encima del CVMe que tenía en q = 24.</button>
+    <p class="why">Ojo: el CVMe hay que recalcularlo en la cantidad nueva. P = CMg da q = 14, y CVMe = 0,5·14 + 6 = 13. Pierde plata (no cubre todo el fijo) pero pierde menos que cerrando. A la larga, por debajo de 26, abandona.</p>
+  </div>
+
+  <div class="q">
+    <p>3. En el monopolio del ejercicio 2, ¿de dónde sale el precio 128?</p>
+    <button class="opt" type="button">Del ingreso marginal en Q = 36: 200 − 4·36.</button>
+    <button class="opt" type="button" data-ok="1">De la demanda en Q = 36: 200 − 2·36. El IMg en ese punto es 56, igual al CMg.</button>
+    <button class="opt" type="button">Del costo total medio, 49,11, más el margen.</button>
+    <p class="why">200 − 4·36 = 56 no es un precio de venta. Es la condición de óptimo. El precio lo paga el consumidor según la demanda.</p>
+  </div>
+
+  <div class="q">
+    <p>4. Liquidez seca de la empresa del ejercicio 4.</p>
+    <button class="opt" type="button">48.000 / 30.000 = 1,60</button>
+    <button class="opt" type="button">(48.000 − 15.000) / 30.000 = 1,10</button>
+    <button class="opt" type="button" data-ok="1">(48.000 − 20.000) / 30.000 = 0,93</button>
+    <p class="why">Se restan los bienes de cambio, 20.000. Los créditos por ventas, 15.000, se quedan: se cobran sin tener que vender stock.</p>
+  </div>
+
+  <div class="q">
+    <p>5. El operativo de 2026 cae aunque las ventas suben 30 %. La causa principal es…</p>
+    <button class="opt" type="button">La administración, que subió 2.400.</button>
+    <button class="opt" type="button" data-ok="1">El CMV, que pasó del 60 % al 65 % de las ventas, y la comercialización, que subió 43 %.</button>
+    <button class="opt" type="button">El impuesto a las ganancias, que se lleva el 35 %.</button>
+    <p class="why">Administración creció menos que las ventas, así que el margen mejora por ese lado. El enunciado del operativo ni siquiera llega al impuesto.</p>
+  </div>
+
+  <div class="q">
+    <p>6. Del seguro de 24.000 pagado el 1 de septiembre, al 31 de diciembre corresponde…</p>
+    <button class="opt" type="button">Gasto 24.000, porque ya salió de la caja.</button>
+    <button class="opt" type="button" data-ok="1">Gasto 8.000 y activo 16.000. De la caja salieron 24.000.</button>
+    <button class="opt" type="button">Gasto 16.000, los meses que faltan.</button>
+    <p class="why">Se devengan cuatro meses de doce. Lo pagado por los ocho meses que vienen es un activo, no un gasto de este ejercicio. El patrimonio no se entera de los 24.000 enteros.</p>
+  </div>
+
+  <div class="q">
+    <p>7. En el ejercicio 7 se producen 9.000 y se venden 7.500. El resultado…</p>
+    <button class="opt" type="button">Es igual por los dos métodos, porque los costos fijos son los mismos.</button>
+    <button class="opt" type="button">Da más el variable, porque no carga fijos al producto.</button>
+    <button class="opt" type="button" data-ok="1">Da más absorción, por 15.000: el CIF fijo de las 1.500 unidades que quedaron en stock.</button>
+    <p class="why">Absorción 150.000, variable 135.000. Si vendiera las 9.000, los dos darían 189.000.</p>
+  </div>
+
+  <div class="q">
+    <p>8. En el ejercicio 8 las ventas superan a la producción. Entonces…</p>
+    <button class="opt" type="button">Absorción da más, igual que cuando sobra producción.</button>
+    <button class="opt" type="button" data-ok="1">Variable da más. La diferencia es el CIF fijo del stock inicial menos el del stock final.</button>
+    <button class="opt" type="button">No se puede comparar, porque hay PEPS.</button>
+    <p class="why">132.800 contra 128.300. El hueco de 4.500 es 7.200 − 2.700. PEPS solo dice qué unidades salen primero: no cambia la regla del signo.</p>
+  </div>
+
+  <div class="q">
+    <p>9. El flete de entrega al cliente y la comisión del vendedor son…</p>
+    <button class="opt" type="button">Costo variable indirecto, porque sin producto no hay venta.</button>
+    <button class="opt" type="button" data-ok="1">Gasto variable directo. No entran al costo de la orden.</button>
+    <button class="opt" type="button">Costo fijo, porque la logística está todos los meses.</button>
+    <p class="why">No se fabrican: se comercializan. Por eso van al resultado del período, en los dos sistemas de costeo.</p>
+  </div>
+
+  <div class="q">
+    <p>10. Préstamo a TNA 24 % con cuotas semestrales. La tasa de cada cuota es…</p>
+    <button class="opt" type="button">24 %, porque la TNA ya es anual y el capital es el mismo.</button>
+    <button class="opt" type="button">(1,24)<sup>1/2</sup> − 1, la efectiva semestral.</button>
+    <button class="opt" type="button" data-ok="1">12 %. En este tema la TNA se divide por los períodos del año.</button>
+    <p class="why">El PDF lo hace proporcional: 24 / 2. No conviertas a efectiva si la cátedra no lo pide. Con esa tasa, n = 6.</p>
+  </div>
+
+  <div class="q">
+    <p>11. Entre las tres formas de cobrar la indemnización, al 9 %, se elige…</p>
+    <button class="opt" type="button">A, porque 8.000.000 hoy valen más que cualquier promesa.</button>
+    <button class="opt" type="button">B, porque 10 · 1.200.000 = 12.000.000 es el mayor monto.</button>
+    <button class="opt" type="button" data-ok="1">C. Su valor presente es 8.666.667, arriba de A y de B.</button>
+    <p class="why">B traído a hoy vale 7.701.189. Sumar las cuotas sin descontar no sirve. C gana mientras la tasa sea menor que 9,75 %.</p>
+  </div>
+
+  <div class="q">
+    <p>12. El proyecto de la máquina, con tasa exigida del 14 %…</p>
+    <button class="opt" type="button">No conviene: el recupero supera los 3 años y el VAN es chico.</button>
+    <button class="opt" type="button" data-ok="1">Conviene: VAN de 31.618 y TIR de 15,06 %, los dos por encima de la regla.</button>
+    <button class="opt" type="button">Conviene solo si se usa el resultado contable de 104.000 como flujo de caja.</button>
+    <p class="why">El flujo es 344.000, no 104.000. El recupero de 3,49 años no descuenta, así que no alcanza para rechazar un VAN positivo. El margen es justo: al 15 % el VAN ya casi se anula.</p>
+  </div>
+</section>
+
+</main>
+</div>
+<script>
+const buttons = document.querySelectorAll("nav button");
+const sheets = document.querySelectorAll(".sheet");
+function show(id) {
+  sheets.forEach(s => s.classList.toggle("active", s.id === id));
+  buttons.forEach(b => b.classList.toggle("on", b.dataset.id === id));
+  try { localStorage.setItem("eco-p2-tab", id); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+buttons.forEach(b => b.addEventListener("click", () => show(b.dataset.id)));
+
+const checks = document.querySelectorAll("[data-check]");
+function paint() {
+  let n = 0;
+  checks.forEach(c => { if (c.checked) n++; });
+  document.getElementById("bar").style.width = (n / checks.length * 100) + "%";
+  document.getElementById("meta").textContent = n + "/" + checks.length + " rehechas";
+}
+checks.forEach(c => {
+  const key = "eco-p2-" + c.dataset.check;
+  try { c.checked = localStorage.getItem(key) === "1"; } catch (e) {}
+  c.addEventListener("change", () => {
+    try { localStorage.setItem(key, c.checked ? "1" : "0"); } catch (e) {}
+    paint();
+  });
+});
+paint();
+
+document.querySelectorAll(".q").forEach(q => {
+  q.querySelectorAll(".opt").forEach(opt => {
+    opt.addEventListener("click", () => {
+      if (q.classList.contains("done")) return;
+      q.classList.add("done");
+      opt.classList.add(opt.dataset.ok ? "correct" : "wrong");
+      if (!opt.dataset.ok) {
+        const good = q.querySelector("[data-ok]");
+        if (good) good.classList.add("correct");
+      }
+    });
+  });
+});
+
+try {
+  const saved = localStorage.getItem("eco-p2-tab");
+  if (saved && document.getElementById(saved)) show(saved);
+} catch (e) {}
+
+window.addEventListener("beforeprint", () => {
+  document.querySelectorAll("details").forEach(d => { d.open = true; });
+});
+</script>
+</body>
+</html>

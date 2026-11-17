@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>AM II · Teórico 1: topología, límite, continuidad</title>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap'>
+<style>
+body { margin:0; color:#1b1b1b; font:18px/1.6 'Iowan Old Style', Palatino, Georgia, serif; background-color:#fbfbf6; background-image:linear-gradient(#dde6ef 1px, transparent 1px), linear-gradient(90deg, #dde6ef 1px, transparent 1px); background-size:24px 24px; }
+nav { position:sticky; top:0; z-index:5; background:#1c1712; padding:8px 16px; display:flex; flex-wrap:wrap; gap:14px; font:14px system-ui, sans-serif; }
+nav a { color:#e4b397; text-decoration:none; } nav b { color:#f6f1e8; }
+main { max-width:900px; margin:0 auto; padding:24px 22px 100px; }
+h1 { font-family:'Kalam', cursive; text-align:center; font-size:32px; margin:8px 0; }
+h2 { font-family:'Kalam', cursive; font-size:26px; margin:40px 0 8px; border-bottom:2px solid #1b1b1b; display:inline-block; }
+h3 { font-family:'Kalam', cursive; font-size:21px; margin:24px 0 6px; text-decoration:underline; text-underline-offset:5px; }
+mark { background:linear-gradient(transparent 12%, #fff176 12%, #fff176 88%, transparent 88%); padding:0 2px; color:inherit; }
+.r { text-decoration:underline; text-decoration-color:#d32f2f; text-decoration-thickness:2.5px; text-underline-offset:3px; font-weight:600; }
+.v { font-family:'Kalam', cursive; color:#2e7d32; font-size:17.5px; }
+.t { text-decoration:underline wavy #1565c0; text-decoration-thickness:1.5px; text-underline-offset:4px; }
+.teo { border:2.5px solid #1b1b1b; border-radius:6px; background:#fff; padding:10px 16px; margin:14px 0; }
+.teo .tit { font-family:'Kalam', cursive; font-weight:700; font-size:19px; }
+.ht { display:grid; grid-template-columns:44px 1fr; gap:4px 8px; margin:6px 0; }
+.ht b { font-family:'Kalam', cursive; font-size:19px; color:#6a1b9a; }
+.dem { background:#fff; border-left:4px solid #6a1b9a; padding:8px 16px; margin:8px 0 16px; }
+.dem p { margin:.4em 0; }
+.paso { font-family:'Kalam', cursive; color:#6a1b9a; font-weight:700; margin-right:6px; }
+.ley { background:#fff; border:1px solid #bbb; border-radius:10px; padding:10px 16px; margin:12px 0 20px; }
+.ley div { margin:4px 0; }
+table { border-collapse:collapse; margin:8px 0 14px; display:block; overflow-x:auto; max-width:max-content; }
+th, td { border:1px solid #bbb; padding:6px 10px; text-align:left; background:#fff; }
+th { background:#f0f0ea; font:600 13px system-ui, sans-serif; }
+.fig { background:#fff; border:1px solid #bbb; max-width:100%; height:auto; }
+.flex { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+.ojo { background:#fdecea; border:2px solid #d32f2f; border-radius:10px; padding:8px 14px; margin:12px 0; }
+@media print { nav { display:none; } body { background:#fff; } }
+</style></head><body>
+<nav><b>AM II · Teórico 1</b><a href='index.html'>Plan</a><a href='AM2-teorico.html'>Teórico completo</a><a href='#top'>Topología</a><a href='#lim'>Límite</a><a href='#cont'>Continuidad</a><a href='#comp'>Compuesta</a><a href='#chk'>Para el examen</a></nav>
+<main>
+<h1>Teórico 1: Topología, límite y continuidad</h1>
+<div class='ley'><b>Cómo copiarlo en el cuaderno</b> (usá los mismos colores):
+<div><mark>Resaltado amarillo</mark>: definición o enunciado. Se escribe <b>textual</b> en el examen.</div>
+<div><span class='r'>Subrayado rojo</span>: palabra que no puede faltar. Si falta, la definición está mal.</div>
+<div><span class='v'>Verde, letra de mano</span>: la idea, para entender. No hace falta escribirlo en el examen.</div>
+<div><span class='t'>Ondulado azul</span>: trampa o pregunta típica de cuestionario.</div>
+<div>Recuadro negro: teorema, con <b style='color:#6a1b9a'>H)</b> hipótesis y <b style='color:#6a1b9a'>T)</b> tesis. Línea violeta: demostración, con los pasos numerados.</div></div>
+
+<h2 id='top'>1. Topología en ℝⁿ</h2>
+<h3>Distancia y bola abierta</h3>
+<p><mark>Distancia entre x y x₀: ‖x − x₀‖ = √((x₁ − a₁)² + … + (xₙ − aₙ)²)</mark>, con x₀ = (a₁, …, aₙ).</p>
+<p><mark><span class='r'>Bola abierta</span> de centro x₀ y radio r &gt; 0: B(x₀, r) = { x ∈ ℝⁿ : ‖x − x₀‖ <span class='r'>&lt;</span> r }</mark>.</p>
+<p><mark><span class='r'>Bola reducida</span> (entorno reducido): B*(x₀, r) = B(x₀, r) − {x₀}</mark>.</p>
+<p class='v'>En ℝ² la bola es un disco sin el borde (por eso es “&lt;” y no “≤”). La reducida es el mismo disco sin el centro. Todo lo que sigue se define mirando bolas chiquitas alrededor del punto.</p>
+
+<h3>Clasificación de puntos (sea U ⊂ ℝⁿ y x₀ ∈ ℝⁿ)</h3>
+<table><tr><th>Tipo</th><th>Definición (resaltar)</th><th>En palabras</th></tr>
+<tr><td><b>Interior</b></td><td><mark><span class='r'>Existe</span> r &gt; 0 tal que B(x₀, r) <span class='r'>⊂ U</span></mark></td><td class='v'>Hay una bola entera adentro de U.</td></tr>
+<tr><td><b>Exterior</b></td><td><mark><span class='r'>Existe</span> r &gt; 0 tal que B(x₀, r) ⊂ <span class='r'>ℝⁿ − U</span></mark></td><td class='v'>Hay una bola entera afuera de U.</td></tr>
+<tr><td><b>Frontera</b></td><td><mark><span class='r'>Para todo</span> r &gt; 0, B(x₀, r) tiene puntos de U <span class='r'>y</span> puntos de ℝⁿ − U</mark></td><td class='v'>Toda bola toca adentro y afuera. Puede pertenecer a U o no.</td></tr>
+<tr><td><b>Aislado</b></td><td><mark>x₀ <span class='r'>∈ U</span> y existe r &gt; 0 tal que B(x₀, r) ∩ U = {x₀}</mark></td><td class='v'>Está en U pero solo: cerca no hay otros puntos de U.</td></tr>
+<tr><td><b>De acumulación</b></td><td><mark><span class='r'>Para todo</span> r &gt; 0, la bola <span class='r'>reducida</span> B*(x₀, r) contiene puntos de U</mark></td><td class='v'>Me puedo acercar a x₀ con puntos de U distintos de x₀. No hace falta que x₀ esté en U.</td></tr></table>
+<div class='flex'><svg class='fig' viewBox='0 0 300 190' width='300' height='190'><circle cx='100' cy='95' r='70' fill='#cfe3f7' stroke='#1f4fa3' stroke-width='2' stroke-dasharray='6 4'/><circle cx='230' cy='95' r='4' fill='#1f4fa3'/><circle cx='100' cy='95' r='4' fill='#2e7d32'/><text x='82' y='118' font-size='12' fill='#2e7d32'>interior</text><circle cx='170' cy='95' r='4' fill='none' stroke='#d32f2f' stroke-width='2'/><text x='140' y='82' font-size='12' fill='#d32f2f'>frontera</text><text x='208' y='118' font-size='12' fill='#1f4fa3'>aislado</text><circle cx='260' cy='30' r='4' fill='#555'/><text x='224' y='22' font-size='12' fill='#555'>exterior</text><text x='40' y='40' font-size='13' fill='#1f4fa3'>U</text></svg>
+<div class='v' style='max-width:480px'>Ejemplo: U = {x² + y² &lt; 1} ∪ {(2, 0)}. (0, 0) es interior. (1, 0) es frontera y de acumulación, y no pertenece a U. (2, 0) es aislado y de frontera, pero no de acumulación. (3, 3) es exterior.</div></div>
+<p><span class='t'>Preguntas típicas:</span> todo punto interior es de acumulación. Todo punto aislado es de frontera. Un punto de acumulación puede no pertenecer a U.</p>
+
+<h3>Tipos de conjuntos</h3>
+<p><mark>U es <span class='r'>abierto</span> si <span class='r'>todos</span> sus puntos son interiores.</mark></p>
+<p><mark>U es <span class='r'>cerrado</span> si contiene a <span class='r'>todos</span> sus puntos de frontera</mark> (equivale a: ℝⁿ − U es abierto).</p>
+<p><mark>U es <span class='r'>acotado</span> si existe M &gt; 0 tal que U ⊂ B(0, M).</mark></p>
+<p><mark>U es <span class='r'>compacto</span> si es cerrado <span class='r'>y</span> acotado.</mark></p>
+<p><mark>U es <span class='r'>conexo por arcos</span> si dos puntos cualesquiera de U se pueden unir con una curva contenida en U.</mark></p>
+<p class='t'>Trampa: abierto y cerrado no son opuestos. Hay conjuntos que no son ni una cosa ni la otra (un disco con medio borde), y ℝⁿ y el vacío son las dos cosas.</p>
+
+<h2 id='lim'>2. Límite</h2>
+<p><mark><b>Definición.</b> Sea f: U ⊂ ℝⁿ → ℝᵐ y x₀ un <span class='r'>punto de acumulación</span> de U. lím<sub>x→x₀</sub> f(x) = b si <span class='r'>para todo ε &gt; 0 existe δ &gt; 0</span> tal que, si x ∈ U y <span class='r'>0 &lt;</span> ‖x − x₀‖ &lt; δ, entonces ‖f(x) − b‖ &lt; ε.</mark></p>
+<p class='v'>ε es la tolerancia a la salida (qué tan cerca de b quiero que esté f). δ es el radio a la entrada (qué tan cerca de x₀ tengo que tomar x). Para cualquier ε, por chico que sea, tiene que haber un δ que funcione. El “0 &lt;” saca a x₀: no importa qué pasa en x₀, ni siquiera si f está definida ahí. Por eso hace falta que x₀ sea de acumulación: para que haya puntos de U cerca.</p>
+
+<div class='teo'><div class='tit'>Teorema: unicidad del límite</div>
+<div class='ht'><b>H)</b><div><mark>x₀ es punto de acumulación de U; lím<sub>x→x₀</sub> f(x) = b₁ y lím<sub>x→x₀</sub> f(x) = b₂.</mark></div><b>T)</b><div><mark>b₁ = b₂.</mark></div></div></div>
+<div class='dem'><p><b>Demostración</b> (por el <span class='r'>absurdo</span>):</p>
+<p><span class='paso'>1.</span> <mark>Supongo b₁ ≠ b₂.</mark> Entonces ‖b₁ − b₂‖ &gt; 0. <span class='v'>Es lo que voy a contradecir.</span></p>
+<p><span class='paso'>2.</span> <mark>Tomo ε = ‖b₁ − b₂‖ / 2 &gt; 0.</mark> <span class='v'>Elijo ε a propósito: la mitad de la distancia.</span></p>
+<p><span class='paso'>3.</span> Por la definición de límite con b₁: existe δ₁ &gt; 0 tal que 0 &lt; ‖x − x₀‖ &lt; δ₁ ⇒ ‖f(x) − b₁‖ &lt; ε. Con b₂: existe δ₂ &gt; 0 tal que 0 &lt; ‖x − x₀‖ &lt; δ₂ ⇒ ‖f(x) − b₂‖ &lt; ε.</p>
+<p><span class='paso'>4.</span> <mark>Tomo δ = mín(δ₁, δ₂).</mark> <span class='r'>Como x₀ es de acumulación</span>, existe x ∈ U con 0 &lt; ‖x − x₀‖ &lt; δ. <span class='v'>Acá se usa la hipótesis: sin esto no habría ningún x para usar.</span></p>
+<p><span class='paso'>5.</span> <mark>Desigualdad triangular:</mark> ‖b₁ − b₂‖ = ‖b₁ − f(x) + f(x) − b₂‖ ≤ ‖f(x) − b₁‖ + ‖f(x) − b₂‖ &lt; ε + ε = 2ε = ‖b₁ − b₂‖. <span class='v'>Sumo y resto f(x): truco clásico.</span></p>
+<p><span class='paso'>6.</span> <mark>Quedó ‖b₁ − b₂‖ &lt; ‖b₁ − b₂‖: absurdo.</mark> Entonces b₁ = b₂. ∎</p></div>
+
+<div class='teo'><div class='tit'>Propiedades del límite (la cátedra pide a y b)</div>
+<div class='ht'><b>H)</b><div><mark>lím<sub>x→x₀</sub> f(x) = b₁, lím<sub>x→x₀</sub> g(x) = b₂, c ∈ ℝ.</mark></div><b>T)</b><div><mark>a) lím c·f(x) = c·b₁. b) lím [f(x) + g(x)] = b₁ + b₂.</mark></div></div></div>
+<div class='dem'><p><b>a)</b> <span class='paso'>1.</span> Si c = 0, c·f = 0 y el límite es 0 = c·b₁. <span class='paso'>2.</span> Si c ≠ 0: sea ε &gt; 0. <mark>Uso la definición para f con ε/|c|</mark>: existe δ con 0 &lt; ‖x − x₀‖ &lt; δ ⇒ ‖f(x) − b₁‖ &lt; ε/|c|. <span class='paso'>3.</span> Entonces ‖c f(x) − c b₁‖ = |c| ‖f(x) − b₁‖ &lt; |c| · ε/|c| = ε. ∎ <span class='v'>Truco: pedirle a f una tolerancia más chica, para que al multiplicar por |c| quede ε.</span></p>
+<p><b>b)</b> <span class='paso'>1.</span> Sea ε &gt; 0. <mark>Uso la definición con ε/2 para cada una</mark>: δ₁ para f y δ₂ para g. <span class='paso'>2.</span> δ = mín(δ₁, δ₂). <span class='paso'>3.</span> ‖f + g − (b₁ + b₂)‖ ≤ ‖f − b₁‖ + ‖g − b₂‖ &lt; ε/2 + ε/2 = ε. ∎ <span class='v'>Triangular otra vez. Cada una aporta la mitad del error.</span></p></div>
+
+<h3>Límites iterados, radiales y por curvas</h3>
+<p><mark>Límites iterados: L₁₂ = lím<sub>x→x₀</sub> [lím<sub>y→y₀</sub> f(x, y)] y L₂₁ = lím<sub>y→y₀</sub> [lím<sub>x→x₀</sub> f(x, y)].</mark></p>
+<p><mark>Si existe el límite doble y existen los iterados, <span class='r'>son iguales</span>.</mark></p>
+<p class='t'>Trampa de cuestionario: si los iterados son distintos, el límite doble no existe. Si son iguales, NO alcanza: el límite puede no existir igual (ejemplo xy/(x² + y²): iterados 0 y 0, por y = mx da m/(1 + m²)). Lo mismo con rectas y curvas: <b>sirven para mostrar que NO existe, nunca para probar que existe</b>. Para probar que existe: acotación o polares.</p>
+
+<h2 id='cont'>3. Continuidad</h2>
+<p><mark><b>Definición.</b> f: U ⊂ ℝⁿ → ℝᵐ es <span class='r'>continua en x₀ ∈ U</span> si lím<sub>x→x₀</sub> f(x) = f(x₀).</mark></p>
+<p>Hay que verificar <span class='r'>tres cosas</span>: <mark>1) f(x₀) existe (x₀ ∈ U); 2) el límite existe; 3) son iguales.</mark></p>
+<p><mark>Con ε y δ: para todo ε &gt; 0 existe δ &gt; 0 tal que x ∈ U y ‖x − x₀‖ &lt; δ ⇒ ‖f(x) − f(x₀)‖ &lt; ε.</mark> <span class='v'>Acá no hace falta el “0 &lt;”: en x₀ la cuenta da 0 &lt; ε igual.</span></p>
+<p><mark>f es continua en U si es continua en cada punto de U.</mark></p>
+<p class='t'>Si el límite existe pero f(x₀) vale otra cosa, no es continua (discontinuidad evitable). Si x₀ es un punto aislado de U, f es continua ahí siempre.</p>
+
+<h2 id='comp'>4. Continuidad de la función compuesta</h2>
+<div class='flex'><svg class='fig' viewBox='0 0 420 90' width='420' height='90'><circle cx='50' cy='45' r='26' fill='#cfe3f7' stroke='#1f4fa3'/><circle cx='210' cy='45' r='26' fill='#e6f3ea' stroke='#2e7d32'/><circle cx='370' cy='45' r='26' fill='#f3e5f5' stroke='#6a1b9a'/><text x='38' y='50' font-size='14'>x₀</text><text x='190' y='50' font-size='14'>f(x₀)</text><text x='340' y='50' font-size='13'>g(f(x₀))</text><line x1='80' y1='45' x2='178' y2='45' stroke='#555' stroke-width='2'/><polygon points='178,40 186,45 178,50' fill='#555'/><line x1='240' y1='45' x2='338' y2='45' stroke='#555' stroke-width='2'/><polygon points='338,40 346,45 338,50' fill='#555'/><text x='125' y='36' font-size='15'>f</text><text x='285' y='36' font-size='15'>g</text><text x='20' y='86' font-size='12' fill='#1f4fa3'>radio δ</text><text x='186' y='86' font-size='12' fill='#2e7d32'>radio γ</text><text x='346' y='86' font-size='12' fill='#6a1b9a'>radio ε</text></svg>
+<div class='v' style='max-width:430px'>La idea: g pide “entrame a menos de γ de f(x₀)” para devolver algo a menos de ε. f pide “entrame a menos de δ de x₀” para devolver algo a menos de γ. Encadeno los dos pedidos, de atrás para adelante.</div></div>
+<div class='teo'><div class='tit'>Teorema (cayó el 17/07/2024)</div>
+<div class='ht'><b>H)</b><div><mark>f: U ⊂ ℝⁿ → ℝᵐ, g: V ⊂ ℝᵐ → ℝᵖ, con <span class='r'>f(U) ⊂ V</span>; f <span class='r'>continua en x₀</span>; g <span class='r'>continua en y₀ = f(x₀)</span>.</mark></div><b>T)</b><div><mark>g ∘ f es continua en x₀.</mark></div></div></div>
+<div class='dem'><p><b>Demostración.</b> <span class='v'>Quiero: para todo ε &gt; 0 existe δ &gt; 0 tal que ‖x − x₀‖ &lt; δ ⇒ ‖g(f(x)) − g(f(x₀))‖ &lt; ε.</span></p>
+<p><span class='paso'>1.</span> <mark>Sea ε &gt; 0.</mark> <span class='v'>Siempre se arranca así: el ε lo elige “el otro”.</span></p>
+<p><span class='paso'>2.</span> <mark>Como <span class='r'>g es continua en y₀</span>, para ese ε existe γ &gt; 0 tal que ‖y − y₀‖ &lt; γ ⇒ ‖g(y) − g(y₀)‖ &lt; ε.</mark> <span class='v'>Empiezo por la última función.</span></p>
+<p><span class='paso'>3.</span> <mark>Como <span class='r'>f es continua en x₀</span>, usando γ como si fuera su ε, existe δ &gt; 0 tal que ‖x − x₀‖ &lt; δ ⇒ ‖f(x) − f(x₀)‖ &lt; γ.</mark> <span class='v'>El “radio de entrada” de g pasa a ser la “tolerancia de salida” de f.</span></p>
+<p><span class='paso'>4.</span> <mark>Encadeno:</mark> si ‖x − x₀‖ &lt; δ, por 3, y = f(x) cumple ‖y − y₀‖ &lt; γ (y está en V porque f(U) ⊂ V). Por 2, ‖g(f(x)) − g(f(x₀))‖ &lt; ε.</p>
+<p><span class='paso'>5.</span> <mark>Encontré δ para cualquier ε: g ∘ f es continua en x₀.</mark> ∎</p></div>
+<p class='v'>Para qué sirve: h(x, y) = sen(x² + y) es continua en todo ℝ² porque x² + y es un polinomio (continuo) y sen es continua. Sin hacer ningún límite.</p>
+
+<h2 id='chk'>Para el examen</h2>
+<div class='ojo'><p><b>Lo que no puede faltar en cada teorema:</b></p>
+<p>1. <b>H)</b> y <b>T)</b> escritas antes de demostrar. 2. “Sea ε &gt; 0” al principio. 3. Decir de dónde sale cada δ: “por la continuidad de g”, “por la definición de límite”. 4. Nombrar la desigualdad triangular cuando se usa. 5. Cerrar con la conclusión y ∎.</p>
+<p><b>Las tres cosas que más se confunden:</b> “&lt; r” en la bola (no ≤); el “0 &lt; ‖x − x₀‖” en el límite (no va en continuidad); que x₀ tiene que ser de acumulación para hablar de límite.</p></div>
+<p class='small'>Fuente: lista de temas y teoremas de la cátedra (fuentes/AM2-Temas-teorico.pdf y AM2-Teoremas.pdf), final teórico del 17/07/2024.</p>
+</main></body></html>

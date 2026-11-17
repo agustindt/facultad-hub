@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Análisis II desde cero · cómo se hace cada ejercicio</title><link rel='stylesheet' href='estilo.css'></head><body>
+<header class='top'><strong>AM II desde cero</strong><a href='index.html'>Plan</a><a href='#base'>Lo de antes</a><a href='#r1'>Función partida</a><a href='#r2'>Extremos</a><a href='#r3'>Lagrange</a><a href='#r4'>Direccional</a><a href='#cadena'>Regla de la cadena</a><a href='#r5'>Volumen</a><a href='#r6'>Green</a><a href='#r7'>ED 1.er orden</a><a href='#r8'>ED 2.º orden</a><a href='#dia'>El día del final</a><a href='AM2.html'>Práctica</a><a href='AM2-teorico.html'>Teórico</a></header>
+<main>
+<p class='k'>Para empezar por acá</p>
+<h1>Análisis II desde cero. Cómo se hace cada ejercicio, paso por paso.</h1>
+<p>El final práctico tiene siempre los mismos cuatro ejercicios: <b>una función partida en el origen</b>, <b>extremos</b>, <b>un volumen en polares</b> y <b>una integral de línea por Green y directa</b> (a veces el cuarto es una <b>ecuación diferencial de segundo orden</b>). Cada uno tiene una receta fija. Cada paso de cada receta tiene un ejemplo con todas las cuentas (recuadro gris) y cómo se escribe en la hoja (recuadro verde). Esta página explica cada receta desde el principio con un ejemplo hecho entero, un ejercicio para que lo hagas vos, y después <b>ejercicios de los parciales de la cátedra (2020 a 2024) resueltos paso por paso</b>, con el número de paso de la receta.</p>
+<p>Orden recomendado: primero la sección 0 (lo que hay que saber de antes), después una receta por día. Cuando una receta te salga sin mirar, pasá a <a href='AM2.html'>AM2.html</a> a hacer los del final.</p>
+
+<h2 id='base'>0. Lo que hay que saber de antes</h2>
+<h3>Derivar en una variable</h3>
+<table><tr><th>Función</th><th>Derivada</th><th>Función</th><th>Derivada</th></tr>
+<tr><td>xⁿ</td><td>n xⁿ⁻¹</td><td>eᵘ</td><td>eᵘ · u′</td></tr>
+<tr><td>ln u</td><td>u′/u</td><td>√u</td><td>u′/(2√u)</td></tr>
+<tr><td>sen u</td><td>cos u · u′</td><td>cos u</td><td>−sen u · u′</td></tr>
+<tr><td>u · v</td><td>u′v + uv′</td><td>u / v</td><td>(u′v − uv′)/v²</td></tr></table>
+<h3>Derivada parcial: la otra letra es un número</h3>
+<p>Para derivar respecto de x, hacé de cuenta que y es un número fijo (como si fuera 5). Para derivar respecto de y, al revés.</p>
+<div class='enun'>f(x, y) = x²y³ + e<sup>xy</sup> + 3y.</div>
+<p>f<sub>x</sub>: x²y³ → 2x·y³ (y³ es una constante que multiplica). e<sup>xy</sup> → e<sup>xy</sup> · y (regla de la cadena: la derivada de xy respecto de x es y). 3y → 0 (no tiene x). <b>f<sub>x</sub> = 2xy³ + y e<sup>xy</sup></b>.</p>
+<p>f<sub>y</sub>: <b>f<sub>y</sub> = 3x²y² + x e<sup>xy</sup> + 3</b>.</p>
+<p>Segundas: f<sub>xx</sub> es derivar f<sub>x</sub> otra vez respecto de x; f<sub>xy</sub> es derivar f<sub>x</sub> respecto de y. f<sub>xy</sub> y f<sub>yx</sub> dan lo mismo (sirve para controlar). Acá: f<sub>xx</sub> = 2y³ + y²e<sup>xy</sup>; f<sub>xy</sub> = 6xy² + e<sup>xy</sup> + xy e<sup>xy</sup>.</p>
+<details><summary>Para practicar: f = x³y − 2xy² + sen(x)</summary><p>f<sub>x</sub> = 3x²y − 2y² + cos x. f<sub>y</sub> = x³ − 4xy. f<sub>xx</sub> = 6xy − sen x. f<sub>yy</sub> = −4x. f<sub>xy</sub> = 3x² − 4y.</p></details>
+
+<h3>Integrar: las técnicas que aparecen</h3>
+<p><b>Tabla:</b> ∫xⁿ dx = xⁿ⁺¹/(n + 1); ∫eˣ = eˣ; ∫1/x = ln|x|; ∫sen = −cos; ∫cos = sen.</p>
+<p><b>Sustitución:</b> si ves una función y su derivada, llamá u a la de adentro. ∫ 2x e<sup>x²</sup> dx: u = x², du = 2x dx, queda ∫eᵘ du = e<sup>x²</sup>.</p>
+<p><b>Por partes:</b> ∫u dv = uv − ∫v du. Elegí u como lo que se simplifica al derivar (un polinomio). ∫x eˣ dx: u = x, dv = eˣ dx ⇒ x eˣ − eˣ.</p>
+<p><b>Senos y cosenos al cuadrado</b> (aparecen en todos los volúmenes): cos²θ = (1 + cos 2θ)/2, sen²θ = (1 − cos 2θ)/2. Con eso: ∫ cos²θ dθ = θ/2 + sen 2θ/4.</p>
+<p><b>Resultados que conviene saber de memoria:</b> ∫<sub>0</sub><sup>2π</sup> sen θ = ∫<sub>0</sub><sup>2π</sup> cos θ = 0. ∫<sub>0</sub><sup>2π</sup> cos²θ = ∫<sub>0</sub><sup>2π</sup> sen²θ = π. ∫<sub>−π/2</sub><sup>π/2</sup> cos²θ = π/2. ∫<sub>−π/2</sub><sup>π/2</sup> cos⁴θ = 3π/8. ∫<sub>−π/2</sub><sup>π/2</sup> cos³θ = 4/3.</p>
+<details><summary>De dónde sale ∫ cos⁴θ</summary><p>cos⁴θ = (cos²θ)² = ((1 + cos 2θ)/2)² = (1 + 2cos 2θ + cos²2θ)/4, y cos²2θ = (1 + cos 4θ)/2. Queda cos⁴θ = 3/8 + cos 2θ/2 + cos 4θ/8. Entre −π/2 y π/2 los cosenos de 2θ y 4θ integran 0, y queda (3/8)·π = 3π/8.</p>
+<p>cos³θ = cos θ (1 − sen²θ): con u = sen θ, ∫(1 − u²) du = u − u³/3. Entre −1 y 1 da 4/3.</p></details>
+
+<h3>Coordenadas polares</h3>
+<p><b>x = r cos θ, y = r sen θ, x² + y² = r²</b>. r es la distancia al origen y θ el ángulo con el eje x positivo. En las integrales, <b>dA = r dr dθ</b> (nunca te olvides de esa r).</p>
+<table><tr><th>En x, y</th><th>En polares</th><th>Qué es</th><th>θ va de</th></tr>
+<tr><td>x² + y² = a²</td><td>r = a</td><td>circunferencia de centro el origen</td><td>0 a 2π</td></tr>
+<tr><td>x² + y² = 2ax</td><td>r = 2a cos θ</td><td>circunferencia de centro (a, 0) y radio a, pasa por el origen</td><td>−π/2 a π/2</td></tr>
+<tr><td>x² + y² = 2ay</td><td>r = 2a sen θ</td><td>centro (0, a), radio a</td><td>0 a π</td></tr>
+<tr><td>y = x (con x ≥ 0)</td><td>θ = π/4</td><td>semirrecta</td><td></td></tr></table>
+<p><b>Cómo se pasa:</b> reemplazá x² + y² por r², x por r cos θ, y por r sen θ, y despejá r. Ejemplo: x² + y² = x ⇒ r² = r cos θ ⇒ <b>r = cos θ</b>. Es la circunferencia de centro (1/2, 0) y radio 1/2. Como r ≥ 0, cos θ ≥ 0, así que θ va de −π/2 a π/2.</p>
+<h3>Parametrizar un camino (para las integrales de línea)</h3>
+<p><b>Segmento de P a Q:</b> (x, y) = P + t(Q − P), t de 0 a 1. Ejemplo de (1, 0) a (1, 1): x = 1, y = t. Si es horizontal o vertical es más fácil usar directamente la variable que cambia: en el segmento vertical x = 1, y va de 0 a 1, y dx = 0.</p>
+<p><b>Curva y = g(x):</b> usá x como parámetro. y = g(x), dy = g′(x) dx, y x va del valor inicial al final <b>en el sentido del recorrido</b> (si se recorre de derecha a izquierda, la integral va de un número mayor a uno menor).</p>
+<p><b>Circunferencia de radio a:</b> x = a cos t, y = a sen t, dx = −a sen t dt, dy = a cos t dt. Con t creciendo se recorre antihoraria.</p>
+
+<h2 id='r1'>1. Función partida en el origen (ejercicio 1)</h2>
+<p>Te dan algo como f(x, y) = (fórmula) si (x, y) ≠ (0, 0), y f(0, 0) = 0. Te preguntan, en este orden: <b>continuidad</b>, <b>derivadas parciales en el origen</b>, <b>diferenciabilidad</b>, y a veces <b>derivada direccional</b>. Todo se hace en (0, 0) y <b>todo por definición</b>: en el origen la fórmula no vale, así que no se puede derivar con las reglas.</p>
+<p>Abajo, cada paso tiene su explicación, un <b>ejemplo con todas las cuentas</b> (recuadro gris) y <b>cómo se escribe en la hoja</b> (recuadro verde).</p>
+
+<h3>Paso 0. Mirar los grados (un minuto, en borrador)</h3>
+<p>El grado de un término es la suma de los exponentes de x y de y. El grado del numerador es el del término más chico (el que manda cerca del origen). √(x² + y²) cuenta como grado 1. Después comparás: <b>grado de arriba − grado de abajo</b>.</p>
+<div class='ej'><table><tr><th>Función</th><th>Arriba</th><th>Abajo</th><th>Diferencia</th><th>Qué esperar</th></tr>
+<tr><td>xy/(x² + y²)</td><td>1 + 1 = 2</td><td>2</td><td>0</td><td>el límite no existe: no continua</td></tr>
+<tr><td>3xy²/(x² + y²)</td><td>1 + 2 = 3</td><td>2</td><td>1</td><td>continua, pero no diferenciable</td></tr>
+<tr><td>xy/√(x² + y²)</td><td>2</td><td>1</td><td>1</td><td>continua, pero no diferenciable</td></tr>
+<tr><td>x²y²/(x² + y²)</td><td>4</td><td>2</td><td>2</td><td>continua y diferenciable</td></tr>
+<tr><td>(x + y)/(x² + y²)</td><td>1</td><td>2</td><td>−1</td><td>el límite es infinito: no continua</td></tr></table>
+<p>Diferencia 0 o negativa → no continua. Diferencia 1 → continua y casi siempre no diferenciable. Diferencia 2 o más → diferenciable. <b>Esto no se escribe en el examen</b>: te dice qué tenés que demostrar.</p></div>
+
+<h3>Paso A. Continuidad</h3>
+<p>Se demuestra que lím<sub>(x,y)→(0,0)</sub> f(x, y) = f(0, 0). Según lo que te dijo el paso 0, vas por uno de dos caminos.</p>
+<h4>A1. Si esperás que NO exista: caminos</h4>
+<p>Reemplazás y por una expresión en x (una recta, una parábola) y te queda un límite de <b>una sola variable</b>. Si dos caminos dan resultados distintos, el límite doble no existe.</p>
+<div class='ej'><p><b>Ejemplo:</b> f = xy/(x² + y²).</p>
+<p>Recta y = mx. Reemplazo cada y por mx:</p>
+<p>f(x, mx) = x · mx / (x² + (mx)²) = m x² / (x² + m² x²).</p>
+<p>Saco factor común x² abajo: m x² / [x²(1 + m²)]. Simplifico x²: <b>m/(1 + m²)</b>.</p>
+<p>No queda x: el límite por esa recta es m/(1 + m²). Depende de m: con m = 0 da 0; con m = 1 da 1/2.</p></div>
+<div class='hoja'><p>Tomo el camino y = mx: lím<sub>x→0</sub> f(x, mx) = lím<sub>x→0</sub> m x²/(x²(1 + m²)) = m/(1 + m²). El límite depende de m, es decir, de la recta por la que me acerco. Por lo tanto lím<sub>(x,y)→(0,0)</sub> f(x, y) no existe y f no es continua en (0, 0).</p></div>
+<div class='ej'><p><b>Cuando las rectas dan todas lo mismo:</b> f = x²y/(x⁴ + y²).</p>
+<p>y = mx: x²·mx/(x⁴ + m²x²) = m x³/[x²(x² + m²)] = m x/(x² + m²) → 0 cuando x → 0. Todas las rectas dan 0. <b>No alcanza</b> para decir que existe.</p>
+<p>Pruebo la parábola y = x² (elegida para que x⁴ e y² tengan el mismo grado): x²·x²/(x⁴ + x⁴) = x⁴/(2x⁴) = <b>1/2</b>.</p>
+<p>Por rectas 0, por la parábola 1/2: <b>no existe</b>.</p></div>
+<div class='ej'><p><b>Los ejes</b> son los caminos más fáciles: y = 0 (reemplazás y por 0) y x = 0. Con f = (x³ − y²)/(x² + y²): por y = 0 da x³/x² = x → 0; por x = 0 da −y²/y² = −1. Distintos: no existe.</p></div>
+
+<h4>A2. Si esperás que SÍ exista: polares y acotación</h4>
+<p>Los caminos nunca prueban que existe (hay infinitos caminos). Se prueba con una <b>cota</b>: |f(x, y) − 0| ≤ (algo que tiende a 0).</p>
+<p>Receta: (1) reemplazar x = r cos θ, y = r sen θ; (2) el denominador x² + y² se hace r² (porque cos²θ + sen²θ = 1) y √(x² + y²) se hace r; (3) simplificar las r; (4) acotar lo que depende de θ usando |cos θ| ≤ 1, |sen θ| ≤ 1 y |a + b| ≤ |a| + |b|; (5) concluir.</p>
+<div class='ej'><p><b>Ejemplo:</b> f = 3xy²/(x² + y²).</p>
+<p>(1) Numerador: 3 · (r cos θ) · (r sen θ)² = 3 · r cos θ · r² sen²θ = 3r³ cos θ sen²θ.</p>
+<p>(2) Denominador: r² cos²θ + r² sen²θ = r²(cos²θ + sen²θ) = r².</p>
+<p>(3) f = 3r³ cos θ sen²θ / r² = 3r cos θ sen²θ.</p>
+<p>(4) |cos θ| ≤ 1 y sen²θ ≤ 1, así que |3 cos θ sen²θ| ≤ 3. Entonces |f| ≤ 3r.</p>
+<p>(5) Cuando (x, y) → (0, 0), r → 0, y 3r → 0.</p></div>
+<div class='hoja'><p>Paso a polares: x = r cos θ, y = r sen θ, con r = √(x² + y²). f(r cos θ, r sen θ) = 3r cos θ sen²θ. Como |cos θ sen²θ| ≤ 1 para todo θ: 0 ≤ |f(x, y) − 0| ≤ 3r → 0. Por el teorema de intercalación lím<sub>(x,y)→(0,0)</sub> f(x, y) = 0 = f(0, 0). Por lo tanto f es continua en (0, 0).</p></div>
+<div class='ej'><p><b>Con raíz abajo:</b> f = xy/√(x² + y²). Numerador r² cos θ sen θ, denominador √(r²) = r. f = r cos θ sen θ, |f| ≤ r → 0. Continua.</p>
+<p><b>Con varios términos:</b> f = (xy² − 2y³)/(x² + y²) = r(cos θ sen²θ − 2sen³θ). Para acotar el paréntesis: |cos θ sen²θ − 2sen³θ| ≤ |cos θ sen²θ| + 2|sen³θ| ≤ 1 + 2 = 3. Entonces |f| ≤ 3r.</p>
+<p><b>Sin polares (también vale):</b> como x² ≤ x² + y², sale |x| ≤ √(x² + y²) y y²/(x² + y²) ≤ 1. Entonces |3xy²/(x² + y²)| = 3|x| · y²/(x² + y²) ≤ 3|x| → 0.</p>
+<p><b>La trampa:</b> si al pasar a polares <b>no queda ninguna r</b>, por ejemplo (x² − y²)/(x² + y²) = cos²θ − sen²θ = cos 2θ, el resultado depende del ángulo: el límite no existe.</p></div>
+<p><b>Último detalle:</b> si el límite existe pero f(0, 0) está definido con otro número (por ejemplo f(0, 0) = 1 y el límite da 0), tampoco es continua.</p>
+
+<h3>Paso B. Derivadas parciales en el origen, por definición</h3>
+<p>Las fórmulas son siempre éstas. Lo único que cambia es cuánto valen f(h, 0) y f(0, k):</p>
+<p class='f'>f<sub>x</sub>(0, 0) = lím<sub>h→0</sub> [f(h, 0) − f(0, 0)] / h &nbsp;&nbsp; f<sub>y</sub>(0, 0) = lím<sub>k→0</sub> [f(0, k) − f(0, 0)] / k</p>
+<p>Receta: (1) calcular f(h, 0): en la fórmula, cada x se cambia por h y cada y por 0. (2) Restar f(0, 0) (que casi siempre es 0). (3) Dividir por h. (4) Hacer h → 0. Lo mismo con f(0, k): x por 0 e y por k.</p>
+<div class='ej'><p><b>Ejemplo:</b> f = (xy² − 2y³)/(x² + y²).</p>
+<p>f(h, 0) = (h · 0² − 2 · 0³)/(h² + 0²) = 0/h² = 0. Entonces [0 − 0]/h = 0 y <b>f<sub>x</sub>(0, 0) = 0</b>.</p>
+<p>f(0, k) = (0 · k² − 2k³)/(0² + k²) = −2k³/k² = −2k. Entonces [−2k − 0]/k = −2 y <b>f<sub>y</sub>(0, 0) = −2</b>.</p></div>
+<div class='hoja'><p>f<sub>x</sub>(0, 0) = lím<sub>h→0</sub> [f(h, 0) − f(0, 0)]/h = lím<sub>h→0</sub> (0 − 0)/h = 0.</p>
+<p>f<sub>y</sub>(0, 0) = lím<sub>k→0</sub> [f(0, k) − f(0, 0)]/k = lím<sub>k→0</sub> (−2k − 0)/k = −2.</p></div>
+<div class='ej'><p><b>Cuando una parcial no existe:</b> f = √(x² + y²) (el cono). f(h, 0) = √(h²) = |h|. El cociente |h|/h vale 1 si h &gt; 0 y −1 si h &lt; 0: los límites laterales son distintos, <b>f<sub>x</sub>(0, 0) no existe</b>. Y entonces f no es diferenciable.</p></div>
+
+<h3>Paso C. Diferenciabilidad, por definición</h3>
+<p>f es diferenciable en (0, 0) si este límite vale 0:</p>
+<p class='f'>lím<sub>(h,k)→(0,0)</sub> [f(h, k) − f(0, 0) − f<sub>x</sub>(0, 0)·h − f<sub>y</sub>(0, 0)·k] / √(h² + k²)</p>
+<p>Receta: (1) escribir el cociente <b>con los números de tus parciales</b>; (2) pasar a polares: h = r cos θ, k = r sen θ, √(h² + k²) = r; (3) simplificar; (4) si queda r por algo acotado → el límite es 0 → <b>diferenciable</b>; si no queda r y depende de θ → mostrar dos ángulos con resultados distintos → <b>no diferenciable</b>.</p>
+<div class='ej'><p><b>Ejemplo con las parciales en 0:</b> f = 3xy²/(x² + y²), f<sub>x</sub> = f<sub>y</sub> = 0.</p>
+<p>(1) [f(h, k) − 0 − 0·h − 0·k]/√(h² + k²) = f(h, k)/√(h² + k²).</p>
+<p>(2) y (3) Del paso A ya sé que f = 3r cos θ sen²θ. Dividido r: <b>3 cos θ sen²θ</b>.</p>
+<p>(4) No hay r. Pruebo ángulos: θ = 0: 3 · 1 · 0 = 0. θ = π/4: 3 · (√2/2) · (1/2) = 3√2/4. Dos valores distintos.</p></div>
+<div class='hoja'><p>Analizo lím<sub>(h,k)→(0,0)</sub> [f(h, k) − f(0, 0) − f<sub>x</sub>(0,0)h − f<sub>y</sub>(0,0)k]/√(h² + k²) = lím f(h, k)/√(h² + k²). En polares: 3r cos θ sen²θ / r = 3 cos θ sen²θ, que depende de θ (vale 0 en θ = 0 y 3√2/4 en θ = π/4). El límite no existe, entonces no es 0, y f no es diferenciable en (0, 0).</p></div>
+<div class='ej'><p><b>Ejemplo con una parcial distinta de 0:</b> f = (xy² − 2y³)/(x² + y²), f<sub>x</sub> = 0, f<sub>y</sub> = −2.</p>
+<p>(1) [f(h, k) − 0 − 0·h − (−2)·k]/√(h² + k²) = [f(h, k) + 2k]/√(h² + k²). <b>Ojo con el signo: menos por menos da más.</b></p>
+<p>(2) f = r(cos θ sen²θ − 2sen³θ) y 2k = 2r sen θ.</p>
+<p>(3) [r(cos θ sen²θ − 2sen³θ) + 2r sen θ]/r = cos θ sen²θ − 2sen³θ + 2sen θ.</p>
+<p>(4) θ = 0 → 0. θ = π/4 → √2/4 − √2/2 + √2 = 3√2/4. No es diferenciable.</p></div>
+<div class='ej'><p><b>Ejemplo que SÍ es diferenciable:</b> f = x²y²/(x² + y²), parciales 0.</p>
+<p>f en polares: r⁴cos²θ sen²θ/r² = r² cos²θ sen²θ. Dividido r: <b>r cos²θ sen²θ</b>. Queda una r: |r cos²θ sen²θ| ≤ r → 0. El límite es 0: <b>es diferenciable</b>.</p></div>
+<p><b>Atajos que podés escribir:</b> “f no es continua, entonces no es diferenciable” (diferenciable implica continua). “f<sub>x</sub>(0,0) no existe, entonces no es diferenciable”. “Las parciales son continuas en un entorno, entonces es diferenciable” (casi nunca aplica en el origen).</p>
+
+<h3>Paso D. Derivada direccional en el origen</h3>
+<p class='f'>D<sub>u</sub>f(0, 0) = lím<sub>t→0</sub> [f(ta, tb) − f(0, 0)] / t, con u = (a, b) unitario</p>
+<p>Receta: (1) <b>verificar que u es unitario</b> (a² + b² = 1); si no, dividirlo por su largo; (2) calcular f(ta, tb): cada x se cambia por ta y cada y por tb; (3) sacar factor común las t, usar a² + b² = 1; (4) dividir por t y hacer t → 0.</p>
+<div class='ej'><p><b>Ejemplo:</b> f = 3xy²/(x² + y²) en la dirección de v = (1, 2).</p>
+<p>(1) ‖v‖ = √(1 + 4) = √5. u = (1/√5, 2/√5).</p>
+<p>(2) Con u = (a, b) general: f(ta, tb) = 3(ta)(tb)²/((ta)² + (tb)²) = 3t³ab²/[t²(a² + b²)].</p>
+<p>(3) a² + b² = 1, así que f(ta, tb) = 3t ab².</p>
+<p>(4) [3t ab² − 0]/t = 3ab². Con a = 1/√5, b = 2/√5: 3 · (1/√5) · (4/5) = <b>12/(5√5) ≈ 1,07</b>.</p>
+<p>Si f fuera diferenciable daría ∇f · u = 0. Da otra cosa: es otra forma de probar que no es diferenciable.</p></div>
+<div class='hoja'><p>u = v/‖v‖ = (1/√5, 2/√5). D<sub>u</sub>f(0, 0) = lím<sub>t→0</sub> [f(t/√5, 2t/√5) − 0]/t = lím<sub>t→0</sub> 3t·(1/√5)(4/5)/t = 12/(5√5).</p></div>
+<div class='enun'><b>Ejemplo hecho (es el del final de 2026).</b> f(x, y) = 3xy²/(x² + y²) si (x, y) ≠ (0, 0), f(0, 0) = 0.</div>
+<p><b>Grados:</b> numerador 3, denominador 2. Numerador mayor: va a ser continua. Supera solo en 1: sospecho que no es diferenciable.</p>
+<p><b>A. Continuidad.</b> Polares: f = 3 r cos θ · r² sen²θ / r² = 3r cos θ sen²θ. Como |cos θ sen²θ| ≤ 1, |f| ≤ 3r → 0. El límite es 0 = f(0, 0): <b>es continua</b>.</p>
+<p><b>B. Parciales.</b> f(h, 0) = 3h·0/h² = 0, así que f<sub>x</sub>(0,0) = lím (0 − 0)/h = <b>0</b>. f(0, k) = 0, <b>f<sub>y</sub>(0,0) = 0</b>.</p>
+<p><b>C. Diferenciabilidad.</b> El cociente es f(h, k)/√(h² + k²) = 3r cos θ sen²θ / r = 3 cos θ sen²θ. No tiene r: depende de θ. Por ejemplo en θ = 0 da 0 y en θ = π/4 da 3·(√2/2)·(1/2) = 3√2/4. No hay un único límite: <b>no es diferenciable</b>.</p>
+<p><b>D. Direccional en u = (a, b).</b> f(ta, tb) = 3·ta·t²b²/(t²a² + t²b²) = 3t ab² (porque a² + b² = 1). Dividido t: 3ab². <b>D<sub>u</sub>f(0,0) = 3ab²</b>: existe en todas las direcciones. Fijate que no coincide con ∇f · u = 0: es otra forma de ver que no es diferenciable.</p>
+<div class='enun'><b>Hacelo vos.</b> f(x, y) = x²y/(x² + y²) si (x, y) ≠ (0, 0), f(0, 0) = 0. Los cuatro pasos, con u = (1/√2, 1/√2).</div>
+<details><summary>Resolución</summary>
+<p>A. Polares: r cos²θ sen θ, |f| ≤ r → 0: continua.</p>
+<p>B. f(h, 0) = 0 y f(0, k) = 0: parciales 0 y 0.</p>
+<p>C. f/r = cos²θ sen θ, depende de θ: no diferenciable.</p>
+<p>D. f(ta, tb)/t = a²b = (1/2)(1/√2) = 1/(2√2) = √2/4.</p></details>
+
+<h3 class='k'>Con parciales de la cátedra, paso por paso</h3>
+<div class='enun'><b>1.er parcial B1, 13/04/2022, ejercicio 1.</b> f(x, y) = (xy² − 2y³)/(x² + y²) si (x, y) ≠ (0, 0); f(0, 0) = 0. a) Demuestre que es continua. b) Parciales por definición. c) Demuestre que no es diferenciable.</div>
+<p><b>Paso 0, los grados.</b> Numerador grado 3 (xy² es 1 + 2), denominador grado 2. Gana el numerador por 1: va a ser continua y probablemente no diferenciable. Coincide con lo que piden.</p>
+<p><b>Paso A, continuidad.</b> Reemplazo x = r cos θ, y = r sen θ:</p>
+<p>f = (r³ cos θ sen²θ − 2r³ sen³θ)/r² = r (cos θ sen²θ − 2 sen³θ).</p>
+<p>El paréntesis está acotado: |cos θ sen²θ| ≤ 1 y |2 sen³θ| ≤ 2, así que |paréntesis| ≤ 3. Entonces |f| ≤ 3r, que tiende a 0. El límite es 0 = f(0, 0): <b>continua</b>. En la hoja se escribe así: “0 ≤ |f(x, y) − 0| ≤ 3r → 0, por lo tanto el límite es 0”.</p>
+<p><b>Paso B, parciales.</b></p>
+<p>f<sub>x</sub>(0, 0) = lím [f(h, 0) − f(0, 0)]/h. f(h, 0) = (h·0 − 0)/h² = 0. Queda lím 0/h = <b>0</b>.</p>
+<p>f<sub>y</sub>(0, 0) = lím [f(0, k) − f(0, 0)]/k. f(0, k) = (0 − 2k³)/k² = −2k. Queda lím (−2k)/k = <b>−2</b>. Ojo: acá la parcial no es 0, y eso cambia el paso siguiente.</p>
+<p><b>Paso C, diferenciabilidad.</b> El cociente es [f(h, k) − f(0, 0) − f<sub>x</sub>·h − f<sub>y</sub>·k]/√(h² + k²) = [f(h, k) − 0 − 0·h + 2k]/√(h² + k²).</p>
+<p>En polares (h = r cos θ, k = r sen θ): [r(cos θ sen²θ − 2 sen³θ) + 2r sen θ]/r = cos θ sen²θ − 2 sen³θ + 2 sen θ.</p>
+<p>No tiene r: depende solo de θ. En θ = 0 da 0; en θ = π/4 da √2/4 − √2/2 + √2 = 3√2/4. Valores distintos según la dirección: el límite no existe, <b>no es diferenciable</b>.</p>
+
+<div class='enun'><b>1.er parcial C, 26/04/2023, ejercicio 1.</b> f(x, y) = (3x²y − y³)/(x² + y²), f(0, 0) = 0. Mismas tres consignas.</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>A.</b> f = r(3cos²θ sen θ − sen³θ), paréntesis acotado por 4, |f| ≤ 4r → 0: continua.</p>
+<p><b>B.</b> f(h, 0) = 0 ⇒ f<sub>x</sub> = 0. f(0, k) = −k³/k² = −k ⇒ f<sub>y</sub> = lím (−k)/k = −1.</p>
+<p><b>C.</b> [f + k]/r = 3cos²θ sen θ − sen³θ + sen θ = sen θ (3cos²θ + 1 − sen²θ) = 4 sen θ cos²θ. En θ = 0 da 0, en θ = π/4 da √2: depende de θ, no diferenciable.</p></details>
+
+<div class='enun'><b>Parcial práctico 1, 25/04/2024, ejercicio 1.</b> f(x, y) = −3|x|y/√(x² + y²), f(0, 0) = 0. a) Continuidad. b) Direccionales en (0, 0) según u = (3/5, −4/5), v = (1, 0), w = (0, 1). c) Diferenciabilidad. (Lectura de la foto: la u puede ser otra; el método es el mismo.)</div>
+<p><b>Paso A.</b> En polares f = −3 r|cos θ| r sen θ / r = −3r |cos θ| sen θ. |f| ≤ 3r → 0: <b>continua</b>.</p>
+<p><b>Paso D antes que C.</b> Para una dirección unitaria cualquiera (a, b): f(ta, tb) = −3|t||a| · tb / |t| = −3t|a|b. Dividido t: <b>D<sub>(a,b)</sub>f(0, 0) = −3|a|b</b>.</p>
+<p>u = (3/5, −4/5): −3 · (3/5) · (−4/5) = <b>36/25</b>. v = (1, 0): b = 0, da <b>0</b> (es f<sub>x</sub>). w = (0, 1): a = 0, da <b>0</b> (es f<sub>y</sub>).</p>
+<p><b>Paso C.</b> Si f fuera diferenciable, toda direccional valdría ∇f · u = 0·a + 0·b = 0. Pero en u da 36/25 ≠ 0. <b>No es diferenciable.</b> (También sale con el cociente: f/r = −3|cos θ| sen θ depende de θ. El alumno que se sacó 9 lo hizo con y = mx: le dio −3m/(1 + m²), que depende de m.)</p>
+
+<div class='enun'><b>1.er parcial A1, 13/05/2020, ejercicio 1.</b> f(x, y) = (x³ − y²)/(x² + y²), f(0, 0) = 0. ¿Es continua? ¿Es diferenciable?</div>
+<details><summary>Resolución por pasos (el caso en que NO es continua)</summary>
+<p><b>Paso 0.</b> El término −y² tiene grado 2, igual que el denominador: sospecho que el límite no existe.</p>
+<p><b>Paso A.</b> Por el eje x (y = 0): x³/x² = x → 0. Por el eje y (x = 0): −y²/y² = −1. Dos caminos, dos valores distintos: el límite no existe, <b>no es continua</b>.</p>
+<p><b>Paso C.</b> No es continua ⇒ <b>no es diferenciable</b>. Con esa frase alcanza.</p></details>
+
+<p><b>Preguntas de cuestionario sobre esto (salen siempre):</b></p>
+<table><tr><th>Pregunta</th><th>Cómo se razona</th><th>Respuesta</th></tr>
+<tr><td>B1 2022: (x² − y²)/(x² + y²), límite radial y existencia del límite</td><td>Con y = mx: (1 − m²)/(1 + m²), depende de m</td><td>No existe</td></tr>
+<tr><td>B1 2022: (x + y)/(x² + y²), ¿continua en el origen?</td><td>Grado 1 sobre grado 2. Por y = x: 2x/2x² = 1/x → ∞</td><td>No</td></tr>
+<tr><td>C 2023: si los límites iterados existen y son iguales, ¿existe el límite doble?</td><td>Los caminos solo sirven para mostrar que no existe</td><td>No necesariamente: no son condiciones suficientes</td></tr></table>
+<h2 id='r2'>2. Extremos libres (ejercicio 2)</h2>
+<p>Te piden los máximos, mínimos y puntos de ensilladura de f(x, y). Son cuatro pasos.</p>
+<h3>Paso 1. Derivadas primeras</h3>
+<p>f<sub>x</sub> (y como constante) y f<sub>y</sub> (x como constante). Revisá dos veces: si acá te equivocás, todo lo demás sale mal.</p>
+<div class='ej'><p><b>Ejemplo:</b> f = x²y − x² + y² − 4y.</p>
+<p>f<sub>x</sub>: x²y → 2xy; −x² → −2x; y² y −4y no tienen x → 0. <b>f<sub>x</sub> = 2xy − 2x</b>.</p>
+<p>f<sub>y</sub>: x²y → x²; −x² → 0; y² → 2y; −4y → −4. <b>f<sub>y</sub> = x² + 2y − 4</b>.</p></div>
+<h3>Paso 2. Puntos críticos: resolver f<sub>x</sub> = 0 y f<sub>y</sub> = 0</h3>
+<p>Es la parte donde más se pierde puntaje. Tres técnicas:</p>
+<p><b>a) Factorizar y abrir en casos.</b> Si una ecuación es un producto igual a 0, cada factor da un caso, y cada caso se termina con la otra ecuación.</p>
+<div class='ej'><p>2xy − 2x = 0 ⇒ 2x(y − 1) = 0 ⇒ <b>x = 0</b> o <b>y = 1</b>.</p>
+<p>Caso x = 0: en f<sub>y</sub> = 0 queda 0 + 2y − 4 = 0 ⇒ y = 2. Punto (0, 2).</p>
+<p>Caso y = 1: queda x² + 2 − 4 = 0 ⇒ x² = 2 ⇒ x = √2 o x = −√2. Puntos (√2, 1) y (−√2, 1).</p>
+<p>Total: <b>tres</b> puntos críticos. Error típico: dividir por x (“2y − 2 = 0”) y perder el caso x = 0.</p></div>
+<p><b>b) Despejar y reemplazar.</b> Cuando una ecuación es lineal, despejás una variable.</p>
+<div class='ej'><p>f<sub>x</sub> = 6x + 6y = 0 ⇒ y = −x. Reemplazo en f<sub>y</sub> = 3x² + 6y − 9 = 0: 3x² − 6x − 9 = 0 ⇒ x² − 2x − 3 = 0 ⇒ x = [2 ± √(4 + 12)]/2 = (2 ± 4)/2 ⇒ x = 3 o x = −1. Con y = −x: (3, −3) y (−1, 1).</p></div>
+<p><b>c) Sistemas simétricos.</b></p>
+<div class='ej'><p>3x² − 3y = 0 y 3y² − 3x = 0 ⇒ y = x² y x = y². Reemplazo: x = (x²)² = x⁴ ⇒ x⁴ − x = 0 ⇒ x(x³ − 1) = 0 ⇒ x = 0 o x = 1. Con y = x²: (0, 0) y (1, 1).</p></div>
+<h3>Paso 3. Derivadas segundas, Hessiana y D</h3>
+<p>f<sub>xx</sub> = derivar f<sub>x</sub> respecto de x. f<sub>yy</sub> = derivar f<sub>y</sub> respecto de y. f<sub>xy</sub> = derivar f<sub>x</sub> respecto de y (da lo mismo que derivar f<sub>y</sub> respecto de x: usalo de control).</p>
+<p class='f'>H = [[f<sub>xx</sub>, f<sub>xy</sub>], [f<sub>xy</sub>, f<sub>yy</sub>]] &nbsp;&nbsp; D = det H = f<sub>xx</sub>·f<sub>yy</sub> − (f<sub>xy</sub>)²</p>
+<div class='ej'><p>Con f<sub>x</sub> = 2xy − 2x y f<sub>y</sub> = x² + 2y − 4:</p>
+<p>f<sub>xx</sub> = 2y − 2. f<sub>yy</sub> = 2. f<sub>xy</sub> = 2x (control: derivar f<sub>y</sub> respecto de x da 2x ✓).</p>
+<p>H = [[2y − 2, 2x], [2x, 2]]. D = (2y − 2)·2 − (2x)² = 4y − 4 − 4x².</p></div>
+<h3>Paso 4. Clasificar, punto por punto</h3>
+<p>Reemplazá cada punto en D y en f<sub>xx</sub>. D &gt; 0 y f<sub>xx</sub> &gt; 0: mínimo. D &gt; 0 y f<sub>xx</sub> &lt; 0: máximo. D &lt; 0: ensilladura. D = 0: no se puede concluir con este criterio. Al final calculá f en cada extremo.</p>
+<div class='ej'><table><tr><th>Punto</th><th>f<sub>xx</sub> = 2y − 2</th><th>D = 4y − 4 − 4x²</th><th>Conclusión</th><th>f</th></tr>
+<tr><td>(0, 2)</td><td>2</td><td>8 − 4 − 0 = 4</td><td>D &gt; 0, f<sub>xx</sub> &gt; 0: mínimo local</td><td>0 − 0 + 4 − 8 = −4</td></tr>
+<tr><td>(√2, 1)</td><td>0</td><td>4 − 4 − 8 = −8</td><td>D &lt; 0: ensilladura</td><td>2 − 2 + 1 − 4 = −3</td></tr>
+<tr><td>(−√2, 1)</td><td>0</td><td>−8</td><td>ensilladura</td><td>−3</td></tr></table></div>
+<div class='hoja'><p>En (0, 2): D = 4 &gt; 0 y f<sub>xx</sub>(0, 2) = 2 &gt; 0, por lo tanto f tiene un mínimo local en (0, 2), y f(0, 2) = −4. En (±√2, 1): D = −8 &lt; 0, por lo tanto son puntos de ensilladura.</p></div>
+<div class='enun'><b>Ejemplo hecho.</b> f(x, y) = x³ − 3x + y² − 4y.</div>
+<p>1. f<sub>x</sub> = 3x² − 3, f<sub>y</sub> = 2y − 4.</p>
+<p>2. 3x² − 3 = 0 ⇒ x = 1 o x = −1. 2y − 4 = 0 ⇒ y = 2. Puntos críticos: (1, 2) y (−1, 2).</p>
+<p>3. f<sub>xx</sub> = 6x, f<sub>yy</sub> = 2, f<sub>xy</sub> = 0. D = 6x · 2 − 0 = 12x.</p>
+<table><tr><th>Punto</th><th>D</th><th>f<sub>xx</sub></th><th>Conclusión</th><th>f en el punto</th></tr>
+<tr><td>(1, 2)</td><td>12 &gt; 0</td><td>6 &gt; 0</td><td>mínimo local</td><td>1 − 3 + 4 − 8 = −6</td></tr>
+<tr><td>(−1, 2)</td><td>−12 &lt; 0</td><td></td><td>ensilladura</td><td>−1 + 3 + 4 − 8 = −2</td></tr></table>
+
+<h3>Si te dan una región cerrada (extremos absolutos)</h3>
+<p>Ejemplo del final de 2024: f en el conjunto D = {x² + 2y² ≤ 1}. En una región cerrada y acotada siempre hay un máximo y un mínimo absolutos, y están en un punto crítico de adentro o en el borde. Receta: (1) críticos interiores que estén dentro de D; (2) extremos sobre el borde, con Lagrange (sección 3) o reemplazando la ecuación del borde en f; (3) evaluar f en todos esos candidatos: el mayor valor es el máximo absoluto y el menor el mínimo.</p>
+<div class='enun'><b>Final 2024.</b> f(x, y) = x² + 2y² + y − 1 en D = {x² + 2y² ≤ 1}.</div>
+<details><summary>Resolución</summary>
+<p>(1) Interior: f<sub>x</sub> = 2x = 0, f<sub>y</sub> = 4y + 1 = 0 ⇒ (0, −1/4). ¿Está en D? 0 + 2/16 = 1/8 ≤ 1, sí. f = 2/16 − 1/4 − 1 = <b>−9/8</b>.</p>
+<p>(2) Borde x² + 2y² = 1: en f, x² + 2y² vale 1, así que f = 1 + y − 1 = y. Sobre la elipse y va de −1/√2 a 1/√2. Candidatos (0, 1/√2) con f = 1/√2 ≈ 0,707 y (0, −1/√2) con f ≈ −0,707.</p>
+<p>(3) Comparando: <b>máximo absoluto 1/√2 en (0, 1/√2)</b>; <b>mínimo absoluto −9/8 en (0, −1/4)</b>.</p></details>
+
+<h3 class='k'>Con parciales de la cátedra, paso por paso</h3>
+<div class='enun'><b>1.er parcial B1, 13/04/2022, ejercicio 3.</b> f(x, y) = x³ + 6xy + 3y² − 9x. a) Puntos críticos. b) Hessiana. c) Clasificación.</div>
+<p><b>Paso 1.</b> f<sub>x</sub> = 3x² + 6y − 9. f<sub>y</sub> = 6x + 6y.</p>
+<p><b>Paso 2.</b> De f<sub>y</sub> = 0: y = −x. Reemplazo en f<sub>x</sub> = 0: 3x² − 6x − 9 = 0 ⇒ x² − 2x − 3 = 0 ⇒ (x − 3)(x + 1) = 0 ⇒ x = 3 o x = −1. Con y = −x: <b>(3, −3) y (−1, 1)</b>.</p>
+<p><b>Paso 3.</b> f<sub>xx</sub> = 6x, f<sub>xy</sub> = 6, f<sub>yy</sub> = 6. <b>Hessiana</b> H = [[6x, 6], [6, 6]]. D = det H = 36x − 36.</p>
+<p><b>Paso 4.</b></p>
+<table><tr><th>Punto</th><th>H</th><th>D</th><th>f<sub>xx</sub></th><th>Tipo</th><th>f</th></tr>
+<tr><td>(3, −3)</td><td>[[18, 6], [6, 6]]</td><td>108 − 36 = 72</td><td>18</td><td>mínimo local</td><td>−27</td></tr>
+<tr><td>(−1, 1)</td><td>[[−6, 6], [6, 6]]</td><td>−36 − 36 = −72</td><td></td><td>ensilladura</td><td>5</td></tr></table>
+
+<div class='enun'><b>Parcial práctico 1, 25/04/2024, ejercicio 4.</b> f(x, y) = y³ + 4xy + 2(x² + y²) − 3y.</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> f<sub>x</sub> = 4y + 4x. f<sub>y</sub> = 3y² + 4x + 4y − 3.</p>
+<p><b>2.</b> f<sub>x</sub> = 0 ⇒ x = −y. En f<sub>y</sub>: 3y² − 4y + 4y − 3 = 0 ⇒ y² = 1 ⇒ y = ±1. Puntos <b>(−1, 1) y (1, −1)</b>.</p>
+<p><b>3.</b> H = [[4, 4], [4, 6y + 4]]. D = 4(6y + 4) − 16 = 24y.</p>
+<p><b>4.</b> (−1, 1): D = 24 &gt; 0, f<sub>xx</sub> = 4 &gt; 0, <b>mínimo</b>, f = −2. (1, −1): D = −24 &lt; 0, <b>ensilladura</b>, f = 2.</p></details>
+
+<div class='enun'><b>Recuperatorio del 1.er parcial A1, 01/07/2020.</b> f(x, y) = 2y³ − y² − 2x + x².</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> f<sub>x</sub> = 2x − 2. f<sub>y</sub> = 6y² − 2y.</p>
+<p><b>2.</b> x = 1. 2y(3y − 1) = 0 ⇒ y = 0 o y = 1/3. Puntos (1, 0) y (1, 1/3).</p>
+<p><b>3.</b> f<sub>xx</sub> = 2, f<sub>yy</sub> = 12y − 2, f<sub>xy</sub> = 0. D = 2(12y − 2).</p>
+<p><b>4.</b> (1, 0): D = −4, <b>ensilladura</b>. (1, 1/3): D = 4 &gt; 0 y f<sub>xx</sub> &gt; 0, <b>mínimo</b>, f = 2/27 − 1/9 − 1 = −28/27.</p></details>
+
+<div class='enun'><b>1.er parcial A1, 13/05/2020, opción múltiple.</b> f(x, y) = 3y² + 6xy − 2y³ − 3x² tiene un máximo local en: a) (0, 2) b) (0, 0) c) (2, 2) d) (2, 0).</div>
+<details><summary>Resolución por pasos</summary>
+<p>f<sub>x</sub> = 6y − 6x = 0 ⇒ y = x. f<sub>y</sub> = 6y + 6x − 6y² = 12x − 6x² = 0 ⇒ x = 0 o 2. Críticos (0, 0) y (2, 2).</p>
+<p>f<sub>xx</sub> = −6, f<sub>xy</sub> = 6, f<sub>yy</sub> = 6 − 12y. En (2, 2): D = (−6)(−18) − 36 = 72 &gt; 0, f<sub>xx</sub> &lt; 0: máximo. En (0, 0): D = −36 − 36 &lt; 0, silla. <b>Respuesta c.</b> Truco de opción múltiple: (0, 2) y (2, 0) ni siquiera anulan el gradiente.</p></details>
+<h2 id='r3'>3. Extremos con restricción: Lagrange</h2>
+<p>Te piden extremos de f(x, y) sujeto a una ecuación (una curva).</p>
+<h3>Paso 1. Escribir la restricción como g(x, y) = c</h3>
+<div class='ej'><p>“Sobre x² + y² = 8”: g = x² + y², c = 8. “Sobre 4x² + y² − 8 = 0”: g = 4x² + y², c = 8 (pasá el número al otro lado). “Sobre la recta x + y = 10”: g = x + y, c = 10.</p></div>
+<h3>Paso 2. Gradientes y sistema</h3>
+<p class='f'>f<sub>x</sub> = λ g<sub>x</sub> &nbsp; f<sub>y</sub> = λ g<sub>y</sub> &nbsp; g(x, y) = c</p>
+<div class='ej'><p><b>Ejemplo:</b> f = xy sobre x² + y² = 8. ∇f = (y, x). ∇g = (2x, 2y). Sistema: y = 2λx; x = 2λy; x² + y² = 8.</p></div>
+<h3>Paso 3. Resolver. Dos técnicas</h3>
+<p><b>a) Despejar λ de las dos primeras e igualar</b> (antes, ver aparte el caso en que dividís por 0).</p>
+<div class='ej'><p>¿Puede ser x = 0? Entonces de y = 2λx sale y = 0, y (0, 0) no cumple x² + y² = 8. Descartado. Lo mismo con y = 0. Entonces puedo dividir:</p>
+<p>λ = y/(2x) y λ = x/(2y) ⇒ y/(2x) = x/(2y) ⇒ 2y² = 2x² ⇒ y² = x² ⇒ y = x o y = −x.</p>
+<p>y = x: 2x² = 8 ⇒ x = ±2: (2, 2) y (−2, −2). y = −x: (2, −2) y (−2, 2).</p></div>
+<p><b>b) Factorizar con (1 − λ)</b>, cuando f y g tienen términos parecidos.</p>
+<div class='ej'><p>f = x² + 2y², g = (x − 1)² + 2y². La segunda ecuación es 4y = λ4y ⇒ 4y(1 − λ) = 0 ⇒ y = 0 o λ = 1. Cada caso se lleva a la primera ecuación y a la restricción (está resuelto entero abajo).</p></div>
+<h3>Paso 4. Evaluar f en todos los puntos y comparar</h3>
+<div class='ej'><p>f(2, 2) = 4, f(−2, −2) = 4, f(2, −2) = −4, f(−2, 2) = −4. La circunferencia es cerrada y acotada, así que hay máximo y mínimo: <b>máximo 4</b> en (2, 2) y (−2, −2); <b>mínimo −4</b> en (2, −2) y (−2, 2).</p></div>
+<div class='hoja'><p>Planteo ∇f = λ∇g con la restricción: y = 2λx, x = 2λy, x² + y² = 8. [Resolución.] Los candidatos son (±2, ±2). Evaluando f: el valor máximo de f sujeto a la restricción es 4 y el mínimo es −4. Por ser la restricción un conjunto compacto, son extremos absolutos.</p></div>
+<div class='enun'><b>Ejemplo hecho (final de Einstein).</b> f(x, y) = x² + 2y² sujeto a (x − 1)² + 2y² = 1.</div>
+<p>1. ∇f = (2x, 4y). g = (x − 1)² + 2y², ∇g = (2(x − 1), 4y).</p>
+<p>2. 2x = λ · 2(x − 1); 4y = λ · 4y; (x − 1)² + 2y² = 1.</p>
+<p>3. La segunda: 4y − 4λy = 0 ⇒ 4y(1 − λ) = 0 ⇒ y = 0 o λ = 1.</p>
+<p>Caso λ = 1: la primera queda 2x = 2x − 2, o sea 0 = −2. Imposible: no da puntos.</p>
+<p>Caso y = 0: la restricción queda (x − 1)² = 1 ⇒ x = 0 o x = 2. Puntos (0, 0) y (2, 0).</p>
+<p>4. f(0, 0) = 0; f(2, 0) = 4. La restricción es una elipse (cerrada): <b>mínimo 0 en (0, 0), máximo 4 en (2, 0)</b>.</p>
+<div class='enun'><b>Hacelo vos.</b> Extremos de f = x + y sobre x² + y² = 2.</div>
+<details><summary>Resolución</summary><p>1 = λ2x, 1 = λ2y ⇒ x = y (los dos son 1/(2λ)). En la restricción 2x² = 2 ⇒ x = ±1. (1, 1): f = 2, máximo. (−1, −1): f = −2, mínimo.</p></details>
+
+<h3 class='k'>Con parciales de la cátedra, paso por paso</h3>
+<div class='enun'><b>1.er parcial A1, 13/05/2020, ejercicio 5.</b> Mínimo global de f = x² + y² sujeta a (x − 1)² + y² = 1.</div>
+<p><b>Paso 1.</b> ∇f = (2x, 2y). ∇g = (2(x − 1), 2y).</p>
+<p><b>Paso 2.</b> 2x = λ · 2(x − 1); 2y = λ · 2y; (x − 1)² + y² = 1.</p>
+<p><b>Paso 3.</b> La segunda: 2y(1 − λ) = 0. Si λ = 1, la primera da 2x = 2x − 2: imposible. Entonces y = 0, y la restricción da (x − 1)² = 1 ⇒ x = 0 o x = 2.</p>
+<p><b>Paso 4.</b> f(0, 0) = 0, f(2, 0) = 4. <b>Mínimo f(0, 0) = 0</b>, opción a.</p>
+<div class='enun'><b>Parcial 17/04/2023, ejercicio 4.</b> Extremos de f = x² − y² sobre 4x² + y² − 8 = 0 (lectura de la foto).</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> ∇f = (2x, −2y). ∇g = (8x, 2y).</p>
+<p><b>2.</b> 2x = 8λx; −2y = 2λy; 4x² + y² = 8.</p>
+<p><b>3.</b> Primera: 2x(1 − 4λ) = 0 ⇒ x = 0 o λ = 1/4. Segunda: 2y(1 + λ) = 0 ⇒ y = 0 o λ = −1. λ no puede valer 1/4 y −1 a la vez, así que x = 0 o y = 0. Si x = 0: y² = 8, y = ±2√2. Si y = 0: x² = 2, x = ±√2.</p>
+<p><b>4.</b> f(±√2, 0) = 2: <b>máximo</b>. f(0, ±2√2) = −8: <b>mínimo</b>.</p></details>
+<h2 id='r4'>4. Gradiente y derivada direccional</h2>
+<h3>Paso 1. El gradiente en el punto</h3>
+<div class='ej'><p>f = xyz en P = (1, 2, 3). ∇f = (yz, xz, xy). Reemplazo: (2·3, 1·3, 1·2) = <b>(6, 3, 2)</b>.</p></div>
+<h3>Paso 2. El vector unitario. Tres formas en que te lo dan</h3>
+<div class='ej'><p><b>Un vector:</b> v = (1, 1, 1). ‖v‖ = √(1 + 1 + 1) = √3. u = (1/√3, 1/√3, 1/√3).</p>
+<p><b>“Hacia el punto Q”:</b> de P = (1, 2) a Q = (4, 6): v = Q − P = (3, 4). ‖v‖ = √(9 + 16) = 5. u = (3/5, 4/5).</p>
+<p><b>Un ángulo α con el eje x:</b> u = (cos α, sen α). Con α = π/3: u = (1/2, √3/2). Ya es unitario.</p>
+<p>Control: a² + b² (+ c²) tiene que dar 1.</p></div>
+<h3>Paso 3. Producto escalar</h3>
+<div class='ej'><p>D<sub>u</sub>f(P) = ∇f · u = (6, 3, 2) · (1/√3, 1/√3, 1/√3) = (6 + 3 + 2)/√3 = <b>11/√3</b>.</p></div>
+<h3>Paso 4. Si piden máxima o mínima</h3>
+<div class='ej'><p>Máxima = ‖∇f‖ = √(36 + 9 + 4) = <b>7</b>, en la dirección ∇f/‖∇f‖ = (6/7, 3/7, 2/7). Mínima = −7, en la dirección (−6/7, −3/7, −2/7). Nula: en cualquier dirección perpendicular al gradiente.</p></div>
+<div class='hoja'><p>Como f es diferenciable en P (sus parciales son continuas), D<sub>u</sub>f(P) = ∇f(P) · u = 11/√3. La máxima razón de cambio es ‖∇f(P)‖ = 7 y se da en la dirección de ∇f(P).</p></div>
+<div class='enun'><b>Ejemplo hecho.</b> f = x²y + y³ en P = (1, 2), en la dirección de v = (3, 4).</div>
+<p>∇f = (2xy, x² + 3y²) = (4, 13) en (1, 2). ‖v‖ = 5, u = (3/5, 4/5). D<sub>u</sub>f = 4·3/5 + 13·4/5 = 12/5 + 52/5 = <b>64/5</b>. Máxima: ‖(4, 13)‖ = √185.</p>
+<p><b>Plano tangente</b> a z = f(x, y) en (x₀, y₀): z = f(x₀, y₀) + f<sub>x</sub>(x − x₀) + f<sub>y</sub>(y − y₀).</p>
+
+<h3 class='k'>Con parciales de la cátedra, paso por paso</h3>
+<div class='enun'><b>Parcial práctico 1, 25/04/2024, ejercicio 2.</b> f(x, y, z) = x + y²z + √(x² + y² + z²). a) Direccional en P = (1, 1, −1) en la dirección que une P con Q = (1, 0, 0). b) Mínima direccional y su dirección.</div>
+<p><b>Paso 1, gradiente.</b> f<sub>x</sub> = 1 + x/√(x² + y² + z²); f<sub>y</sub> = 2yz + y/√(…); f<sub>z</sub> = y² + z/√(…). En P, √(1 + 1 + 1) = √3: ∇f(P) = (1 + 1/√3, −2 + 1/√3, 1 − 1/√3) ≈ (1,577; −1,423; 0,423).</p>
+<p><b>Paso 2, dirección.</b> v = Q − P = (0, −1, 1). ‖v‖ = √2. u = (0, −1/√2, 1/√2).</p>
+<p><b>Paso 3.</b> D<sub>u</sub>f = 0 + 1,423/√2 + 0,423/√2 = <b>(3 − 2/√3)/√2 ≈ 1,305</b>.</p>
+<p><b>Paso 4, mínima.</b> Es −‖∇f‖ = −√(1,577² + 1,423² + 0,423²) = <b>−2,166</b>, en la dirección −∇f/‖∇f‖ ≈ (−0,728; 0,657; −0,195).</p>
+<div class='enun'><b>1.er parcial A1, 13/05/2020, ejercicio 2.</b> f = x cos y + xz + y e<sup>xyz</sup> en (0, 0, 0), u = (1/√3, 1/√3, 1/√3).</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> f<sub>x</sub> = cos y + z + y·yz e<sup>xyz</sup> → 1. f<sub>y</sub> = −x sen y + e<sup>xyz</sup> + y·xz e<sup>xyz</sup> → 1. f<sub>z</sub> = x + y·xy e<sup>xyz</sup> → 0. ∇f = (1, 1, 0).</p>
+<p><b>2.</b> u ya es unitario.</p>
+<p><b>3.</b> D<sub>u</sub>f = 1/√3 + 1/√3 + 0 = <b>2/√3</b>.</p></details>
+<div class='enun'><b>Recuperatorio 01/07/2020.</b> f = e<sup>yz</sup> + x + xy³ en (0, 1, 0), u = (√3/3)(1, 1, 1).</div>
+<details><summary>Resolución por pasos</summary><p>∇f = (1 + y³, z e<sup>yz</sup> + 3xy², y e<sup>yz</sup>) = (2, 0, 1). D<sub>u</sub>f = (2 + 0 + 1)·√3/3 = <b>√3</b>.</p></details>
+<div class='enun'><b>Cuestionarios: hallar constantes con el gradiente.</b> B1 2022: f = Axy² + B e<sup>2x+y</sup>, ∇f(0, 1) = (3e, e). C 2023: f = A(x − 1) + B e<sup>x+3y</sup>, ∇f(1, 0) = (3 + e, 3e).</div>
+<details><summary>Resolución por pasos</summary>
+<p>Derivás con A y B como letras, evaluás en el punto e igualás componente a componente.</p>
+<p>B1: f<sub>x</sub> = Ay² + 2B e<sup>2x+y</sup> → A + 2Be = 3e. f<sub>y</sub> = 2Axy + B e<sup>2x+y</sup> → Be = e ⇒ <b>B = 1</b>, y entonces <b>A = e</b>.</p>
+<p>C: f<sub>y</sub> = 3B e<sup>x+3y</sup> → 3Be = 3e ⇒ <b>B = 1</b>. f<sub>x</sub> = A + B e<sup>x+3y</sup> → A + e = 3 + e ⇒ <b>A = 3</b>.</p></details>
+<div class='enun'><b>1.er parcial A2, 13/05/2020.</b> La altura de una montaña es h = 2e<sup>−x²</sup> + e<sup>−3y²</sup>. Parado en (1, 0), ¿hacia dónde caminar para subir más rápido? a) (e², 0) b) (−1, 0) c) (1, 0) d) (1, −1).</div>
+<details><summary>Resolución por pasos</summary><p>Subir más rápido = dirección del gradiente. ∇h = (−4x e<sup>−x²</sup>, −6y e<sup>−3y²</sup>) = (−4/e, 0) en (1, 0). Apunta como (−1, 0): <b>b</b>.</p></details>
+
+<h2 id='cadena'>4 bis. Regla de la cadena (sale en todos los primeros parciales)</h2>
+<p>Te dan dos funciones, f y g, y te piden la jacobiana de la compuesta h = f ∘ g (primero g, después f) en un punto x₀, o una derivada de h.</p>
+<ol><li><b>Calculá g(x₀).</b> Ese es el punto donde se evalúa f. Error típico: evaluar f en x₀.</li>
+<li><b>Jacobiana de g en x₀:</b> una fila por cada componente de g, una columna por cada variable.</li>
+<li><b>Jacobiana de f en g(x₀):</b> igual.</li>
+<li><b>Multiplicá</b> h′(x₀) = f′(g(x₀)) · g′(x₀), en ese orden (fila por columna). Controlá tamaños: (m × k)·(k × n) da m × n.</li>
+<li>Leé lo que pidan: el elemento (i, j) es ∂h<sub>i</sub>/∂x<sub>j</sub>. Si h es real, la fila es ∇h: la direccional es ∇h · u y la máxima razón de cambio ‖∇h‖.</li></ol>
+<div class='enun'><b>Recuperatorio 01/07/2020.</b> g(x, y) = (xy + y², x² + y²), f(u, v) = (u + uv, u³ + v). Jacobiana de f ∘ g en (1, 1).</div>
+<p><b>Paso 1.</b> g(1, 1) = (1 + 1, 1 + 1) = (2, 2).</p>
+<p><b>Paso 2.</b> g′ = [[y, x + 2y], [2x, 2y]] → en (1, 1): [[1, 3], [2, 2]].</p>
+<p><b>Paso 3.</b> f′ = [[1 + v, u], [3u², 1]] → en (2, 2): [[3, 2], [12, 1]].</p>
+<p><b>Paso 4.</b> [[3, 2], [12, 1]] · [[1, 3], [2, 2]] = [[3 + 4, 9 + 4], [12 + 2, 36 + 2]] = <b>[[7, 13], [14, 38]]</b>.</p>
+<div class='enun'><b>1.er parcial A1, 13/05/2020, ejercicio 3.</b> g(x, y) = (x² + 2x, y, x + y), f(u, v, w) = (u² + w, u + v). Jacobiana de f ∘ g en (1, 1).</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> g(1, 1) = (3, 1, 2). <b>2.</b> g′ = [[2x + 2, 0], [0, 1], [1, 1]] → [[4, 0], [0, 1], [1, 1]] (3 × 2). <b>3.</b> f′ = [[2u, 0, 1], [1, 1, 0]] → [[6, 0, 1], [1, 1, 0]] (2 × 3).</p>
+<p><b>4.</b> Fila 1: (6·4 + 0 + 1·1, 0 + 0 + 1·1) = (25, 1). Fila 2: (4 + 0 + 0, 0 + 1 + 0) = (4, 1). <b>[[25, 1], [4, 1]]</b>.</p></details>
+<div class='enun'><b>Parcial práctico 1, 25/04/2024, ejercicio 3.</b> g′(x, y) = (2x + y, x²y), F(t) = (1 + t², t cos t, ln(1 + 2t + t²)), g(1, −2) = 0. Jacobiana de h = F ∘ g en (1, −2); ∂h₁/∂x y ∂h₂/∂y.</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> g(1, −2) = 0: F se evalúa en t = 0.</p>
+<p><b>2.</b> g′(1, −2) = (2 − 2, 1·(−2)) = (0, −2), matriz 1 × 2.</p>
+<p><b>3.</b> F′(t) = (2t, cos t − t sen t, (2 + 2t)/(1 + t)²) = (2t, cos t − t sen t, 2/(1 + t)). F′(0) = (0, 1, 2) como columna (3 × 1).</p>
+<p><b>4.</b> h′ = F′(0) · g′ = columna (0, 1, 2) por fila (0, −2) = [[0, 0], [0, −2], [0, −4]].</p>
+<p><b>5.</b> ∂h₁/∂x = elemento (1, 1) = <b>0</b>. ∂h₂/∂y = elemento (2, 2) = <b>−2</b>.</p></details>
+<div class='enun'><b>1.er parcial C, 26/04/2023, ejercicio 2.</b> g(x, y) = (e<sup>3x+y−1</sup>, sen(xy²), y²), f(u, v, w) = e<sup>uv+w−1</sup> + uv + uw², h = f ∘ g, x₀ = (0, 1). b) Direccional según u = (√2/2, −√2/2) (lectura). c) Máxima razón de cambio.</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>1.</b> g(0, 1) = (e⁰, sen 0, 1) = (1, 0, 1).</p>
+<p><b>2.</b> g′ = [[3e<sup>3x+y−1</sup>, e<sup>3x+y−1</sup>], [y² cos(xy²), 2xy cos(xy²)], [0, 2y]] → [[3, 1], [1, 0], [0, 2]].</p>
+<p><b>3.</b> f′ = (v e<sup>uv+w−1</sup> + v + w², u e<sup>uv+w−1</sup> + u, e<sup>uv+w−1</sup> + 2uw). En (1, 0, 1), e<sup>0</sup> = 1: (0 + 0 + 1, 1 + 1, 1 + 2) = (1, 2, 3).</p>
+<p><b>4.</b> ∇h = (1, 2, 3) · [[3, 1], [1, 0], [0, 2]] = (3 + 2 + 0, 1 + 0 + 6) = <b>(5, 7)</b>.</p>
+<p><b>5.</b> D<sub>u</sub>h = 5·√2/2 − 7·√2/2 = <b>−√2</b>. Máxima razón de cambio ‖(5, 7)‖ = <b>√74</b>.</p></details>
+<div class='enun'><b>1.er parcial A2, 13/05/2020.</b> Si h(x, t) = f(x + at) + g(−x − at), demostrar que ∂h/∂t = a ∂h/∂x.</div>
+<details><summary>Resolución</summary><p>Regla de la cadena en una variable: ∂h/∂t = f′(x + at)·a + g′(−x − at)·(−a). ∂h/∂x = f′(x + at)·1 + g′(−x − at)·(−1). La primera es a veces la segunda. ∎</p></details>
+<h2 id='r5'>5. Volumen con integral doble en polares (ejercicio 3)</h2>
+<p>La idea: <b>volumen = ∬<sub>D</sub> (techo − piso) dA</b>, donde D es la sombra del sólido sobre el plano xy.</p>
+<h3>Paso 1. Techo y piso</h3>
+<p>Escribí cada superficie como z = algo. Para saber cuál está arriba, probá un punto de la región (el origen suele servir).</p>
+<div class='ej'><p><b>Ejemplo:</b> sólido entre z = x² + y² y z = 8 − x² − y².</p>
+<p>En (0, 0): la primera da 0, la segunda da 8. <b>Techo: z = 8 − x² − y². Piso: z = x² + y².</b></p>
+<p>Si una superficie viene como “x² + y² + z = 4”, despejá: z = 4 − x² − y².</p></div>
+<h3>Paso 2. La región D</h3>
+<p>Si no te la dan, sale de igualar techo y piso: ahí se cortan, y esa curva es el borde de D.</p>
+<div class='ej'><p>8 − x² − y² = x² + y² ⇒ 2(x² + y²) = 8 ⇒ x² + y² = 4. D es el disco de radio 2.</p>
+<p>Si te la dan como desigualdad (x² + y² ≤ 2y, x ≥ 0, y ≥ x…), se pasa a polares en el paso 3.</p></div>
+<h3>Paso 3. Todo a polares</h3>
+<p><b>El integrando:</b> techo − piso, con x² + y² = r², x = r cos θ, y = r sen θ. <b>Multiplicado por r</b> (dA = r dr dθ).</p>
+<p><b>Los límites de r:</b> desde el borde de adentro (casi siempre 0) hasta la curva de afuera escrita como r = algo. <b>Los límites de θ:</b> los ángulos que barren la región.</p>
+<div class='ej'><p>Integrando: (8 − r²) − r² = 8 − 2r². Por r: (8 − 2r²) r = 8r − 2r³.</p>
+<p>Disco de radio 2: r de 0 a 2, θ de 0 a 2π.</p>
+<table><tr><th>La región es…</th><th>r</th><th>θ</th></tr>
+<tr><td>x² + y² ≤ 4, primer cuadrante</td><td>0 a 2</td><td>0 a π/2</td></tr>
+<tr><td>x² + y² ≤ 4, y ≥ 0</td><td>0 a 2</td><td>0 a π</td></tr>
+<tr><td>x² + y² ≤ 4, y ≥ x</td><td>0 a 2</td><td>π/4 a 5π/4</td></tr>
+<tr><td>1 ≤ x² + y² ≤ 4 (anillo)</td><td>1 a 2</td><td>0 a 2π</td></tr>
+<tr><td>x² + y² ≤ x</td><td>0 a cos θ</td><td>−π/2 a π/2</td></tr>
+<tr><td>x² + y² ≤ 2y</td><td>0 a 2 sen θ</td><td>0 a π</td></tr></table></div>
+<h3>Paso 4. Integrar primero en r</h3>
+<p>θ se trata como un número. Integrás, reemplazás el límite de arriba y restás el de abajo.</p>
+<div class='ej'><p>∫<sub>0</sub><sup>2</sup> (8r − 2r³) dr = [4r² − r⁴/2]<sub>0</sub><sup>2</sup> = (16 − 8) − 0 = <b>8</b>.</p>
+<p><b>Si el límite tiene θ</b> (r de 0 a cos θ, con integrando 4r − r³): [2r² − r⁴/4]<sub>0</sub><sup>cos θ</sup> = 2cos²θ − cos⁴θ/4. Queda una función de θ.</p></div>
+<h3>Paso 5. Integrar en θ</h3>
+<div class='ej'><p>∫<sub>0</sub><sup>2π</sup> 8 dθ = 8 · 2π = <b>16π</b>.</p>
+<p>Con la función de θ: ∫<sub>−π/2</sub><sup>π/2</sup> (2cos²θ − cos⁴θ/4) dθ = 2 · (π/2) − (1/4)(3π/8) = 29π/32 (usando las integrales de la sección 0).</p></div>
+<div class='hoja'><p>V = ∬<sub>D</sub> [(8 − x² − y²) − (x² + y²)] dA, con D = {x² + y² ≤ 4}. En polares: V = ∫<sub>0</sub><sup>2π</sup> ∫<sub>0</sub><sup>2</sup> (8 − 2r²) r dr dθ = ∫<sub>0</sub><sup>2π</sup> [4r² − r⁴/2]<sub>0</sub><sup>2</sup> dθ = ∫<sub>0</sub><sup>2π</sup> 8 dθ = 16π.</p></div>
+<div class='enun'><b>Ejemplo hecho (el del modelo).</b> Volumen bajo z = 4 − x² − y² y sobre z = 0, con (x, y) en x² + y² ≤ x.</div>
+<p>1. Techo 4 − x² − y² = 4 − r². Piso 0.</p>
+<p>2. D: x² + y² ≤ x es r² ≤ r cos θ ⇒ <b>0 ≤ r ≤ cos θ</b>, con <b>−π/2 ≤ θ ≤ π/2</b> (para que cos θ ≥ 0).</p>
+<p>3. V = ∫<sub>−π/2</sub><sup>π/2</sup> ∫<sub>0</sub><sup>cos θ</sup> (4 − r²) r dr dθ. Ojo con la r de más: el integrando es 4r − r³.</p>
+<p>4. Integral en r: [2r² − r⁴/4]<sub>0</sub><sup>cos θ</sup> = 2cos²θ − cos⁴θ/4.</p>
+<p>5. Integral en θ: 2 · ∫cos² − (1/4) ∫cos⁴ = 2 · π/2 − (1/4) · 3π/8 = π − 3π/32 = <b>29π/32</b>.</p>
+<div class='enun'><b>Hacelo vos.</b> Volumen entre z = 1 + 2(x² + y²) y z = 9.</div>
+<details><summary>Resolución</summary>
+<p>Techo 9, piso 1 + 2r². Se cortan cuando 1 + 2r² = 9 ⇒ r = 2: D es el disco r ≤ 2, θ de 0 a 2π.</p>
+<p>V = ∫<sub>0</sub><sup>2π</sup> ∫<sub>0</sub><sup>2</sup> (8 − 2r²) r dr dθ = 2π · [4r² − r⁴/2]<sub>0</sub><sup>2</sup> = 2π · (16 − 8) = <b>16π</b>.</p>
+<p>Si la región además pide algo como y ≥ 0 o x ≥ 0, cambia el rango de θ (0 a π, −π/2 a π/2) y el resultado se divide.</p></details>
+<p class='small'>Gráfico (piden un esbozo): dibujá el paraboloide o la esfera, el plano, y sombreá la región D en el piso con la curva de corte. Con eso alcanza.</p>
+
+<h2 id='r6'>6. Integral de línea: directa y por Green (ejercicio 4)</h2>
+<p>Te dan ∮<sub>C</sub> P dx + Q dy sobre el borde de una región, positivamente orientado, y te piden las dos maneras. <b>Tienen que dar lo mismo.</b></p>
+<h3>Paso 1. Leer P y Q</h3>
+<p>P es lo que multiplica a dx; Q lo que multiplica a dy. Si el orden está cambiado o falta uno, reordená.</p>
+<div class='ej'><p>∮ y dx + 2x dy: P = y, Q = 2x. ∮ x dy − y dx: P = −y, Q = x. ∮ x² dy: P = 0, Q = x².</p></div>
+<h3>Paso 2. Dibujo y orientación</h3>
+<p>Dibujá la región, marcá los vértices, poné flechas en sentido <b>antihorario</b>. Regla: caminando por el borde, la región queda a tu izquierda. Nombrá los tramos (C₁, C₂, C₃) con su punto de inicio y de fin.</p>
+<div class='ej'><p>Triángulo de vértices (0, 0), (1, 0), (0, 1). Antihorario: C₁ de (0, 0) a (1, 0); C₂ de (1, 0) a (0, 1); C₃ de (0, 1) a (0, 0).</p></div>
+<h3>Paso 3. Green</h3>
+<p class='f'>∮<sub>C</sub> P dx + Q dy = ∬<sub>D</sub> (∂Q/∂x − ∂P/∂y) dA</p>
+<p>(a) Derivá Q respecto de x y P respecto de y. (b) Restá. (c) Integrá sobre D: si dio una constante k, es k · área. Si no, describí D: x entre dos números, y entre dos funciones (o polares si es un círculo).</p>
+<div class='ej'><p>∮ x dy − y dx sobre el triángulo: Q = x ⇒ ∂Q/∂x = 1. P = −y ⇒ ∂P/∂y = −1. Resta: 1 − (−1) = 2. Área del triángulo 1/2. <b>Resultado 2 · 1/2 = 1</b>.</p>
+<p>Si no da constante, por ejemplo ∂Q/∂x − ∂P/∂y = x y la región es 0 ≤ x ≤ 1, x² ≤ y ≤ x: ∫<sub>0</sub><sup>1</sup> ∫<sub>x²</sub><sup>x</sup> x dy dx = ∫<sub>0</sub><sup>1</sup> x(x − x²) dx = 1/3 − 1/4 = 1/12.</p></div>
+<h3>Paso 4. Directa: parametrizar cada tramo</h3>
+<p>Para cada tramo escribís x, y, dx, dy en función de un parámetro y los límites <b>del inicio al fin del tramo</b>.</p>
+<div class='ej'><table><tr><th>Tramo</th><th>Cómo se escribe</th></tr>
+<tr><td>Horizontal y = c, de x = a a x = b</td><td>y = c, dy = 0, x de a a b (si va hacia la izquierda, a &gt; b)</td></tr>
+<tr><td>Vertical x = c, de y = a a y = b</td><td>x = c, dx = 0, y de a a b</td></tr>
+<tr><td>Segmento inclinado de P a Q</td><td>(x, y) = P + t(Q − P), t de 0 a 1. De (1, 0) a (0, 1): x = 1 − t, y = t, dx = −dt, dy = dt</td></tr>
+<tr><td>Curva y = g(x)</td><td>y = g(x), dy = g′(x) dx, x del inicio al fin. Parábola y = 1 − x² de (0, 1) a (1, 0): dy = −2x dx, x de 0 a 1</td></tr>
+<tr><td>Arco de circunferencia de radio a</td><td>x = a cos t, y = a sen t, dx = −a sen t dt, dy = a cos t dt. De (2, 0) a (0, 2): t de 0 a π/2. De (0, 2) a (−2, 0): t de π/2 a π. Sentido horario: t decrece</td></tr></table></div>
+<h3>Paso 5. Directa: reemplazar, integrar cada tramo y sumar</h3>
+<div class='ej'><p>∮ x dy − y dx sobre el triángulo:</p>
+<p>C₁: y = 0, dy = 0 ⇒ x · 0 − 0 · dx = 0. Aporta <b>0</b>.</p>
+<p>C₂: x = 1 − t, y = t, dx = −dt, dy = dt ⇒ (1 − t) dt − t(−dt) = (1 − t + t) dt = dt. ∫<sub>0</sub><sup>1</sup> dt = <b>1</b>.</p>
+<p>C₃: x = 0, dx = 0 ⇒ 0 · dy − y · 0 = 0. Aporta <b>0</b>.</p>
+<p>Total 0 + 1 + 0 = <b>1</b>. Igual que Green.</p></div>
+<div class='hoja'><p>Por Green: P = −y, Q = x, ∂Q/∂x − ∂P/∂y = 2, ∮<sub>C</sub> x dy − y dx = ∬<sub>D</sub> 2 dA = 2 · A(D) = 1. Directa: C = C₁ ∪ C₂ ∪ C₃, [cada tramo con su parametrización y su integral], suma = 1. Ambos métodos coinciden.</p></div>
+<div class='enun'><b>Ejemplo hecho (el del modelo).</b> ∮ y dx + 2x dy sobre el borde de D = {0 ≤ x ≤ 1, 1 − x² ≤ y ≤ 1}, sentido positivo.</div>
+<p><b>Dibujo.</b> Abajo la parábola y = 1 − x², que va de (0, 1) a (1, 0). Arriba la recta y = 1. A la derecha el segmento x = 1 de (1, 0) a (1, 1). Antihorario: parábola de (0, 1) a (1, 0), subo por x = 1 hasta (1, 1), vuelvo por y = 1 hasta (0, 1).</p>
+<p><b>Green.</b> P = y, Q = 2x. ∂Q/∂x − ∂P/∂y = 2 − 1 = 1. La integral es el área de D: ∫<sub>0</sub><sup>1</sup> [1 − (1 − x²)] dx = ∫<sub>0</sub><sup>1</sup> x² dx = <b>1/3</b>.</p>
+<p><b>Directa.</b></p>
+<table><tr><th>Tramo</th><th>Parametrización</th><th>Cuenta</th><th>Valor</th></tr>
+<tr><td>Parábola, de (0,1) a (1,0)</td><td>y = 1 − x², dy = −2x dx, x de 0 a 1</td><td>∫<sub>0</sub><sup>1</sup> [(1 − x²) + 2x(−2x)] dx = ∫<sub>0</sub><sup>1</sup> (1 − 5x²) dx</td><td>−2/3</td></tr>
+<tr><td>x = 1, de (1,0) a (1,1)</td><td>x = 1, dx = 0, y de 0 a 1</td><td>∫<sub>0</sub><sup>1</sup> 2·1 dy</td><td>2</td></tr>
+<tr><td>y = 1, de (1,1) a (0,1)</td><td>y = 1, dy = 0, x de 1 a 0</td><td>∫<sub>1</sub><sup>0</sup> 1 dx</td><td>−1</td></tr></table>
+<p>Suma: −2/3 + 2 − 1 = <b>1/3</b>. Coincide con Green.</p>
+<div class='enun'><b>Hacelo vos.</b> ∮ (x² − y) dx + (x + y²) dy sobre la circunferencia x² + y² = 4, antihoraria.</div>
+<details><summary>Resolución</summary>
+<p>Green: ∂Q/∂x − ∂P/∂y = 1 − (−1) = 2. Área del círculo 4π. Resultado <b>8π</b>.</p>
+<p>Directa: x = 2cos t, y = 2sen t, t de 0 a 2π. Al reemplazar y simplificar quedan términos con cos²t sen t y sen²t cos t, que integran 0 en una vuelta, y un 4 constante: ∫<sub>0</sub><sup>2π</sup> 4 dt = 8π.</p></details>
+<p class='small'>Si te piden “verifique si el campo es conservativo”: es conservativo (en un dominio sin agujeros) si ∂P/∂y = ∂Q/∂x. Entonces la integral cerrada da 0 y las dos maneras dan 0.</p>
+
+<h3 class='k'>Con exámenes de la cátedra, paso por paso</h3>
+<p class='small'>En tu material no hay segundos parciales; estos dos son de finales prácticos de la misma cátedra.</p>
+<div class='enun'><b>Final 2024, ejercicio 3.</b> ∮ 2y dx + 3x dy sobre la frontera positiva de la región 0 ≤ y ≤ x², −1 ≤ x ≤ 0. a) Directa. b) Green.</div>
+<p><b>Paso 0, el dibujo.</b> La región está entre el eje x y la parábola y = x², a la izquierda del origen. Vértices: (−1, 0), (0, 0) y (−1, 1). Antihorario: por el eje x de (−1, 0) a (0, 0); por la parábola de (0, 0) a (−1, 1); por la recta x = −1 bajando de (−1, 1) a (−1, 0). P = 2y, Q = 3x.</p>
+<p><b>b) Green.</b> ∂Q/∂x − ∂P/∂y = 3 − 2 = 1. Es el área: ∫<sub>−1</sub><sup>0</sup> x² dx = <b>1/3</b>.</p>
+<p><b>a) Directa, tramo por tramo.</b></p>
+<table><tr><th>Tramo</th><th>Parametrización</th><th>Cuenta</th><th>Valor</th></tr>
+<tr><td>Eje x, de (−1,0) a (0,0)</td><td>y = 0, dy = 0</td><td>2·0 dx + 0 = 0</td><td>0</td></tr>
+<tr><td>Parábola, de (0,0) a (−1,1)</td><td>y = x², dy = 2x dx, x de 0 a −1</td><td>∫<sub>0</sub><sup>−1</sup> (2x² + 3x·2x) dx = ∫<sub>0</sub><sup>−1</sup> 8x² dx</td><td>−8/3</td></tr>
+<tr><td>x = −1, de (−1,1) a (−1,0)</td><td>dx = 0, y de 1 a 0</td><td>∫<sub>1</sub><sup>0</sup> 3(−1) dy</td><td>3</td></tr></table>
+<p>Suma: 0 − 8/3 + 3 = <b>1/3</b>. Igual que Green.</p>
+<div class='enun'><b>Final práctico 22/11/2023, ejercicio 3.</b> ∮ (−x²y) dx + (xy²) dy sobre la curva cerrada positiva formada por C₁: segmento de (−2, 0) a (0, 0); C₂: segmento de (0, 0) a (0, 2); C₃: arco de circunferencia de (0, 2) a (−2, 0). (Así se lee el integrando en la foto; si es otro, cambia el número, no los pasos.)</div>
+<details><summary>Resolución por pasos</summary>
+<p><b>0.</b> Es el cuarto de círculo de radio 2 en el segundo cuadrante. P = −x²y, Q = xy².</p>
+<p><b>Green.</b> ∂Q/∂x − ∂P/∂y = y² + x² = r². En polares, θ de π/2 a π, r de 0 a 2: ∫∫ r² · r dr dθ = (π/2) · [r⁴/4]<sub>0</sub><sup>2</sup> = (π/2) · 4 = <b>2π</b>.</p>
+<p><b>Directa.</b> C₁: y = 0 ⇒ P = 0 y dy = 0: aporta 0. C₂: x = 0 ⇒ Q = 0 y dx = 0: aporta 0. C₃: x = 2cos t, y = 2sen t, t de π/2 a π. P dx = −(4cos²t)(2sen t)(−2sen t) dt = 16cos²t sen²t dt. Q dy = (2cos t)(4sen²t)(2cos t) dt = 16cos²t sen²t dt. Suma 32cos²t sen²t = 8 sen²(2t). ∫<sub>π/2</sub><sup>π</sup> 8 sen²(2t) dt = 8 · π/4 = <b>2π</b>.</p></details>
+<h2 id='r7'>7. Ecuaciones diferenciales de primer orden</h2>
+<p>Primero se <b>despeja y′</b> y se identifica el tipo. Preguntate en este orden: ¿separable? ¿lineal? ¿exacta? ¿Bernoulli?</p>
+<h3>Separable: y′ = (algo de x) · (algo de y)</h3>
+<p>Pasos: (1) escribir y′ como dy/dx; (2) pasar todo lo de y con dy a la izquierda y lo de x con dx a la derecha; (3) integrar los dos lados; (4) una sola constante C; (5) despejar y si se puede; (6) si hay condición inicial, reemplazarla para sacar C.</p>
+<div class='ej'><p>y′ = x/y, y(0) = 2.</p>
+<p>(1) dy/dx = x/y. (2) y dy = x dx. (3) y²/2 = x²/2 + C. (4)-(5) y² = x² + K (K = 2C). (6) 4 = 0 + K ⇒ K = 4. <b>y = √(x² + 4)</b> (raíz positiva porque y(0) = 2 &gt; 0).</p></div>
+<div class='ej'><p>y′ = xy. dy/y = x dx ⇒ ln|y| = x²/2 + C ⇒ |y| = e<sup>C</sup> e<sup>x²/2</sup> ⇒ <b>y = K e<sup>x²/2</sup></b>.</p></div>
+<h3>Lineal: y′ + P(x) y = Q(x)</h3>
+<p>Pasos: (1) dejarla con y′ solo (coeficiente 1); (2) leer P y Q; (3) μ = e<sup>∫P dx</sup>, sin constante; (4) escribir (μ y)′ = μ Q; (5) integrar: μ y = ∫ μ Q dx + C; (6) dividir por μ.</p>
+<div class='ej'><p>x y′ + 2y = x² (x &gt; 0).</p>
+<p>(1) Divido por x: y′ + (2/x) y = x. (2) P = 2/x, Q = x. (3) ∫P = 2 ln x = ln x² ⇒ μ = x². (4) (x² y)′ = x² · x = x³. (5) x² y = x⁴/4 + C. (6) <b>y = x²/4 + C/x²</b>.</p>
+<p>Control: y′ = x/2 − 2C/x³; x y′ + 2y = x²/2 − 2C/x² + x²/2 + 2C/x² = x² ✓.</p></div>
+<h3>Exacta: M dx + N dy = 0 con ∂M/∂y = ∂N/∂x</h3>
+<p>Pasos: (1) leer M (lo que multiplica a dx) y N (a dy); (2) verificar M<sub>y</sub> = N<sub>x</sub>; (3) F = ∫ M dx + g(y), integrando en x con y constante; (4) derivar F respecto de y e igualar a N; (5) despejar g′(y) (no tiene que quedar x) e integrar; (6) la solución es F(x, y) = C.</p>
+<div class='ej'><p>(2xy + 1) dx + (x² + 3y²) dy = 0.</p>
+<p>(1) M = 2xy + 1, N = x² + 3y². (2) M<sub>y</sub> = 2x, N<sub>x</sub> = 2x ✓. (3) F = x²y + x + g(y). (4) F<sub>y</sub> = x² + g′(y) = x² + 3y². (5) g′ = 3y² ⇒ g = y³. (6) <b>x²y + x + y³ = C</b>.</p></div>
+<h3>Bernoulli: y′ + P y = Q yⁿ</h3>
+<p>Pasos: (1) identificar n; (2) cambio v = y<sup>1−n</sup>; (3) la ecuación queda v′ + (1 − n)P v = (1 − n)Q (lineal); (4) resolverla como lineal; (5) volver: y = v<sup>1/(1−n)</sup>.</p>
+<div class='ej'><p>y′ + y = x y². (1) n = 2. (2) v = y⁻¹. (3) v′ + (1 − 2)·1·v = (1 − 2)x ⇒ v′ − v = −x. (4) μ = e<sup>−x</sup>: (v e<sup>−x</sup>)′ = −x e<sup>−x</sup> ⇒ v e<sup>−x</sup> = x e<sup>−x</sup> + e<sup>−x</sup> + C ⇒ v = x + 1 + C eˣ. (5) <b>y = 1/(x + 1 + C eˣ)</b>.</p></div>
+<h2 id='r8'>8. Ecuación diferencial de segundo orden (el cuarto ejercicio alternativo)</h2>
+<p>Forma: y″ + a y′ + b y = r(x). Te piden: <b>a)</b> homogénea, <b>b)</b> particular, <b>c)</b> general, <b>d)</b> la que cumple las condiciones iniciales.</p>
+<h3>Paso a. Ecuación característica y homogénea</h3>
+<p>Cambiás y″ por m², y′ por m, y por 1, y r(x) por 0. Resolvés la cuadrática con m = [−a ± √(a² − 4b)]/2.</p>
+<div class='ej'><table><tr><th>Ecuación</th><th>Característica</th><th>Raíces</th><th>y<sub>h</sub></th></tr>
+<tr><td>y″ − 5y′ + 6y</td><td>m² − 5m + 6 = 0</td><td>2 y 3 (distintas)</td><td>C₁e<sup>2x</sup> + C₂e<sup>3x</sup></td></tr>
+<tr><td>y″ − 4y</td><td>m² − 4 = 0</td><td>±2</td><td>C₁e<sup>2x</sup> + C₂e<sup>−2x</sup></td></tr>
+<tr><td>y″ + 4y′</td><td>m² + 4m = m(m + 4)</td><td>0 y −4</td><td>C₁ + C₂e<sup>−4x</sup></td></tr>
+<tr><td>y″ − 4y′ + 4y</td><td>(m − 2)² = 0</td><td>2 doble</td><td>(C₁ + C₂x)e<sup>2x</sup></td></tr>
+<tr><td>y″ + 2y′ + 5y</td><td>m = [−2 ± √(4 − 20)]/2 = −1 ± 2i</td><td>α = −1, β = 2</td><td>e<sup>−x</sup>(C₁ cos 2x + C₂ sen 2x)</td></tr>
+<tr><td>y″ + 9y</td><td>m² = −9</td><td>±3i (α = 0, β = 3)</td><td>C₁ cos 3x + C₂ sen 3x</td></tr></table>
+<p>√ de un negativo: √(−16) = 4i. Las raíces complejas son −a/2 ± (√(4b − a²)/2) i.</p></div>
+<h3>Paso b. Particular: proponer, derivar, reemplazar, igualar</h3>
+<p>(1) Elegir la forma según r(x). (2) Verificar si choca con y<sub>h</sub>: si choca, multiplicar por x. (3) Derivar dos veces. (4) Reemplazar en la ecuación. (5) Agrupar e igualar coeficientes. (6) Resolver para A, B, C.</p>
+<div class='ej'><p>Todos con y″ − 5y′ + 6y = r(x) (raíces 2 y 3):</p>
+<p><b>r = 12.</b> Propongo y<sub>p</sub> = A. y′ = 0, y″ = 0. 0 − 0 + 6A = 12 ⇒ <b>A = 2</b>.</p>
+<p><b>r = 6x.</b> y<sub>p</sub> = Ax + B. y′ = A, y″ = 0. 0 − 5A + 6(Ax + B) = 6x ⇒ 6Ax + (6B − 5A) = 6x + 0. Igualo: 6A = 6 ⇒ A = 1; 6B − 5 = 0 ⇒ B = 5/6. <b>y<sub>p</sub> = x + 5/6</b>.</p>
+<p><b>r = eˣ.</b> 1 no es raíz. y<sub>p</sub> = Aeˣ = y′ = y″. A − 5A + 6A = 2A = 1 ⇒ <b>A = 1/2</b>.</p>
+<p><b>r = e<sup>2x</sup>.</b> 2 <b>es</b> raíz: Ae<sup>2x</sup> está en y<sub>h</sub> y daría 0 = e<sup>2x</sup>. Propongo y<sub>p</sub> = Axe<sup>2x</sup>. y′ = A(1 + 2x)e<sup>2x</sup>. y″ = A(4 + 4x)e<sup>2x</sup>. Reemplazo y saco e<sup>2x</sup>: A[(4 + 4x) − 5(1 + 2x) + 6x] = A[4 + 4x − 5 − 10x + 6x] = −A. −A = 1 ⇒ <b>y<sub>p</sub> = −x e<sup>2x</sup></b>.</p>
+<p><b>r = sen x.</b> y<sub>p</sub> = A cos x + B sen x (siempre los dos). y′ = −A sen x + B cos x. y″ = −A cos x − B sen x. Reemplazo y agrupo: cos x: −A − 5B + 6A = 5A − 5B. sen x: −B + 5A + 6B = 5A + 5B. Igualo con 0·cos x + 1·sen x: 5A − 5B = 0 y 5A + 5B = 1 ⇒ <b>A = B = 1/10</b>.</p></div>
+<h3>Pasos c y d. General y condiciones iniciales</h3>
+<p>(1) y = y<sub>h</sub> + y<sub>p</sub>. (2) Derivar la general entera. (3) Reemplazar x = 0 en y y en y′. (4) Igualar a los datos: sistema de dos ecuaciones para C₁ y C₂. (5) Escribir la solución con los números.</p>
+<div class='ej'><p>y″ − 5y′ + 6y = 12, y(0) = 0, y′(0) = 1.</p>
+<p>(1) y = C₁e<sup>2x</sup> + C₂e<sup>3x</sup> + 2. (2) y′ = 2C₁e<sup>2x</sup> + 3C₂e<sup>3x</sup>.</p>
+<p>(3)-(4) y(0) = C₁ + C₂ + 2 = 0; y′(0) = 2C₁ + 3C₂ = 1. De la primera C₁ = −2 − C₂ ⇒ 2(−2 − C₂) + 3C₂ = 1 ⇒ −4 + C₂ = 1 ⇒ C₂ = 5, C₁ = −7.</p>
+<p>(5) <b>y = −7e<sup>2x</sup> + 5e<sup>3x</sup> + 2</b>. Control: y(0) = −7 + 5 + 2 = 0 ✓; y′(0) = −14 + 15 = 1 ✓.</p></div>
+<div class='enun'><b>Ejemplo hecho (final 2024).</b> y″ + 2y′ + y = x(1 − x), y(0) = 0, y′(0) = 0.</div>
+<p><b>a)</b> m² + 2m + 1 = 0 ⇒ (m + 1)² = 0 ⇒ m = −1 doble. <b>y<sub>h</sub> = (C₁ + C₂x)e<sup>−x</sup></b>.</p>
+<p><b>b)</b> r = x − x², polinomio de grado 2. ¿0 es raíz? No. Propongo y<sub>p</sub> = Ax² + Bx + C; y<sub>p</sub>′ = 2Ax + B; y<sub>p</sub>″ = 2A.</p>
+<p>Reemplazo: 2A + 2(2Ax + B) + Ax² + Bx + C = −x² + x. Ordeno: Ax² + (4A + B)x + (2A + 2B + C) = −x² + x + 0.</p>
+<p>Igualo: A = −1; 4A + B = 1 ⇒ B = 5; 2A + 2B + C = 0 ⇒ −2 + 10 + C = 0 ⇒ C = −8. <b>y<sub>p</sub> = −x² + 5x − 8</b>.</p>
+<p><b>c)</b> <b>y = (C₁ + C₂x)e<sup>−x</sup> − x² + 5x − 8</b>.</p>
+<p><b>d)</b> y(0) = C₁ − 8 = 0 ⇒ C₁ = 8. y′ = C₂e<sup>−x</sup> − (C₁ + C₂x)e<sup>−x</sup> − 2x + 5 ⇒ y′(0) = C₂ − C₁ + 5 = 0 ⇒ C₂ = 3. <b>y = (8 + 3x)e<sup>−x</sup> − x² + 5x − 8</b>.</p>
+<div class='enun'><b>Hacelo vos (final 22/11/2023).</b> y″ − 3y′ − 4y = 5e<sup>−x</sup>, y(0) = 0, y′(0) = 0.</div>
+<details><summary>Resolución</summary>
+<p>a) m² − 3m − 4 = (m − 4)(m + 1) ⇒ m = 4, −1. y<sub>h</sub> = C₁e<sup>4x</sup> + C₂e<sup>−x</sup>.</p>
+<p>b) r = 5e<sup>−x</sup>, y −1 es raíz: propongo y<sub>p</sub> = A x e<sup>−x</sup>. y<sub>p</sub>′ = A(1 − x)e<sup>−x</sup>, y<sub>p</sub>″ = A(x − 2)e<sup>−x</sup>. Reemplazo: A[(x − 2) − 3(1 − x) − 4x]e<sup>−x</sup> = −5A e<sup>−x</sup> = 5e<sup>−x</sup> ⇒ A = −1. y<sub>p</sub> = −x e<sup>−x</sup>.</p>
+<p>c) y = C₁e<sup>4x</sup> + C₂e<sup>−x</sup> − x e<sup>−x</sup>.</p>
+<p>d) C₁ + C₂ = 0; 4C₁ − C₂ − 1 = 0 ⇒ C₁ = 1/5, C₂ = −1/5. <b>y = (1/5)e<sup>4x</sup> − (1/5)e<sup>−x</sup> − x e<sup>−x</sup></b>.</p></details>
+
+<h2 id='dia'>El día del final</h2>
+<ol><li>Leé los cuatro enunciados primero (3 minutos). Empezá por el que más seguro te sale.</li>
+<li>25 minutos por ejercicio como máximo. Si te trabás, escribí la receta (los pasos con las fórmulas) aunque no termines: suma puntos. No dejes ninguno en blanco.</li>
+<li>Controles rápidos: Green y directa tienen que dar igual; en Lagrange evaluá f en todos los puntos; en los volúmenes el resultado tiene que ser positivo; en la ED, verificá las condiciones iniciales en la solución final.</li>
+<li>Con tres ejercicios bien llegás a 75: es un 7.</li></ol>
+<p>Cuando estas ocho recetas te salgan sin mirar, pasá a <a href='AM2.html'>AM2.html</a>: el modelo oficial, la práctica de Einstein y los once ejercicios nuevos.</p>
+</main></body></html>

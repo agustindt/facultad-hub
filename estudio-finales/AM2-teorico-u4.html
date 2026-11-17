@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang='es'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>AM II · Teórico 4: ecuaciones de primer orden</title>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css'>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap'>
+<link rel='stylesheet' href='fichas.css'></head><body>
+<nav><b>AM II · Teórico 4</b><a href='index.html'>Plan</a><a href='AM2-teorico-u3.html'>Teórico 3</a><a href='#gen'>A. Conceptos</a><a href='#lin'>B. Lineal</a><a href='#ber'>C. Bernoulli</a><a href='#exa'>D. Exacta</a><a href='#otras'>E. Separable y homogénea</a></nav>
+<main>
+<h1>Teórico 4: Ecuaciones diferenciales de primer orden</h1>
+<div class='ley'><mark>Amarillo</mark>: se copia textual. <span class='r'>Rojo</span>: palabra que no puede faltar. <span class='v'>Verde</span>: explicación, no se escribe en el examen. <span class='t'>Ondulado azul</span>: trampa.</div>
+<p>En los <b>5</b> finales teóricos hubo una pregunta de este tema: <b>Bernoulli o exacta, alternándose</b>.</p>
+<table><tr><th>Tema</th><th>Cayó</th><th>Fechas</th><th>Prioridad</th></tr>
+<tr><td><a href='#ber'>Bernoulli: deducir la fórmula</a></td><td>2 veces</td><td>29/07/2022, 26/06/2024</td><td>★★★</td></tr>
+<tr><td><a href='#exa'>Exacta: condición y resolución</a></td><td>2 veces</td><td>07/12/2022, 17/07/2024</td><td>★★★</td></tr>
+<tr><td><a href='#lin'>Lineal: factor integrante</a></td><td>se usa en Bernoulli</td><td></td><td>★★</td></tr></table>
+
+<h2 id='gen'>A. Conceptos generales</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Ecuación diferencial ordinaria.</b> <mark>Ecuación que relaciona una <span class='r'>función de una variable</span> y = y(x), <span class='r'>sus derivadas</span> y la variable x: F(x, y, y′, …, y⁽ⁿ⁾) = 0.</mark> <span class='v'>La incógnita es una función, no un número.</span></p>
+<p><b>Orden.</b> <mark>El de la <span class='r'>derivada de mayor orden</span> que aparece.</mark> <span class='v'>y″ + y = 0 es de orden 2.</span></p>
+<p><b>Grado.</b> <mark>El <span class='r'>exponente</span> de la derivada de mayor orden, si la ecuación es polinómica en las derivadas.</mark> <span class='v'>(y′)³ + y = x es de orden 1 y grado 3.</span></p>
+<p><b>Solución.</b> <mark>Función y = φ(x) definida en un <span class='r'>intervalo</span> I que, <span class='r'>reemplazada</span> en la ecuación, la cumple para todo x ∈ I.</mark></p>
+<p><b>Solución general.</b> <mark>Familia de soluciones con <span class='r'>tantas constantes arbitrarias como el orden</span>.</mark> <span class='v'>En primer orden, una sola C.</span></p>
+<p><b>Solución particular.</b> <mark>La que se obtiene <span class='r'>dándole un valor a la constante</span>, por ejemplo con una condición inicial.</mark></p>
+<p><b>Solución singular.</b> <mark>Solución que <span class='r'>no se obtiene de la general</span> para ningún valor de C.</mark> <span class='v'>Ejemplo: y = 0 en Bernoulli.</span></p>
+<p><b>Problema de valor inicial.</b> <mark>y′ = f(x, y) con <span class='r'>y(x₀) = y₀</span>.</mark> <span class='v'>La ecuación más un punto por donde tiene que pasar la solución.</span></p>
+<p><b>Existencia y unicidad.</b> <mark>Si <span class='r'>f y ∂f/∂y son continuas</span> en un rectángulo que contiene a (x₀, y₀), el problema de valor inicial tiene <span class='r'>solución única</span> en un entorno de x₀.</mark></p>
+<p><span class='t'>Trampa: sin esas hipótesis puede haber más de una. y′ = 3y<sup>2/3</sup>, y(0) = 0 tiene y = 0 y también y = x³.</span></p></div>
+
+<h2 id='lin'>B. Ecuación lineal</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Lineal de primer orden.</b> <mark>y′ + P(x)y = Q(x): <span class='r'>y e y′ aparecen a la primera potencia</span> y no se multiplican entre sí.</mark></p>
+<p><b>Lineal homogénea.</b> <mark>La lineal con <span class='r'>Q(x) = 0</span>.</mark></p>
+<p><b>Factor integrante.</b> <mark>Función <span class='r'>μ ≠ 0</span> que, al multiplicar la ecuación, la vuelve <span class='r'>exacta</span> (o deja el lado izquierdo como la derivada de un producto).</mark> <span class='v'>En la lineal es μ = e<sup>∫P dx</sup>.</span></p>
+<p><span class='t'>Trampa: el factor integrante usa P (lo que multiplica a y), no Q.</span></p></div>
+<h3>Fórmula de la lineal <span class='sale'>★★ base de Bernoulli</span></h3>
+<div class='criollo'>Multiplico toda la ecuación por un “factor mágico” μ que deja el lado izquierdo como la derivada de un producto, (μy)′. Después integro y despejo.</div>
+<div class='copiar'><div class='M'>y'+P(x)@,y=Q(x)@qquad@mu(x)=e^{@int P@,dx}@qquad y=@dfrac{1}{@mu}@Big[@int@mu@,Q@,dx+C@Big]</div></div>
+<div class='idea'>μ′ = Pμ, entonces μy′ + μPy = (μy)′.</div>
+<div class='l'><div class='num'>1</div><div class='M'>@mu=e^{@int P@,dx}@;@Rightarrow@;@mu'=P@,@mu</div><div class='n'><mark>Derivo μ.</mark> <span class='v'>Derivada de e<sup>algo</sup> = e<sup>algo</sup> · (algo)′.</span></div></div>
+<div class='l'><div class='num'>2</div><div class='M'>@mu@,y'+@mu@,P@,y=@mu@,Q</div><div class='n'><mark><span class='r'>Multiplico por μ</span> toda la ecuación.</mark></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>@mu@,y'+@mu'@,y=(@mu@,y)'</div><div class='n'><mark>Como μP = μ′: <span class='r'>regla del producto</span> al revés.</mark></div></div>
+<div class='l'><div class='num'>4</div><div class='M'>(@mu@,y)'=@mu@,Q@;@Rightarrow@;@mu@,y=@int@mu@,Q@,dx+C</div><div class='n'><mark><span class='r'>Integro</span> los dos lados.</mark> <span class='v'>La C va acá, una sola vez.</span></div></div>
+<div class='l'><div class='num'>5</div><div class='M'>y=@dfrac{1}{@mu}@Big[@int@mu@,Q@,dx+C@Big]@quad@blacksquare</div><div class='n'><mark>Divido por μ.</mark> <span class='v'>Nunca es 0: es una exponencial.</span></div></div>
+<div class='acordate'>μ = e<sup>∫P</sup> convierte el lado izquierdo en (μy)′.</div>
+
+<h2 id='ber'>C. Ecuación de Bernoulli</h2>
+<div class='defs'><h3>Definición</h3>
+<p><b>Ecuación de Bernoulli.</b> <mark>y′ + P(x)y = Q(x)<span class='r'>yⁿ</span>, con <span class='r'>n ≠ 0, 1</span>.</mark> <span class='v'>Si n = 0 o n = 1 ya es lineal.</span></p></div>
+<h3>Deducción de la fórmula <span class='sale'>★★★ 2022 · 2024</span></h3>
+<div class='criollo'>Es casi una lineal, pero el yⁿ de la derecha la arruina. Con el cambio v = y<sup>1−n</sup> se convierte en una lineal, que ya sé resolver.</div>
+<div class='copiar'><p><mark>Con el cambio <span class='r'>v = y<sup>1−n</sup></span> la ecuación se transforma en una <span class='r'>lineal en v</span>:</mark></p>
+<div class='M'>v'+(1-n)P@,v=(1-n)Q</div>
+<div class='M'>@mu=e^{(1-n)@int P@,dx},@qquad v=@dfrac{1}{@mu}@Big[(1-n)@int Q@,@mu@,dx+C@Big],@qquad y=v^{@frac{1}{1-n}}</div></div>
+<div class='idea'>Divido por yⁿ y llamo v a lo que queda multiplicando a P.</div>
+<div class='l'><div class='num'>1</div><div class='M'>y^{-n}@,y'+P@,y^{1-n}=Q</div><div class='n'><mark><span class='r'>Divido por yⁿ</span> (y ≠ 0).</mark> <span class='v'>y/yⁿ = y<sup>1−n</sup> y yⁿ/yⁿ = 1.</span></div></div>
+<div class='l'><div class='num'>2</div><div class='M'>v=y^{1-n}@;@Rightarrow@; v'=(1-n)@,y^{-n}@,y'</div><div class='n'><mark><span class='r'>Cambio de variable</span> y lo derivo con la <span class='r'>regla de la cadena</span>.</mark> <span class='v'>Baja el exponente, le resto 1, y multiplico por y′.</span></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>y^{-n}@,y'=@dfrac{v'}{1-n}</div><div class='n'><mark>Despejo.</mark> <span class='v'>Es lo que aparece en la línea 1.</span></div></div>
+<div class='l'><div class='num'>4</div><div class='M'>@dfrac{v'}{1-n}+P@,v=Q</div><div class='n'><mark><span class='r'>Reemplazo</span> en la línea 1.</mark></div></div>
+<div class='l'><div class='num'>5</div><div class='M'>v'+(1-n)P@,v=(1-n)Q</div><div class='n'><mark>Multiplico por (1 − n): <span class='r'>es lineal en v</span>.</mark></div></div>
+<div class='l'><div class='num'>6</div><div class='M'>v=@dfrac{1}{@mu}@Big[(1-n)@int Q@mu@,dx+C@Big],@quad y=v^{@frac{1}{1-n}}@quad@blacksquare</div><div class='n'><mark>Fórmula de la lineal con μ = e<sup>(1−n)∫P</sup> y <span class='r'>vuelvo a y</span>.</mark></div></div>
+<div class='copiar'><p><mark>Ejemplo de control:</mark></p>
+<div class='M'>y'+y=x@,y^2:@quad n=2,@ v=y^{-1},@ v'-v=-x@;@Rightarrow@; v=x+1+Ce^{x}@;@Rightarrow@; y=@dfrac{1}{x+1+Ce^{x}}</div></div>
+<div class='acordate'>Dividir por yⁿ, llamar v = y<sup>1−n</sup>, y queda v′ + (1 − n)Pv = (1 − n)Q.</div>
+<div class='trampa'><span class='t'>Si n &gt; 0, y = 0 también es solución y se pierde al dividir por yⁿ: es la solución singular.</span></div>
+
+<h2 id='exa'>D. Ecuación diferencial exacta</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Diferencial total.</b> <mark>dF = F<sub>x</sub> dx + F<sub>y</sub> dy.</mark></p>
+<p><b>Ecuación exacta.</b> <mark>M dx + N dy = 0 es exacta si <span class='r'>existe F</span> con <span class='r'>F<sub>x</sub> = M y F<sub>y</sub> = N</span>.</mark> <span class='v'>Entonces la ecuación es dF = 0.</span></p>
+<p><b>Solución.</b> <mark><span class='r'>F(x, y) = C</span>.</mark> <span class='v'>Si dF = 0, F es constante.</span></p>
+<p><b>Factor integrante.</b> <mark>Si M<sub>y</sub> ≠ N<sub>x</sub>, función μ que hace exacta a μM dx + μN dy = 0.</mark> <span class='v'>Si (M<sub>y</sub> − N<sub>x</sub>)/N depende solo de x: μ(x) = e<sup>∫(M<sub>y</sub> − N<sub>x</sub>)/N dx</sup>.</span></p></div>
+<h3>Teorema: condición de exactitud <span class='sale'>★★★ 2022 · 2024</span></h3>
+<div class='criollo'>M dx + N dy es el diferencial de una función F escondida. Si la encuentro, la solución es F = C. La prueba rápida para saber si F existe es M<sub>y</sub> = N<sub>x</sub>.</div>
+<div class='copiar'><p><b>H)</b> <mark>M, N de <span class='r'>clase C¹</span> en un <span class='r'>rectángulo</span>.</mark></p>
+<p><b>T)</b> <mark>M dx + N dy = 0 es exacta <span class='r'>si y solo si</span> ∂M/∂y = ∂N/∂x.</mark></p></div>
+<div class='idea'>Ida: Schwarz. Vuelta: armo F integrando M en x y ajusto con una g(y).</div>
+<h3>Ida (⇒)</h3>
+<div class='l'><div class='num'>1</div><div class='M'>F_x=M,@quad F_y=N</div><div class='n'><mark>Por ser <span class='r'>exacta</span>.</mark></div></div>
+<div class='l'><div class='num'>2</div><div class='M'>M_y=F_{xy},@quad N_x=F_{yx}</div><div class='n'><mark>Derivo M respecto de y y N respecto de x.</mark></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>F_{xy}=F_{yx}@;@Rightarrow@; M_y=N_x@quad@blacksquare</div><div class='n'><mark>Por el <span class='r'>teorema de Schwarz</span></mark> <span class='v'>(las cruzadas son iguales porque M y N son C¹).</span></div></div>
+<h3>Vuelta (⇐): cómo se construye F</h3>
+<div class='l'><div class='num'>1</div><div class='M'>F(x,y)=@int M(x,y)@,dx+g(y)</div><div class='n'><mark><span class='r'>Integro M respecto de x</span>; la constante puede <span class='r'>depender de y</span>.</mark> <span class='v'>Así ya F<sub>x</sub> = M.</span></div></div>
+<div class='l'><div class='num'>2</div><div class='M'>F_y=@dfrac{@partial}{@partial y}@int M@,dx+g'(y)=N</div><div class='n'><mark>Pido la otra condición: <span class='r'>F<sub>y</sub> = N</span>.</mark></div></div>
+<div class='l'><div class='num'>3</div><div class='M'>g'(y)=N-@dfrac{@partial}{@partial y}@int M@,dx</div><div class='n'><mark>Despejo g′(y).</mark></div></div>
+<div class='l'><div class='num'>4</div><div class='M'>@dfrac{@partial}{@partial x}@Big[N-@dfrac{@partial}{@partial y}@int M@,dx@Big]=N_x-M_y=0</div><div class='n'><mark>Lo de la derecha <span class='r'>no depende de x</span> (por la condición).</mark> <span class='v'>Entonces g sale integrando en y.</span></div></div>
+<div class='l'><div class='num'>5</div><div class='M'>F(x,y)=C@quad@blacksquare</div><div class='n'><mark>Solución general.</mark></div></div>
+<div class='copiar'><p><mark><b>Fórmula resolvente:</b></mark></p>
+<div class='M'>F(x,y)=@int_{x_0}^{x}M(t,y)@,dt+@int_{y_0}^{y}N(x_0,t)@,dt=C</div>
+<p><mark>Ejemplo de control:</mark></p>
+<div class='M'>(2xy+1)@,dx+(x^2+3y^2)@,dy=0:@quad M_y=2x=N_x,@quad F=x^2y+x+y^3=C</div></div>
+<div class='acordate'>Exacta ⇔ M<sub>y</sub> = N<sub>x</sub>. Ida por Schwarz; vuelta: F = ∫M dx + g(y) y saco g con F<sub>y</sub> = N.</div>
+<div class='trampa'><span class='t'>Una lineal no es exacta en general: (Py − Q)dx + dy = 0 tiene M<sub>y</sub> = P y N<sub>x</sub> = 0. Con el factor integrante sí.</span></div>
+
+<h2 id='otras'>E. Separable y homogénea (por si preguntan)</h2>
+<div class='defs'><h3>Definiciones</h3>
+<p><b>Separable.</b> <mark>Se puede escribir <span class='r'>y′ = f(x)·g(y)</span>.</mark> Se resuelve: <mark>dy/g(y) = f(x) dx e integro los dos lados.</mark> <span class='v'>Las y con g(y) = 0 son soluciones constantes.</span></p>
+<p><b>Homogénea (de grado 0).</b> <mark>y′ = f(x, y) con <span class='r'>f(tx, ty) = f(x, y)</span>; equivale a y′ = F(y/x).</mark> Se resuelve: <mark>cambio <span class='r'>y = v·x</span>, y′ = v + x·v′, y queda separable.</mark></p>
+<p><span class='t'>Trampa: “homogénea” acá no es lo mismo que “lineal homogénea” (Q = 0). Mismo nombre, dos cosas distintas.</span></p></div>
+</main>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js'></script>
+<script>(function(){var B=String.fromCharCode(92);function go(){if(!window.katex)return;document.querySelectorAll('.M, .m').forEach(function(el){var s=el.textContent.split('@').join(B);try{katex.render(s,el,{displayMode:el.classList.contains('M'),throwOnError:false});}catch(e){}});}if(window.katex)go();else window.addEventListener('load',go);})();</script>
+</body></html>
